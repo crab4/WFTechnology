@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<Form Name="TemplateStartForm" Width="500" Height="300" FormBorderStyle="Sizable" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" BackColor="ThemeBackgroundColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True">
+<Form Name="TemplateClientListForm" Width="1000" Height="600" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
-    <Parameter Name="Title">Города</Parameter>
+    <Parameter Name="Title">Клиенты</Parameter>
   </Parameters>
 
   <Appearance>
@@ -13,6 +13,7 @@
 
       <Color Name="HeadBackgroundColor" Red="221" Green="232" Blue="246" Alpha="255" />
       <Color Name="HeadForeColor" Red="70" Green="70" Blue="70" Alpha="255" />
+
       <Color Name="LabelForeColor" Red="100" Green="100" Blue="100" Alpha="255" />
       <Color Name="TableBackgroundColor" Red="200" Green="200" Blue="200" Alpha="255" />
       <Color Name="TableArchiveColor" Red="230" Green="230" Blue="230" Alpha="255" />
@@ -27,18 +28,55 @@
       <FontStyle Name="ThemeFontStyle" Font="Segoe UI" Size="9" />
       <FontStyle Name="HeadFontStyle" Font="Segoe UI" Size="15" />
       <FontStyle Name="LabelFontStyle" Font="Segoe UI" Size="9" Italic="True" />
-      <FontStyle Name="ButtonFontStyle" Font="Segoe UI" Size="9" />
+      <FontStyle Name="ButtonFontStyle" Font="Segoe UI" Size="10" />
     </FontStyles>
   </Appearance>
 
-  <DataConnections />
+  <DataConnections>
+    <DataConnection Name="ClientPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="ClientSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="ClientId" />
+          <Field Name="Name" />
+          <Field Name="CityTitle" />
+          <Field Name="Phone" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+  </DataConnections>
 
   <Conditions>
     <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
+
+    <Condition Name="ClientSelectedGreaterCondition" Type="GreaterCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="ClientDatabaseTable">
+            <Property Name="SelectedRowsCount" />
+          </Object>
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
   </Conditions>
 
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
+
+    <Command Name="ClientEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">Client/TemplateClientEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="Edit">
+          <Input Name="Edit">False</Input>
+        </Parameter>
+        <Parameter Name="ClientId">
+          <Input Name="ClientId" />
+        </Parameter>
+      </Parameters>
+    </Command>
   </Commands>
 
   <Executions>
@@ -53,7 +91,6 @@
   </Executions>
 
   <MyObjects>
-
     <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
       <Top>0</Top>
       <Left>0</Left>
@@ -97,7 +134,6 @@
           <Parameter Name="Title" />
         </Text>
       </MyObject>
-
     </MyObject>
 
     <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls">
@@ -109,7 +145,7 @@
       <Left>0</Left>
       <Height>
         <Calculate>
-          <Expression>{0} - {1} - {2} - {3} </Expression>
+          <Expression>{0} - {1}</Expression>
           <Items>
             <Item>
               <Form>
@@ -117,18 +153,10 @@
               </Form>
             </Item>
             <Item>
-              <Object Name="HeadPanel">
-                <Property Name="Height" />
+              <Object Name="ContentPanel">
+                <Property Name="Top" />
               </Object>
             </Item>
-            <Item>
-              <Object Name="FootSeparatePanel">
-                <Property Name="Height"/>
-              </Object>
-            </Item>
-            <Item><Object Name="FootPanel">
-              <Property Name="Height"/>
-            </Object></Item>
           </Items>
         </Calculate>
       </Height>
@@ -140,7 +168,8 @@
       <TabIndex>1</TabIndex>
       <BackColor>ThemeBackgroundColor</BackColor>
 
-      <MyObject Name="CityDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
+      <!-- Insert your content-->
+      <MyObject Name="ClientDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
         <Top>5</Top>
         <Left>10</Left>
         <Height>
@@ -153,7 +182,7 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="CityDatabaseTable">
+                <Object Name="ClientDatabaseTable">
                   <Property Name="Top" />
                 </Object>
               </Item>
@@ -170,12 +199,12 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="CityDatabaseTable">
+                <Object Name="ClientDatabaseTable">
                   <Property Name="Left" />
                 </Object>
               </Item>
               <Item>
-                <Object Name="CityAddButton">
+                <Object Name="ClientAddButton">
                   <Property Name="Width" />
                 </Object>
               </Item>
@@ -188,38 +217,42 @@
         <AllowUpdate>False</AllowUpdate>
         <AllowDelete>False</AllowDelete>
         <AutoSizeColumnsMode Value="Fill" />
-        <!-- <SourceDataConnection Name="" /> -->
         <Columns>
-          <Column Name="CityId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
-            <Visible>False</Visible>
-          </Column>
           <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
             <Title>#</Title>
-            <Width>30</Width>
-            <AutoFill Type="RowNumber" />
-            <Alignment Value="MiddleCenter" />
+            <Width>40</Width>
+            <MinimumWidth>20</MinimumWidth>
             <AutoSizeMode Value="None" />
+            <AutoFill Type="RowNumber" />
           </Column>
-          <Column Name="Title" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
-            <Title>Наименование</Title>
-            <Width>150</Width>
+          <Column Name="ClientId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="Name" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>ФИО</Title>
+            <MinimumWidth>200</MinimumWidth>
             <AutoSizeMode Value="Fill" />
           </Column>
+          <Column Name="CityTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Город</Title>
+            <MinimumWidth>150</MinimumWidth>
+          </Column>
+          <Column Name="Phone" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Телефон</Title>
+            <MinimumWidth>150</MinimumWidth>
+          </Column>
         </Columns>
+        <SourceDataConnection Name="ClientPrimaryGetDataConnection" />
       </MyObject>
 
-      <MyObject Name="CityAddButton" Type="Button" Assembly="BaseControls">
-        <Top>
-          <Object Name="CityDatabaseTable">
-            <Property Name="Top" />
-          </Object>
-        </Top>
+      <MyObject Name="ClientAddButton" Type="Button" Assembly="BaseControls">
+        <Top>5</Top>
         <Left>
           <Calculate>
             <Expression>{0} + 5</Expression>
             <Items>
               <Item>
-                <Object Name="CityDatabaseTable">
+                <Object Name="ClientDatabaseTable">
                   <Property Name="Right" />
                 </Object>
               </Item>
@@ -236,72 +269,92 @@
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Commands> </Commands>
-      </MyObject>
-    </MyObject>
-
-    <MyObject Name="FootSeparatePanel" Type="Panel" Assembly="BaseControls">
-      <Top>
-        <Object Name="ContentPanel">
-          <Property Name="Bottom" />
-        </Object>
-      </Top>
-      <Left>5</Left>
-      <Height>1</Height>
-      <Width>
-        <Calculate>
-          <Expression>{0} - 10</Expression>
-          <Items>
-            <Item>
-              <Form>
-                <Property Name="Width" />
-              </Form>
-            </Item>
-            <Item />
-          </Items>
-        </Calculate>
-      </Width>
-      <BackColor>ThemeSeparateBackgroundColor</BackColor>
-    </MyObject>
-
-    <MyObject Name="FootPanel" Type="Panel" Assembly="BaseControls">
-      <Top>
-        <Object Name="FootSeparatePanel">
-          <Property Name="Bottom" />
-        </Object>
-      </Top>
-      <Left>0</Left>
-      <Height>40</Height>
-      <Width>
-        <Form>
-          <Property Name="Width" />
-        </Form>
-      </Width>
-      <TabIndex>2</TabIndex>
-      <BackColor>ThemeBackgroundColor</BackColor>
-      
-      <MyObject Name="Button" Type="Button" Assembly="BaseControls">
-        <Top>5</Top>
-        <Right><Calculate>
-          <Expression>{0} - 5</Expression>
-          <Items>
-            <Item><Object Name="FootPanel">
-              <Property Name="Right"/>
-            </Object></Item>
-          </Items>
-        </Calculate></Right>
-        <Height>30</Height>
-        <Width>200</Width>
-        <TextAlign>MiddleCenter</TextAlign>
-        <FontStyle>ButtonFontStyle</FontStyle>
-        <ImageAlign>MiddleLeft</ImageAlign>
-        <Image>Images\24x24\content-save.png</Image>
-        <Text></Text>
         <Commands>
-          <Command Name=""></Command>
+          <Command Name="ClientEditFormShowCommand" />
         </Commands>
       </MyObject>
-    </MyObject>
 
+      <MyObject Name="ClientEditButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="ClientAddButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="ClientAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Height>40</Height>
+        <Width>40</Width>
+        <Hint>Редактировать запись...</Hint>
+        <BackgroundImage>Images\24x24\pencil.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <Condition Name="ClientSelectedGreaterCondition" />
+        </Enabled>
+        <Commands>
+          <Command Name="ClientEditFormShowCommand">
+            <Input Name="Edit">True</Input>
+            <Input Name="ClientId">
+              <Object Name="ClientDatabaseTable">
+                <Property Name="SelectedRowCellValueByColumnName">
+                  <Parameters>
+                    <Parameter Name="ColumnName">ClientId</Parameter>
+                  </Parameters>
+                </Property>
+              </Object>
+            </Input>
+          </Command>
+        </Commands>
+      </MyObject>
+
+      <MyObject Name="ClientDeleteButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="ClientEditButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="ClientAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Height>40</Height>
+        <Width>40</Width>
+        <Hint>Удалить запись...</Hint>
+        <BackgroundImage>Images\24x24\delete.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <Condition Name="ClientSelectedGreaterCondition" />
+        </Enabled>
+        <Commands> </Commands>
+      </MyObject>
+
+    </MyObject>
   </MyObjects>
 </Form>

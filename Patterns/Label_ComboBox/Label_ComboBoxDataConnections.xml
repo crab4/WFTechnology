@@ -1,0 +1,9 @@
+<DataConnection Name="{FieldName}ShortPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+  <SqlQuery Name="{FieldName}ShortSelectSqlQuery" Type="Select">
+    <Workflow Name="{WorkflowName}" />
+    <Fields>
+      <Field Name="{FieldName}Id" />
+      <Field Name="Title" />
+    </Fields>
+  </SqlQuery>
+</DataConnection>

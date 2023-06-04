@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FilePattern>
+  <Name>Empty Form with Footer</Name>
+  <Description>Шаблонная форма с хэдером и футером.</Description>
+  <Actions>
+    <VariableCollector Type="WorkflowNameCollector" />
+    <Input Type="Wizard">
+      <Page>
+        <Title>Настройки паттерна Empty Form with Footer</Title>
+        <Description>Шаблонная форма с хэдером и футером.</Description>
+		
+        <Variable Name="FormName">
+          <Type Value="Text" />
+          <Text>Имя формы (например, "City")</Text>
+          <Description>Если имя процесса "NewWorkflow", а значение параметра "City",
+то файл будет называться "NewWorkflowCity.xml",
+а в тэге Form в атрибуте Name будет "NewWorkflowCityForm"</Description>
+        </Variable>
+        <Variable Name="FormTitle">
+          <Type Value="Text" />
+          <Text>Заголовок формы (например, "Пример формы")</Text>
+        </Variable>
+		
+        <Variable Name="FooterButtonName">
+          <Type Value="Text" />
+          <Text>Имя кнопки в футере (например, "SaveButton")</Text>
+          <Default>|Button</Default>
+        </Variable>
+        <Variable Name="FooterButtonText">
+          <Type Value="Text" />
+          <Text>Текст на кнопке в футере (например, "Сохранить")</Text>
+          <Default>Сохранить</Default>
+        </Variable>
+        <Variable Name="FooterButtonIcon">
+          <Type Value="Text" />
+          <Text>Иконка на кнопке в футере (путь по умолчанию - Images\24x24)</Text>
+          <Default>\content-save.png</Default>
+        </Variable>
+		
+      </Page>
+    </Input>
+    <CreateFile>
+      <Template>EmptyFormWithFooter\EmptyFormWithFooter.xml</Template>
+      <FileName>{WorkflowName}{FormName}.xml</FileName>
+    </CreateFile>
+    <CopyFile>
+      <Source>EntityForm\24x24\content-save.png</Source>
+      <Destination>Images\24x24\content-save.png</Destination>
+    </CopyFile>
+  </Actions>
+</FilePattern>

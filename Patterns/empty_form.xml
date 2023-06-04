@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FilePattern>
+  <Name>Empty Form</Name>
+  <Description>Шаблонная форма только с хэдером.</Description>
+  <Actions>
+    <VariableCollector Type="WorkflowNameCollector" />
+    <Input Type="Wizard">
+      <Page>
+        <Title>Настройки паттерна Empty Form</Title>
+        <Description>Шаблонная форма только с хэдером.</Description>
+		
+        <Variable Name="FormName">
+          <Type Value="Text" />
+          <Text>Имя формы (например, "City")</Text>
+          <Description>Если имя процесса "NewWorkflow", а значение параметра "City",
+то файл будет называться "NewWorkflowCity.xml",
+а в тэге Form в атрибуте Name будет "NewWorkflowCityForm"</Description>
+        </Variable>
+        <Variable Name="FormTitle">
+          <Type Value="Text" />
+          <Text>Заголовок формы (например, "Пример формы")</Text>
+        </Variable>
+		
+      </Page>
+    </Input>
+    <CreateFile>
+      <Template>EmptyForm\EmptyForm.xml</Template>
+      <FileName>{WorkflowName}{FormName}.xml</FileName>
+    </CreateFile>
+  </Actions>
+</FilePattern>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Snippet>
+  <Name>Label + TextBox</Name>
+  <ShortName>ltbox</ShortName>
+  <Description>Надпись Label и текстовое поле TextBox.
+
+Начальные условия.
+Курсор должен стоять там, где идет описание графических объектов.
+
+Применение.
+В текущий файл будут добавлены Label и TextBox.</Description>
+  <FileTypes>
+    <FileType Value="Form" />
+  </FileTypes>
+  <ContextCheckings>
+    <Checking Type="ObjectsContextChecker" />
+  </ContextCheckings>
+  <Actions>
+    <Input Type="Wizard">
+      <Page>
+        <Title>Настройки паттерна Label + TextBox</Title>
+        <Description>Надпись Label и текстовое поле TextBox.</Description>
+        <FieldDescription>
+          <Text>Начальные условия. Курсор должен стоять там, где идет описание графических объектов.</Text>
+        </FieldDescription>
+        <FieldDescription>
+          <Text>Применение. В текущий файл будут добавлены Label и TextBox.</Text>
+        </FieldDescription>
+        <Variable Name="ItemName">
+          <Type Value="Text" />
+          <Text>Имя сущности, свойство которой будет редактировать TextBox (например, "Client")</Text>
+        </Variable>
+        <Variable Name="FieldName">
+          <Type Value="Text" />
+          <Text>Имя свойства сущности, которое будет редактировать TextBox (например, "Name")</Text>
+        </Variable>
+        <Variable Name="FieldTitle">
+          <Type Value="Text" />
+          <Text>Описание поля TextBox, которое будет отображаться в Label (например, "Имя")</Text>
+        </Variable>
+        <Variable Name="ParentObject">
+          <Type Value="Text" />
+          <Text>Имя контейнера, в который добавляются объекты (например, "ContentPanel")</Text>
+          <Default>ContentPanel</Default>
+        </Variable>
+        <Variable Name="AboveLabel">
+          <Type Value="Text" />
+          <Text>Имя вышестоящего объекта для расчета координаты Left (например, "TitleLabel")</Text>
+          <Description>Оно будет использоваться для расчета координаты Left вставляемого объекта Label.
+Если вышестоящего объекта нет, то в тэге Left вставляемого объекта Label нужно будет задать константу.</Description>
+          <Default>|Label</Default>
+        </Variable>
+        <Variable Name="AboveObject">
+          <Type Value="Text" />
+          <Text>Имя вышестоящего объекта для расчета координаты Top (например, "TitleTextBox")</Text>
+          <Description>Оно будет использоваться для расчета координаты Top вставляемого объекта Label.
+Если вышестоящего объекта нет, то в тэге Top вставляемого объекта Label нужно будет задать константу.</Description>
+        </Variable>
+      </Page>
+    </Input>
+    <Insert Place="Caret">
+      <Xml Path="Label_TextBox\Label_TextBoxCaret.xml" />
+    </Insert>
+    <ToDo>
+      <Text>Доработка после применения паттерна Label + TextBox.
+1. Добавить новое поле в GetDataConnection, Insert- и UpdateSetDataConnection
+2. Добавить новое поле в Select-, Insert- и Update-запросы
+3. Добавить новое поле в таблицу базы данных</Text>
+    </ToDo>
+  </Actions>
+</Snippet>

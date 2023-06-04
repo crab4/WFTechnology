@@ -1,10 +1,108 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Workflow>
-  <SqlQueries> </SqlQueries>
+  <SqlQueries>
+    <SqlQuery Name="CitySelectSqlQuery">
+      <Text>
+        select 
+          city_id as "CityId",
+          title as "Title"
+         from 
+          template.city
+         order by title;
+      </Text>
+    </SqlQuery>
 
-  <Permissions> </Permissions>
+    <SqlQuery Name="CityInsertSqlQuery">
+      <Text>
+        insert into template.city(
+          title
+        )
+        values
+          (
+          {Title}
+          );
+      </Text>
+    </SqlQuery>
 
-  <Roles> </Roles>
+    <SqlQuery Name="CityUpdateSqlQuery">
+      <Text>
+        update template.city
+        set
+          title = {Title}
+        where
+          city_id = {CityId};
+      </Text>
+    </SqlQuery>
 
-  <Groups> </Groups>
+    <SqlQuery Name="CityDeleteSqlQuery">
+      <Text>
+        delete from template.city where city_id = {CityId};
+      </Text>
+    </SqlQuery>
+    
+    <SqlQuery Name="ClientSelectSqlQuery">
+      <Text>
+        select
+          cl.client_id as "ClientId",
+          cl.title as "Name",
+          ct.title as "CityTitle",
+          cl.phone as "Phone"
+        from
+          template.client cl
+          left join template.city ct using(city_id)
+        order by cl.title
+      </Text>
+    </SqlQuery>
+
+  </SqlQueries>
+
+  <Permissions>
+    <Permission Name="CityViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="CitySelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+    <Permission Name="CityEditSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="CityInsertSqlQuery" />
+        <SqlQuery Name="CityUpdateSqlQuery" />
+        <SqlQuery Name="CityDeleteSqlQuery" />
+      </SqlQueries>
+    </Permission>
+    
+    <Permission Name="ClientViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="ClientSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+  </Permissions>
+
+  <Roles>
+    <Role Name="CityViewRole">
+      <Permissions>
+        <Permission Name="CityViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
+    <Role Name="CityEditRole">
+      <Permissions>
+        <Permission Name="CityViewSqlQueryPermission" />
+        <Permission Name="CityEditSqlQueryPermission" />
+      </Permissions>
+    </Role>
+    
+    <Role Name="ClientViewRole">
+      <Permissions>
+        <Permission Name="ClientViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
+  </Roles>
+
+  <Groups>
+    <Group Name="GuestGroup">
+      <Roles>
+        <Role Name="CityEditRole" />
+        <Role Name="ClientViewRole" />
+      </Roles>
+    </Group>
+  </Groups>
 </Workflow>

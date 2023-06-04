@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FilePattern>
+  <Name>Entity Form</Name>
+  <Description>Шаблонная карточка сущности.
+    
+Примечание.
+После применения требуется отдельно создать команду для запуска формы.</Description>
+  <Actions>
+    <VariableCollector Type="EnvironmentNamesCollector" />
+    <VariableCollector Type="WorkflowNameCollector" />
+    <Input Type="Wizard">
+      <Page>
+        <Title>Настройки паттерна Entity Form</Title>
+        <Description>Шаблонная карточка сущности.</Description>
+        <FieldDescription>
+          <Text>Примечание. После применения требуется отдельно создать команду для запуска формы.</Text>
+        </FieldDescription>
+		
+        <Variable Name="FormName">
+          <Type Value="Text" />
+          <Text>Имя формы (например, "CityEdit")</Text>
+          <Description>Если имя процесса "NewWorkflow", а значение параметра "CityEdit",
+то файл будет называться "NewWorkflowCityEdit.xml",
+а в тэге Form в атрибуте Name будет "NewWorkflowCityEditForm"</Description>
+        </Variable>		
+        <Variable Name="AddFormTitle">
+          <Type Value="Text" />
+          <Text>Заголовок формы для создания сущности (например, "Добавление города")</Text>
+        </Variable>
+        <Variable Name="EditFormTitle">
+          <Type Value="Text" />
+          <Text>Заголовок формы для редактирования сущности (например, "Редактирование города")</Text>
+        </Variable>
+        <Variable Name="ItemName">
+          <Type Value="Text" />
+          <Text>Имя сущности (например, "City")</Text>
+        </Variable>
+		
+        <Variable Name="FooterButtonName">
+          <Type Value="Text" />
+          <Text>Имя кнопки в футере (например, "Save")</Text>
+          <Default>Save</Default>
+        </Variable>
+        <Variable Name="FooterButtonText">
+          <Type Value="Text" />
+          <Text>Текст на кнопке в футере (например, "Сохранить")</Text>
+          <Default>Сохранить</Default>
+        </Variable>
+        <Variable Name="FooterButtonIcon">
+          <Type Value="Text" />
+          <Text>Иконка на кнопке в футере (путь по умолчанию - Images\24x24)</Text>
+          <Default>\content-save.png</Default>
+        </Variable>
+		
+      </Page>
+    </Input>
+    <CreateFile>
+      <Template>EntityForm\EntityForm.xml</Template>
+      <FileName>{WorkflowName}{FormName}.xml</FileName>
+    </CreateFile>
+    <CopyFile>
+      <Source>EntityForm\24x24\content-save.png</Source>
+      <Destination>Images\24x24\content-save.png</Destination>
+    </CopyFile>
+  </Actions>
+</FilePattern>

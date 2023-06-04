@@ -1,0 +1,10 @@
+<SqlQuery Name="{FieldName}ShortSelectSqlQuery">
+  <Text>
+    SELECT
+      {ChildItemTable}.{ChildItemTable}_id AS "{FieldName}Id",
+      {ChildItemTable}.title AS "Title"
+    FROM
+      {WorkflowSchemeName}.{ChildItemTable}
+    ORDER BY {ChildItemTable}.title;
+  </Text>
+</SqlQuery>
