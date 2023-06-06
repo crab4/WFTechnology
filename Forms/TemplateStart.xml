@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<Form Name="TemplateClientListForm" Width="1000" Height="600" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateOrderForm" Width="1000" Height="600" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
-    <Parameter Name="Title">Клиенты</Parameter>
+    <Parameter Name="Title">Заказы</Parameter>
   </Parameters>
 
   <Appearance>
@@ -32,115 +32,14 @@
     </FontStyles>
   </Appearance>
 
-  <DataConnections>
-    <DataConnection Name="ClientPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
-      <SqlQuery Name="ClientSelectSqlQuery" Type="Select">
-        <Workflow Name="Template" />
-        <Fields>
-          <Field Name="ClientId" />
-          <Field Name="Name" />
-          <Field Name="CityTitle" />
-          <Field Name="Phone" />
-        </Fields>
-      </SqlQuery>
-    </DataConnection>
-
-    <DataConnection Name="ClientDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
-      <Workflow Name="Template" />
-      <Parameters>
-        <Parameter NativeName="ClientId">
-          <Value>
-            <Object Name="ClientDatabaseTable">
-              <Property Name="SelectedRowCellValueByColumnName">
-                <Parameters>
-                  <Parameter Name="ColumnName">ClientId</Parameter>
-                </Parameters>
-              </Property>
-            </Object>
-          </Value>
-        </Parameter>
-      </Parameters>
-      <SqlQueries>
-        <SqlQuery Name="ClientDeleteSqlQuery" Type="Delete" />
-      </SqlQueries>
-      <Refresh>
-        <DataConnection Name="ClientPrimaryGetDataConnection" />
-      </Refresh>
-    </DataConnection>
-
-  </DataConnections>
+  <DataConnections> </DataConnections>
 
   <Conditions>
     <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
-
-    <Condition Name="ClientSelectedGreaterCondition" Type="GreaterCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Object Name="ClientDatabaseTable">
-            <Property Name="SelectedRowsCount" />
-          </Object>
-        </Item>
-        <Item>0</Item>
-      </Items>
-      <DataType Type="IntegerDataType" />
-    </Condition>
-
-    <Condition Name="ClientDatabaseTableCellDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
-      <Table Name="ClientDatabaseTable" />
-    </Condition>
-
-    <Condition Name="ClientEditUpdateTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <AlwaysChange Value="True" />
-      <Items>
-        <Item>
-          <Command Name="ClientEditFormShowCommand" Parameter="Updated" />
-        </Item>
-        <Item>True</Item>
-      </Items>
-      <DataType Type="BooleanDataType" />
-    </Condition>
   </Conditions>
 
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
-
-    <Command Name="ClientEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">Client/TemplateClientEdit.xml</Xml>
-      <Show Type="None" />
-      <Parameters>
-        <Parameter Name="Edit">
-          <Input Name="Edit">False</Input>
-        </Parameter>
-        <Parameter Name="ClientId">
-          <Input Name="ClientId" />
-        </Parameter>
-      </Parameters>
-    </Command>
-
-    <Command Name="ClientViewDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="ClientPrimaryGetDataConnection" Packet="True" />
-      </DataConnections>
-    </Command>
-
-    <Command Name="ClientSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Object Name="ClientDatabaseTable">
-        <Property Name="SelectRowByFieldValue">
-          <Parameters>
-            <Parameter Name="ColumnName">ClientId</Parameter>
-            <Parameter Name="Value">
-              <Command Name="ClientEditFormShowCommand" Parameter="ClientId" />
-            </Parameter>
-          </Parameters>
-        </Property>
-      </Object>
-    </Command>
-    
-    <Command Name="ClientDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="ClientDeleteSetDataConnection" />
-      </DataConnections>
-    </Command>
   </Commands>
 
   <Executions>
@@ -150,36 +49,6 @@
       </ConditionExpression>
       <Commands>
         <Command Name="FormCloseCommand" />
-      </Commands>
-    </Execution>
-
-    <Execution>
-      <ConditionExpression>
-        <Condition Name="ClientDatabaseTableCellDoubleClickCondition" />
-      </ConditionExpression>
-      <Commands>
-        <Command Name="ClientEditFormShowCommand">
-          <Input Name="Edit">True</Input>
-          <Input Name="ClientId">
-            <Object Name="ClientDatabaseTable">
-              <Property Name="SelectedRowCellValueByColumnName">
-                <Parameters>
-                  <Parameter Name="ColumnName">ClientId</Parameter>
-                </Parameters>
-              </Property>
-            </Object>
-          </Input>
-        </Command>
-      </Commands>
-    </Execution>
-
-    <Execution>
-      <ConditionExpression>
-        <Condition Name="ClientEditUpdateTrueEqualCondition" />
-      </ConditionExpression>
-      <Commands>
-        <Command Name="ClientViewDataConnectionRefreshCommand" />
-        <Command Name="ClientSelectInTableValueSetCommand" />
       </Commands>
     </Execution>
   </Executions>
@@ -263,21 +132,17 @@
       <BackColor>ThemeBackgroundColor</BackColor>
 
       <!-- Insert your content-->
-      <MyObject Name="ClientDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
+
+      <MyObject Name="OrderDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
         <Top>5</Top>
         <Left>10</Left>
         <Height>
           <Calculate>
-            <Expression>{0} - {1} * 2</Expression>
+            <Expression>{0} - 10</Expression>
             <Items>
               <Item>
                 <Object Name="ContentPanel">
                   <Property Name="Height" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="ClientDatabaseTable">
-                  <Property Name="Top" />
                 </Object>
               </Item>
             </Items>
@@ -293,12 +158,12 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="ClientDatabaseTable">
+                <Object Name="OrderDatabaseTable">
                   <Property Name="Left" />
                 </Object>
               </Item>
               <Item>
-                <Object Name="ClientAddButton">
+                <Object Name="OrderAddButton">
                   <Property Name="Width" />
                 </Object>
               </Item>
@@ -311,42 +176,60 @@
         <AllowUpdate>False</AllowUpdate>
         <AllowDelete>False</AllowDelete>
         <AutoSizeColumnsMode Value="Fill" />
+        <!--<SourceDataConnection Name="" />-->
         <Columns>
-          <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
-            <Title>#</Title>
-            <Width>40</Width>
-            <MinimumWidth>20</MinimumWidth>
-            <AutoSizeMode Value="None" />
-            <AutoFill Type="RowNumber" />
+          <Column Name="OrderId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
           </Column>
           <Column Name="ClientId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
             <Visible>False</Visible>
           </Column>
-          <Column Name="Name" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
-            <Title>ФИО</Title>
-            <MinimumWidth>200</MinimumWidth>
-            <AutoSizeMode Value="Fill" />
+          <Column Name="CityId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>#</Title>
+            <Width>40</Width>
+            <AutoFill Type="RowNumber" />
+            <AutoSizeMode Value="None" />
+          </Column>
+          <Column Name="OrderNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Номер заказа</Title>
+            <MinimumWidth>150</MinimumWidth>
+            <AutoSizeMode Value="None" />
+          </Column>
+          <Column Name="OrderDate" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Дата и время заказа</Title>
+            <Width>150</Width>
+            <AutoSizeMode Value="None" />
+            <Alignment Value="MiddleCenter" />
+            <DataType Type="DateTimeDataType" Format="dd.MM.yyyy HH:mm" />
           </Column>
           <Column Name="CityTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
             <Title>Город</Title>
+            <Width>150</Width>
             <MinimumWidth>150</MinimumWidth>
           </Column>
-          <Column Name="Phone" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
-            <Title>Телефон</Title>
-            <MinimumWidth>150</MinimumWidth>
+          <Column Name="ClientTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Клиент</Title>
+            <Width>200</Width>
+            <MinimumWidth>200</MinimumWidth>
           </Column>
         </Columns>
-        <SourceDataConnection Name="ClientPrimaryGetDataConnection" />
       </MyObject>
 
-      <MyObject Name="ClientAddButton" Type="Button" Assembly="BaseControls">
-        <Top>5</Top>
+      <MyObject Name="OrderAddButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Object Name="OrderDatabaseTable">
+            <Property Name="Top" />
+          </Object>
+        </Top>
         <Left>
           <Calculate>
             <Expression>{0} + 5</Expression>
             <Items>
               <Item>
-                <Object Name="ClientDatabaseTable">
+                <Object Name="OrderDatabaseTable">
                   <Property Name="Right" />
                 </Object>
               </Item>
@@ -363,18 +246,16 @@
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Commands>
-          <Command Name="ClientEditFormShowCommand" />
-        </Commands>
+        <Commands> </Commands>
       </MyObject>
 
-      <MyObject Name="ClientEditButton" Type="Button" Assembly="BaseControls">
+      <MyObject Name="OrderEditButton" Type="Button" Assembly="BaseControls">
         <Top>
           <Calculate>
             <Expression>{0} + 5</Expression>
             <Items>
               <Item>
-                <Object Name="ClientAddButton">
+                <Object Name="OrderAddButton">
                   <Property Name="Bottom" />
                 </Object>
               </Item>
@@ -382,7 +263,7 @@
           </Calculate>
         </Top>
         <Left>
-          <Object Name="ClientAddButton">
+          <Object Name="OrderAddButton">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -396,43 +277,21 @@
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Enabled>
-          <Condition Name="ClientSelectedGreaterCondition" />
-        </Enabled>
-        <Commands>
-          <Command Name="ClientEditFormShowCommand">
-            <Input Name="Edit">True</Input>
-            <Input Name="ClientId">
-              <Object Name="ClientDatabaseTable">
-                <Property Name="SelectedRowCellValueByColumnName">
-                  <Parameters>
-                    <Parameter Name="ColumnName">ClientId</Parameter>
-                  </Parameters>
-                </Property>
-              </Object>
-            </Input>
-          </Command>
-        </Commands>
+        <Commands> </Commands>
       </MyObject>
-
-      <MyObject Name="ClientDeleteButton" Type="Button" Assembly="BaseControls">
-        <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="ClientEditButton">
-                  <Property Name="Bottom" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Top>
-        <Left>
-          <Object Name="ClientAddButton">
-            <Property Name="Left" />
-          </Object>
-        </Left>
+      
+      <MyObject Name="OrderDeleteButton" Type="Button" Assembly="BaseControls">
+        <Top><Calculate>
+          <Expression>{0} + 5</Expression>
+          <Items>
+            <Item><Object Name="OrderEditButton">
+              <Property Name="Bottom"/>
+            </Object></Item>
+          </Items>
+        </Calculate></Top>
+        <Left><Object Name="OrderAddButton">
+          <Property Name="Left"/>
+        </Object></Left>
         <Height>40</Height>
         <Width>40</Width>
         <Hint>Удалить запись...</Hint>
@@ -443,10 +302,8 @@
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Enabled>
-          <Condition Name="ClientSelectedGreaterCondition" />
-        </Enabled>
-        <Commands ><Command Name="ClientDeleteSaveCommand"></Command></Commands>
+        <Commands>
+        </Commands>
       </MyObject>
 
     </MyObject>

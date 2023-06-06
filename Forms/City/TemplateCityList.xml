@@ -17,7 +17,7 @@
       <Color Name="LabelForeColor" Red="100" Green="100" Blue="100" Alpha="255" />
       <Color Name="TableBackgroundColor" Red="200" Green="200" Blue="200" Alpha="255" />
       <Color Name="TableArchiveColor" Red="230" Green="230" Blue="230" Alpha="255" />
-      
+
 
       <!-- Стили кнопок -->
       <Color Name="ButtonFlatBorderColor" Red="225" Green="225" Blue="225" Alpha="255" />
@@ -40,6 +40,7 @@
         <Fields>
           <Field Name="CityId" />
           <Field Name="Title" />
+          <Field Name="Archive" />
         </Fields>
       </SqlQuery>
     </DataConnection>
@@ -53,6 +54,9 @@
         </Parameter>
         <Parameter NativeName="CityId">
           <Column Name="CityId" />
+        </Parameter>
+        <Parameter NativeName="Archive">
+          <Column Name="Archive" />
         </Parameter>
       </Parameters>
       <SqlQueries>
@@ -101,6 +105,52 @@
     <Condition Name="CityDatabaseTableCellDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
       <Table Name="CityDatabaseTable" />
     </Condition>
+
+    <Condition Name="FormChangedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Form>
+            <Property Name="FormChanged" />
+          </Form>
+        </Item>
+        <Item>True</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="SaveOnCloseYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Command Name="SaveOnCloseMessageBoxCommand" />
+        </Item>
+        <Item>Yes</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="SaveOnCloseNoEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Command Name="SaveOnCloseMessageBoxCommand" />
+        </Item>
+        <Item>No</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="SelectedCityIsArchiveEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="CityDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">Archive</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Item>
+        <Item>True</Item>
+      </Items>
+    </Condition>
+
+
   </Conditions>
 
   <Commands>
@@ -124,6 +174,11 @@
           </Object>
         </Parameter>
         <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="Archive"><Object Name="CityDatabaseTable">
+          <Property Name="SelectedRowCellValueByColumnName"><Parameters>
+            <Parameter Name="ColumnName">Archive</Parameter>
+          </Parameters></Property>
+        </Object></Parameter>
       </Parameters>
     </Command>
 
@@ -194,16 +249,124 @@
         <DataConnection Name="CityDatabaseTableSetDataConnection" />
       </DataConnections>
     </Command>
-    
+
     <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <Parameter Name="Updated">True</Parameter>
+    </Command>
+
+    <Command Name="SaveOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Сохранение</Caption>
+      <Text>На этой форме есть несохранённые изменения.\rСохранить их?</Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNoCancel" />
+    </Command>
+
+    <Command Name="CityArchiveMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Архив</Caption>
+      <Text>
+        <Switch>
+          <Case>
+            <When>
+              <Condition Name="SelectedCityIsArchiveEqualCondition" />
+            </When>
+            <Then>Вы уверены, что хотите восстановить запись из архива</Then>
+          </Case>
+          <Case>Вы уверены, что хотите архивировать выбранную запись? </Case>
+        </Switch>
+      </Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNo" />
+    </Command>
+
+    <Command Name="CityArchiveUpdateRowValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="CityDatabaseTable">
+        <Property Name="UpdateRow">
+          <Parameters>
+            <Parameter Name="RowIndex">
+              <Object Name="CityDatabaseTable">
+                <Property Name="SelectedRowIndex" />
+              </Object>
+            </Parameter>
+            <Parameter Name="ColumnNames">
+              <Structure Type="List">
+                <Item>Archive</Item>
+              </Structure>
+            </Parameter>
+            <Parameter Name="Values">
+              <Structure Type="List">
+                <Item>
+                  <Not>
+                    <Object Name="CityDatabaseTable">
+                      <Property Name="SelectedRowCellValueByColumnName">
+                        <Parameters>
+                          <Parameter Name="ColumnName">Archive</Parameter>
+                        </Parameters>
+                      </Property>
+                    </Object>
+                  </Not>
+                </Item>
+              </Structure>
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+
+    <Command Name="ArchiveFilterVariableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="ArchiveFilterVariable">
+        <Object Name="ArchiveFilterComboBox" />
+      </Object>
+    </Command>
+
+    <Command Name="ArchiveFilterComboBoxValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="ArchiveFilterComboBox">
+        <Input />
+      </Object>
+    </Command>
+    
+    <Command Name="CityDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Вы уверены, что хотите удалить данный город?</Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNo" />
     </Command>
   </Commands>
 
   <Executions>
     <Execution>
       <ConditionExpression>
-        <Condition Name="FormClosingCondition" />
+        <And>
+          <Condition Name="FormClosingCondition" />
+          <Condition Name="FormChangedTrueEqualCondition" />
+        </And>
+      </ConditionExpression>
+      <Commands>
+        <Command Name="SaveOnCloseMessageBoxCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="SaveOnCloseYesEqualCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="CityDatabaseTableSaveCommand" />
+        <Command Name="UpdatedTrueValueSetCommand" />
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Or>
+          <And>
+            <Condition Name="FormClosingCondition" />
+            <Not>
+              <Condition Name="FormChangedTrueEqualCondition" />
+            </Not>
+          </And>
+          <Condition Name="SaveOnCloseNoEqualCondition" />
+        </Or>
       </ConditionExpression>
       <Commands>
         <Command Name="FormCloseCommand" />
@@ -236,9 +399,34 @@
         <Command Name="CityEditFormShowCommand" />
       </Commands>
     </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="CityArchiveMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="CityArchiveUpdateRowValueSetCommand" />
+        <Command Name="ArchiveFilterVariableValueSetCommand" />
+        <Command Name="ArchiveFilterComboBoxValueSetCommand">%NULL%</Command>
+        <Command Name="ArchiveFilterComboBoxValueSetCommand">
+          <Object Name="ArchiveFilterVariable" />
+        </Command>
+      </Commands>
+    </Execution>
+    
+    <Execution>
+      <ConditionExpression><Command Name="CityDeleteMessageBoxCommand" Parameter="Yes" /></ConditionExpression>
+      <Commands>
+        <Command Name="CityDatabaseTableDeleteRowValueSetCommand"></Command>
+      </Commands>
+    </Execution>
   </Executions>
 
   <MyObjects>
+    <MyObject Name="ArchiveFilterVariable" Type="Variable" Assembly="SimpleControls">
+      <Value />
+    </MyObject>
+
 
     <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
       <Top>0</Top>
@@ -264,8 +452,8 @@
             <Expression>{0} - {1} - 10</Expression>
             <Items>
               <Item>
-                <Object Name="HeadPanel">
-                  <Property Name="Width" />
+                <Object Name="ArchiveFilterComboBox">
+                  <Property Name="Left" />
                 </Object>
               </Item>
               <Item>
@@ -282,6 +470,54 @@
         <Text>
           <Parameter Name="Title" />
         </Text>
+      </MyObject>
+
+      <MyObject Name="ArchiveFilterComboBox" Type="ComboBox" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>Ceiling(({0} - {1})/2)</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="ArchiveFilterComboBox">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Right>
+          <Calculate>
+            <Expression>{0} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Right>
+        <Width>100</Width>
+        <NullValue Show="True" Title="Все" />
+        <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
+        <ValueList>
+          <Structure Type="Table">
+            <Row>
+              <Item>False</Item>
+              <Item>Актуальные</Item>
+            </Row>
+            <Row>
+              <Item>True</Item>
+              <Item>Архивные</Item>
+            </Row>
+          </Structure>
+        </ValueList>
+        <Value>False</Value>
       </MyObject>
 
     </MyObject>
@@ -393,7 +629,25 @@
             <Width>150</Width>
             <AutoSizeMode Value="Fill" />
           </Column>
+          <Column Name="Archive" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+            <Filter FilterNullValue="False">
+              <Object Name="ArchiveFilterComboBox" />
+            </Filter>
+          </Column>
         </Columns>
+        <Formatting>
+          <BackColor Name="TableArchiveColor">
+            <Expression>Archive AND {0}</Expression>
+            <Items>
+              <Item>
+                <Not>
+                  <Object Name="ArchiveFilterComboBox" />
+                </Not>
+              </Item>
+            </Items>
+          </BackColor>
+        </Formatting>
       </MyObject>
 
       <MyObject Name="CityAddButton" Type="Button" Assembly="BaseControls">
@@ -457,8 +711,13 @@
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>Требуется выбрать город.</DisabledText>
         <Enabled>
-          <Condition Name="CitySelectedGreaterCondition" />
+          <And>
+            <Condition Name="CitySelectedGreaterCondition" />
+            <Not><Condition Name="SelectedCityIsArchiveEqualCondition" /></Not>
+          </And>
         </Enabled>
         <Commands>
           <Command Name="CityEditFormShowCommand" />
@@ -494,10 +753,76 @@
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
+          <And>
+            <Condition Name="CitySelectedGreaterCondition" />
+            <Not><Condition Name="SelectedCityIsArchiveEqualCondition" /></Not>
+          </And>
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText><Switch>
+          <Case>
+            <When><Not><Condition Name="CitySelectedGreaterCondition" /></Not></When>
+            <Then>Требуется выбрать город.</Then>
+          </Case>
+          <Case>Нельзя удалять архивный город</Case>
+        </Switch></DisabledText>
+        <Commands>
+          <Command Name="CityDeleteMessageBoxCommand" />
+        </Commands>
+      </MyObject>
+
+      <MyObject Name="CityAchiveButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="CityDeleteButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="CityAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Height>
+          <Object Name="CityAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Object Name="CityAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <BackgroundImage>
+          <Switch>
+            <Case>
+              <When>
+                <Condition Name="SelectedCityIsArchiveEqualCondition" />
+              </When>
+              <Then>Images\24x24\unarchive.png</Then>
+            </Case>
+            <Case>Images\24x24\archive.png</Case>
+          </Switch>
+        </BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
           <Condition Name="CitySelectedGreaterCondition" />
         </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>Требуется выбрать город.</DisabledText>
         <Commands>
-          <Command Name="CityDatabaseTableDeleteRowValueSetCommand" />
+          <Command Name="CityArchiveMessageBoxCommand" />
         </Commands>
       </MyObject>
 
@@ -572,8 +897,8 @@
         <Text>Сохранить</Text>
         <Commands>
           <Command Name="CityDatabaseTableSaveCommand" />
-          <Command Name="UpdatedTrueValueSetCommand"></Command>
-          <Command Name="FormCloseCommand"></Command>
+          <Command Name="UpdatedTrueValueSetCommand" />
+          <Command Name="FormCloseCommand" />
         </Commands>
       </MyObject>
     </MyObject>

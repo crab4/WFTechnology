@@ -5,7 +5,8 @@
       <Text>
         select 
           city_id as "CityId",
-          title as "Title"
+          title as "Title",
+          archive as "Archive"
          from 
           template.city
          order by title;
@@ -15,11 +16,13 @@
     <SqlQuery Name="CityInsertSqlQuery">
       <Text>
         insert into template.city(
-          title
+          title,
+          archive
         )
         values
           (
-          {Title}
+          {Title},
+          {Archive}
           );
       </Text>
     </SqlQuery>
@@ -28,7 +31,8 @@
       <Text>
         update template.city
         set
-          title = {Title}
+          title = {Title},
+          archive = {Archive}
         where
           city_id = {CityId};
       </Text>
@@ -36,7 +40,7 @@
 
     <SqlQuery Name="CityDeleteSqlQuery">
       <Text>
-        delete from template.city where city_id = {CityId};
+        select template.city_try_delete({CityId}::smallint);
       </Text>
     </SqlQuery>
     
@@ -115,6 +119,9 @@
           city.title AS "Title"
         FROM
           template.city
+        where
+          not city.archive or
+          city.city_id = {CityId}
         ORDER BY city.title;
       </Text>
     </SqlQuery>

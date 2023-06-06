@@ -73,6 +73,17 @@
           <Field Name="CityId" />
           <Field Name="Title" />
         </Fields>
+        <Parameters>
+          <Parameter NativeName="CityId">
+            <Value>
+              <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="CityId" />
+                </Fields>
+              </DataConnection>
+            </Value>
+          </Parameter>
+        </Parameters>
       </SqlQuery>
     </DataConnection>
 
@@ -103,7 +114,18 @@
         </Parameter>
         <Parameter NativeName="Phone">
           <Value>
-            <Object Name="PhoneTextBox" />
+            <Switch>
+              <Case>
+                <When>
+                  <Not>
+                    <Condition Name="PhoneIsEmptyEqualCondition" />
+                  </Not>
+                </When>
+                <Then>
+                  <Object Name="PhoneTextBox" />
+                </Then>
+              </Case>
+            </Switch>
           </Value>
         </Parameter>
       </Parameters>
@@ -201,6 +223,63 @@
         <Item>No</Item>
       </Items>
     </Condition>
+
+    <Condition Name="CloseOnCloseMessageBoxYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Command Name="CloseOnCloseMessageBoxCommand" />
+        </Item>
+        <Item>Yes</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="NameTextBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="NameTextBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="CityComboBoxIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="CityComboBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="CheckingFiredFalseEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Form>
+            <Property Name="CheckingFired" />
+          </Form>
+        </Item>
+        <Item>False</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="PhoneMaskNotCompletedEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="PhoneTextBox">
+            <Property Name="MaskCompleted" />
+          </Object>
+        </Item>
+        <Item>False</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PhoneIsEmptyEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="PhoneTextBox" />
+        </Item>
+        <Item>+</Item>
+      </Items>
+    </Condition>
   </Conditions>
 
   <Commands>
@@ -264,7 +343,45 @@
       <Buttons Type="YesNoCancel" />
     </Command>
 
+    <Command Name="CloseOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Закрытие</Caption>
+      <Text>При закрытии все несохраненные изменения будет утеряны.\rВсё равно закрыть форму?</Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNo" />
+    </Command>
+
   </Commands>
+
+  <Checkings>
+    <Checking>
+      <Object Name="NameTextBox" />
+      <ConditionExpression>
+        <Condition Name="NameTextBoxIsNullOrEmptyCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
+    </Checking>
+
+    <Checking>
+      <Object Name="CityComboBox" />
+      <ConditionExpression>
+        <Condition Name="CityComboBoxIsNullCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, выберите город</AsteriskHint>
+    </Checking>
+
+    <Checking>
+      <Object Name="PhoneTextBox" />
+      <ConditionExpression>
+        <And>
+          <Condition Name="PhoneMaskNotCompletedEqualCondition" />
+          <Not>
+            <Condition Name="PhoneIsEmptyEqualCondition" />
+          </Not>
+        </And>
+      </ConditionExpression>
+      <AsteriskHint>Некорректный номер телефоны</AsteriskHint>
+    </Checking>
+  </Checkings>
 
   <Executions>
     <Execution>
@@ -278,7 +395,18 @@
         </And>
       </ConditionExpression>
       <Commands>
-        <Command Name="SaveOnCloseMessageBoxCommand" />
+        <If>
+          <When>
+            <Condition Name="CheckingFiredFalseEqualCondition" />
+          </When>
+          <Then>
+            <Command Name="SaveOnCloseMessageBoxCommand" />
+          </Then>
+          <Else>
+            <Command Name="CloseOnCloseMessageBoxCommand" />
+          </Else>
+        </If>
+
       </Commands>
     </Execution>
 
@@ -295,6 +423,7 @@
       <ConditionExpression>
         <Or>
           <Condition Name="SaveOnCloseMessageBoxCommandNoEqualCondition" />
+          <Condition Name="CloseOnCloseMessageBoxYesEqualCondition" />
           <And>
             <Or>
               <Condition Name="FormClosingCondition" />
@@ -744,6 +873,7 @@
             </Fields>
           </DataConnection>
         </Text>
+        <Mask>Phone</Mask>
       </MyObject>
 
       <MyObject Name="EmailLabel" Type="Label" Assembly="BaseControls">
@@ -898,6 +1028,11 @@
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Text>Сохранить</Text>
         <TabIndex>1</TabIndex>
+        <Enabled>
+          <Condition Name="CheckingFiredFalseEqualCondition" />
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>Одно или несколько полей заполнены некорректно.</DisabledText>
         <Commands>
           <Command Name="SaveSequentialCommand" />
         </Commands>
