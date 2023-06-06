@@ -239,7 +239,7 @@
         <AllowUpdate>False</AllowUpdate>
         <AllowDelete>False</AllowDelete>
         <AutoSizeColumnsMode Value="Fill" />
-        <!--<SourceDataConnection Name="" />-->
+        <SourceDataConnection Name="OrderSelectPrimaryGetDataConnection" />
         <Columns>
           <Column Name="OrderId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
             <Visible>False</Visible>
