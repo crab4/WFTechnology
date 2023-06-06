@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateClientEditForm" Width="400" Height="350" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateOrderEditForm" Width="320" Height="500" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
@@ -8,12 +8,12 @@
           <When>
             <Parameter Name="Edit" />
           </When>
-          <Then>Редактирование клиента</Then>
+          <Then>Редактирование заказа</Then>
         </Case>
-        <Case>Добавление клиента</Case>
+        <Case>Создание заказа</Case>
       </Switch>
     </Parameter>
-    <Parameter Name="ClientId" />
+    <Parameter Name="OrderId" />
     <Parameter Name="Updated">False</Parameter>
   </Parameters>
 
@@ -46,135 +46,98 @@
   </Appearance>
 
   <DataConnections>
-    <DataConnection Name="ClientPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
-      <SqlQuery Name="ClientByIdSelectSqlQuery" Type="Select">
+    <DataConnection Name="OrderPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="OrderSelectByIdSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
-          <Field Name="Name" />
-          <Field Name="CityId" />
-          <Field Name="DateOfBirth" />
-          <Field Name="Email" />
-          <Field Name="Phone" />
+          <Field Name="OrderId" />
+          <Field Name="ClientId" />
+          <Field Name="OrderNumber" />
+          <Field Name="OrderDate" />
+          <Field Name="OrderDescription" />
         </Fields>
         <Parameters>
-          <Parameter NativeName="ClientId">
+          <Parameter NativeName="OrderId">
             <Value>
-              <Parameter Name="ClientId" />
+              <Parameter Name="OrderId" />
             </Value>
           </Parameter>
         </Parameters>
       </SqlQuery>
     </DataConnection>
 
-    <DataConnection Name="CityShortPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
-      <SqlQuery Name="CityShortSelectSqlQuery" Type="Select">
+    <DataConnection Name="ClientShortPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="ClientShortSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
-          <Field Name="CityId" />
-          <Field Name="Title" />
+          <Field Name="ClientId" />
+          <Field Name="ClientTitle" />
+          <Field Name="ClientPhone" />
+          <Field Name="CityTitle" />
         </Fields>
-        <Parameters>
-          <Parameter NativeName="CityId">
-            <Value>
-              <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
-                <Fields>
-                  <Field Name="CityId" />
-                </Fields>
-              </DataConnection>
-            </Value>
-          </Parameter>
-        </Parameters>
       </SqlQuery>
     </DataConnection>
-
-    <DataConnection Name="ClientInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+    
+    <DataConnection Name="OrderInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
       <Workflow Name="Template" />
       <Parameters>
-        <Parameter NativeName="CityId">
+        <Parameter NativeName="OrderNumber">
           <Value>
-            <Object Name="CityComboBox">
-              <Property Name="Value" />
-            </Object>
+            <Object Name="OrderNumberTextBox" />
           </Value>
         </Parameter>
-        <Parameter NativeName="Name">
+        <Parameter NativeName="OrderDate">
           <Value>
-            <Object Name="NameTextBox" />
+            <Object Name="OrderDateDateTimePicker" />
           </Value>
         </Parameter>
-        <Parameter NativeName="DateOfBirth">
-          <Value>
-            <Object Name="DateOfBirthDateTimePicker" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="Email">
-          <Value>
-            <Object Name="EmailTextBox" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="Phone">
-          <Value>
-            <Switch>
-              <Case>
-                <When>
-                  <Not>
-                    <Condition Name="PhoneIsEmptyEqualCondition" />
-                  </Not>
-                </When>
-                <Then>
-                  <Object Name="PhoneTextBox" />
-                </Then>
-              </Case>
-            </Switch>
-          </Value>
-        </Parameter>
-      </Parameters>
-      <SqlQueries>
-        <SqlQuery Name="ClientInsertSqlQuery" Type="Insert" />
-      </SqlQueries>
-    </DataConnection>
-
-    <DataConnection Name="ClientUpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
-      <Workflow Name="Template" />
-      <Parameters>
         <Parameter NativeName="ClientId">
           <Value>
-            <Parameter Name="ClientId" />
+            <Object Name="ClientComboBox" />
           </Value>
         </Parameter>
-        <Parameter NativeName="Name">
+        <Parameter NativeName="OrderDescription">
           <Value>
-            <Object Name="NameTextBox" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="CityId">
-          <Value>
-            <Object Name="CityComboBox">
-              <Property Name="Value" />
-            </Object>
-          </Value>
-        </Parameter>
-        <Parameter NativeName="DateOfBirth">
-          <Value>
-            <Object Name="DateOfBirthDateTimePicker" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="Email">
-          <Value>
-            <Object Name="EmailTextBox" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="Phone">
-          <Value>
-            <Object Name="PhoneTextBox" />
+            <Object Name="DescriptionTextBox" />
           </Value>
         </Parameter>
       </Parameters>
       <SqlQueries>
-        <SqlQuery Name="ClientUpdateSqlQuery" Type="Update" />
+        <SqlQuery Name="OrderInsertSqlQuery" Type="Insert" />
       </SqlQueries>
     </DataConnection>
-
+    
+    <DataConnection Name="OrderUpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="OrderNumber">
+          <Value>
+            <Object Name="OrderNumberTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="OrderDate">
+          <Value>
+            <Object Name="OrderDateDateTimePicker" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="ClientId">
+          <Value>
+            <Object Name="ClientComboBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="OrderDescription">
+          <Value>
+            <Object Name="DescriptionTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="OrderId">
+          <Value><Parameter Name="OrderId" /></Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="OrderUpdateSqlQuery" Type="Update" />
+      </SqlQueries>
+    </DataConnection>
   </DataConnections>
 
   <Conditions>
@@ -184,17 +147,25 @@
       <Key Value="Escape" />
     </Condition>
 
-    <Condition Name="TemplateCityListUpdatedEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <AlwaysChange Value="True" />
+    <Condition Name="OrderNumberIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
       <Items>
         <Item>
-          <Command Name="CityListFormShowCommand" Parameter="Updated" />
+          <Object Name="OrderNumberTextBox" />
         </Item>
-        <Item>True</Item>
       </Items>
     </Condition>
 
-    <Condition Name="FormChangedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+    <Condition Name="OrderClientIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="ClientComboBox">
+            <Property Name="Value" />
+          </Object>
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="FormChangedEqualCondition" Type="EqualCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Form>
@@ -202,82 +173,6 @@
           </Form>
         </Item>
         <Item>True</Item>
-      </Items>
-      <DataType Type="BooleanDataType" />
-    </Condition>
-
-    <Condition Name="SaveOnCloseMessageBoxCommandYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Command Name="SaveOnCloseMessageBoxCommand" />
-        </Item>
-        <Item>Yes</Item>
-      </Items>
-    </Condition>
-
-    <Condition Name="SaveOnCloseMessageBoxCommandNoEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Command Name="SaveOnCloseMessageBoxCommand" />
-        </Item>
-        <Item>No</Item>
-      </Items>
-    </Condition>
-
-    <Condition Name="CloseOnCloseMessageBoxYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Command Name="CloseOnCloseMessageBoxCommand" />
-        </Item>
-        <Item>Yes</Item>
-      </Items>
-    </Condition>
-
-    <Condition Name="NameTextBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Object Name="NameTextBox" />
-        </Item>
-      </Items>
-    </Condition>
-
-    <Condition Name="CityComboBoxIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Object Name="CityComboBox" />
-        </Item>
-      </Items>
-    </Condition>
-
-    <Condition Name="CheckingFiredFalseEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Form>
-            <Property Name="CheckingFired" />
-          </Form>
-        </Item>
-        <Item>False</Item>
-      </Items>
-      <DataType Type="BooleanDataType" />
-    </Condition>
-
-    <Condition Name="PhoneMaskNotCompletedEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Object Name="PhoneTextBox">
-            <Property Name="MaskCompleted" />
-          </Object>
-        </Item>
-        <Item>False</Item>
-      </Items>
-    </Condition>
-
-    <Condition Name="PhoneIsEmptyEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Object Name="PhoneTextBox" />
-        </Item>
-        <Item>+</Item>
       </Items>
     </Condition>
   </Conditions>
@@ -291,164 +186,56 @@
 
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
       <Commands>
-        <If>
-          <When>
-            <Parameter Name="Edit" />
-          </When>
-          <Then>
-            <Command Name="ClientUpdateSaveCommand" />
-          </Then>
-          <Else>
-            <Command Name="ClientInsertSaveCommand" />
-            <Command Name="ClientIdValueSetCommand" />
-          </Else>
-        </If>
         <Command Name="UpdatedTrueValueSetCommand" />
         <Command Name="FormCloseCommand" />
       </Commands>
     </Command>
 
-    <Command Name="CityListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">City/TemplateCityList.xml</Xml>
-      <Show Type="None" />
-    </Command>
-
-    <Command Name="CityShortDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="CityShortPrimaryGetDataConnection" Packet="True" />
-      </DataConnections>
-    </Command>
-
-    <Command Name="ClientInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="ClientInsertSetDataConnection" />
-      </DataConnections>
-    </Command>
-    <Command Name="ClientUpdateSaveCommand" Type="SaveCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="ClientUpdateSetDataConnection" />
-      </DataConnections>
-    </Command>
-
-    <Command Name="ClientIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Parameter Name="ClientId">
-        <Command Name="ClientInsertSaveCommand" />
-      </Parameter>
-    </Command>
-
     <Command Name="SaveOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
       <Caption>Сохранение</Caption>
-      <Text>Форма содержит несохранённые изменения.\rСохранить их перед закрытием?</Text>
+      <Text>На этой форме есть несохранённые данные.\rСохранить их?</Text>
       <Icon Type="Question" />
       <Buttons Type="YesNoCancel" />
     </Command>
 
     <Command Name="CloseOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
-      <Caption>Закрытие</Caption>
-      <Text>При закрытии все несохраненные изменения будет утеряны.\rВсё равно закрыть форму?</Text>
+      <Caption>Выход</Caption>
+      <Text>Если выйти сейчас, то потеряются несохранённые данные.\r Всё равно выйти?</Text>
       <Icon Type="Question" />
       <Buttons Type="YesNo" />
     </Command>
-
   </Commands>
 
   <Checkings>
     <Checking>
-      <Object Name="NameTextBox" />
+      <Object Name="OrderNumberTextBox" />
       <ConditionExpression>
-        <Condition Name="NameTextBoxIsNullOrEmptyCondition" />
+        <Condition Name="OrderNumberIsNullOrEmptyCondition" />
       </ConditionExpression>
-      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
+      <AsteriskHint>Заказу необходим номер</AsteriskHint>
     </Checking>
 
     <Checking>
-      <Object Name="CityComboBox" />
+      <Object Name="ClientComboBox" />
       <ConditionExpression>
-        <Condition Name="CityComboBoxIsNullCondition" />
+        <Condition Name="OrderClientIsNullOrEmptyCondition" />
       </ConditionExpression>
-      <AsteriskHint>Пожалуйста, выберите город</AsteriskHint>
-    </Checking>
-
-    <Checking>
-      <Object Name="PhoneTextBox" />
-      <ConditionExpression>
-        <And>
-          <Condition Name="PhoneMaskNotCompletedEqualCondition" />
-          <Not>
-            <Condition Name="PhoneIsEmptyEqualCondition" />
-          </Not>
-        </And>
-      </ConditionExpression>
-      <AsteriskHint>Некорректный номер телефоны</AsteriskHint>
+      <AsteriskHint>Заказ делает клиент. А клиент не выбран!</AsteriskHint>
     </Checking>
   </Checkings>
 
   <Executions>
     <Execution>
       <ConditionExpression>
-        <And>
-          <Condition Name="FormChangedTrueEqualCondition" />
-          <Or>
-            <Condition Name="FormClosingCondition" />
-            <Condition Name="EscapeKeyDownCondition" />
-          </Or>
-        </And>
-      </ConditionExpression>
-      <Commands>
-        <If>
-          <When>
-            <Condition Name="CheckingFiredFalseEqualCondition" />
-          </When>
-          <Then>
-            <Command Name="SaveOnCloseMessageBoxCommand" />
-          </Then>
-          <Else>
-            <Command Name="CloseOnCloseMessageBoxCommand" />
-          </Else>
-        </If>
-
-      </Commands>
-    </Execution>
-
-    <Execution>
-      <ConditionExpression>
-        <Condition Name="SaveOnCloseMessageBoxCommandYesEqualCondition" />
-      </ConditionExpression>
-      <Commands>
-        <Command Name="SaveSequentialCommand" />
-      </Commands>
-    </Execution>
-
-    <Execution>
-      <ConditionExpression>
         <Or>
-          <Condition Name="SaveOnCloseMessageBoxCommandNoEqualCondition" />
-          <Condition Name="CloseOnCloseMessageBoxYesEqualCondition" />
-          <And>
-            <Or>
-              <Condition Name="FormClosingCondition" />
-              <Condition Name="EscapeKeyDownCondition" />
-            </Or>
-            <Not>
-              <Condition Name="FormChangedTrueEqualCondition" />
-            </Not>
-          </And>
+          <Condition Name="FormClosingCondition" />
+          <Condition Name="EscapeKeyDownCondition" />
         </Or>
       </ConditionExpression>
       <Commands>
         <Command Name="FormCloseCommand" />
       </Commands>
     </Execution>
-
-    <Execution>
-      <ConditionExpression>
-        <Condition Name="TemplateCityListUpdatedEqualCondition" />
-      </ConditionExpression>
-      <Commands>
-        <Command Name="CityShortDataConnectionRefreshCommand" />
-      </Commands>
-    </Execution>
-
   </Executions>
 
   <MyObjects>
@@ -541,7 +328,7 @@
 
       <!-- Insert your content-->
 
-      <MyObject Name="NameLabel" Type="Label" Assembly="BaseControls">
+      <MyObject Name="OrderNumberLabel" Type="Label" Assembly="BaseControls">
         <Top>5</Top>
         <Left>10</Left>
         <Width>
@@ -554,7 +341,7 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="NameLabel">
+                <Object Name="OrderNumberLabel">
                   <Property Name="Left" />
                 </Object>
               </Item>
@@ -565,53 +352,37 @@
         <TextAlign>MiddleLeft</TextAlign>
         <FontStyle>LabelFontStyle</FontStyle>
         <ForeColor>LabelForeColor</ForeColor>
-        <Text>Имя(ФИО)</Text>
+        <Text>Номер Заказа</Text>
       </MyObject>
 
-      <MyObject Name="NameTextBox" Type="TextBox" Assembly="BaseControls">
+      <MyObject Name="OrderNumberTextBox" Type="TextBox" Assembly="BaseControls">
         <Top>
-          <Object Name="NameLabel">
+          <Object Name="OrderNumberLabel">
             <Property Name="Bottom" />
           </Object>
         </Top>
         <Left>
-          <Object Name="NameLabel">
+          <Object Name="OrderNumberLabel">
             <Property Name="Left" />
           </Object>
         </Left>
-        <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="NameTextBox">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Width>
+        <Width>200</Width>
         <Text>
-          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+          <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
             <Fields>
-              <Field Name="Name" />
+              <Field Name="OrderNumber" />
             </Fields>
           </DataConnection>
         </Text>
       </MyObject>
 
-      <MyObject Name="DateOfBirthLabel" Type="Label" Assembly="BaseControls">
+      <MyObject Name="OrderDateLabel" Type="Label" Assembly="BaseControls">
         <Top>
           <Calculate>
             <Expression>{0} + 5</Expression>
             <Items>
               <Item>
-                <Object Name="NameTextBox">
+                <Object Name="OrderNumberTextBox">
                   <Property Name="Bottom" />
                 </Object>
               </Item>
@@ -619,7 +390,57 @@
           </Calculate>
         </Top>
         <Left>
-          <Object Name="NameLabel">
+          <Object Name="OrderNumberLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>200</Width>
+        <Height>20</Height>
+        <TextAlign>MiddleLeft</TextAlign>
+        <FontStyle>LabelFontStyle</FontStyle>
+        <ForeColor>LabelForeColor</ForeColor>
+        <Text>Дата и время заказа</Text>
+      </MyObject>
+
+      <MyObject Name="OrderDateDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
+        <Top>
+          <Object Name="OrderDateLabel">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Object Name="OrderDateLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>200</Width>
+        <Format>dd MMM yyyy HH:mm</Format>
+        <ShowCalendar>True</ShowCalendar>
+        <NullValue Show="False" />
+        <Value>
+          <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="OrderDate" />
+            </Fields>
+          </DataConnection>
+        </Value>
+      </MyObject>
+
+      <MyObject Name="ClientLabel" Type="Label" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="OrderDateDateTimePicker">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="OrderNumberLabel">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -633,7 +454,7 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="DateOfBirthLabel">
+                <Object Name="ClientLabel">
                   <Property Name="Left" />
                 </Object>
               </Item>
@@ -644,28 +465,52 @@
         <TextAlign>MiddleLeft</TextAlign>
         <FontStyle>LabelFontStyle</FontStyle>
         <ForeColor>LabelForeColor</ForeColor>
-        <Text>Дата рождения</Text>
+        <Text>Клиент</Text>
       </MyObject>
 
-      <MyObject Name="DateOfBirthDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
+      <MyObject Name="ClientComboBox" Type="ComboBox" Assembly="BaseControls">
         <Top>
-          <Object Name="DateOfBirthLabel">
+          <Object Name="ClientLabel">
             <Property Name="Bottom" />
           </Object>
         </Top>
         <Left>
-          <Object Name="DateOfBirthLabel">
+          <Object Name="ClientLabel">
             <Property Name="Left" />
           </Object>
         </Left>
-        <Width>150</Width>
-        <Format>dd MMMM yyyy</Format>
-        <ShowCalendar>True</ShowCalendar>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="ClientComboBox">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
         <NullValue Show="True" />
-        <Value>
-          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+        <NullValueTitle>[Не выбрано]</NullValueTitle>
+        <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
+        <ValueList>
+          <DataConnection SourceDataConnection="ClientShortPrimaryGetDataConnection">
             <Fields>
-              <Field Name="DateOfBirth" />
+              <Field Name="ClientId" />
+              <Field Name="ClientTitle" />
+            </Fields>
+          </DataConnection>
+        </ValueList>
+        <Value>
+          <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="ClientId" />
             </Fields>
           </DataConnection>
         </Value>
@@ -677,7 +522,7 @@
             <Expression>{0} + 5</Expression>
             <Items>
               <Item>
-                <Object Name="DateOfBirthDateTimePicker">
+                <Object Name="ClientComboBox">
                   <Property Name="Bottom" />
                 </Object>
               </Item>
@@ -685,7 +530,7 @@
           </Calculate>
         </Top>
         <Left>
-          <Object Name="NameLabel">
+          <Object Name="OrderNumberLabel">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -713,7 +558,7 @@
         <Text>Город</Text>
       </MyObject>
 
-      <MyObject Name="CityComboBox" Type="ComboBox" Assembly="BaseControls">
+      <MyObject Name="CityTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
         <Top>
           <Object Name="CityLabel">
             <Property Name="Bottom" />
@@ -726,7 +571,7 @@
         </Left>
         <Width>
           <Calculate>
-            <Expression>{0} - {1} - {2} - 15</Expression>
+            <Expression>{0} - {1} - 10</Expression>
             <Items>
               <Item>
                 <Object Name="ContentPanel">
@@ -734,66 +579,15 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="CityComboBox">
+                <Object Name="CityTextBox">
                   <Property Name="Left" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="CityListButton">
-                  <Property Name="Width" />
                 </Object>
               </Item>
             </Items>
           </Calculate>
         </Width>
-        <NullValue Show="True" />
-        <NullValueTitle>[Не выбрано]</NullValueTitle>
-        <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
-        <ValueList>
-          <DataConnection SourceDataConnection="CityShortPrimaryGetDataConnection">
-            <Fields>
-              <Field Name="CityId" />
-              <Field Name="Title" />
-            </Fields>
-          </DataConnection>
-        </ValueList>
-        <Value>
-          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
-            <Fields>
-              <Field Name="CityId" />
-            </Fields>
-          </DataConnection>
-        </Value>
-      </MyObject>
-
-      <MyObject Name="CityListButton" Type="Button" Assembly="BaseControls">
-        <Top>
-          <Object Name="CityComboBox">
-            <Property Name="Top" />
-          </Object>
-        </Top>
-        <Left>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="CityComboBox">
-                  <Property Name="Right" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Left>
-        <Height>22</Height>
-        <Width>22</Width>
-        <Hint>Список городов...</Hint>
-        <BackgroundImage>Images\16x16\list.png</BackgroundImage>
-        <BackgroundImageLayout>Center</BackgroundImageLayout>
-        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Commands>
-          <Command Name="CityListFormShowCommand" />
-        </Commands>
+        <ReadOnly>True</ReadOnly>
+        <Text />
       </MyObject>
 
       <MyObject Name="PhoneLabel" Type="Label" Assembly="BaseControls">
@@ -802,7 +596,7 @@
             <Expression>{0} + 5</Expression>
             <Items>
               <Item>
-                <Object Name="CityComboBox">
+                <Object Name="CityTextBox">
                   <Property Name="Bottom" />
                 </Object>
               </Item>
@@ -810,7 +604,7 @@
           </Calculate>
         </Top>
         <Left>
-          <Object Name="NameLabel">
+          <Object Name="OrderNumberLabel">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -838,7 +632,7 @@
         <Text>Телефон</Text>
       </MyObject>
 
-      <MyObject Name="PhoneTextBox" Type="TextBox" Assembly="BaseControls">
+      <MyObject Name="PhoneTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
         <Top>
           <Object Name="PhoneLabel">
             <Property Name="Bottom" />
@@ -866,17 +660,11 @@
             </Items>
           </Calculate>
         </Width>
-        <Text>
-          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
-            <Fields>
-              <Field Name="Phone" />
-            </Fields>
-          </DataConnection>
-        </Text>
+        <Text />
         <Mask>Phone</Mask>
       </MyObject>
 
-      <MyObject Name="EmailLabel" Type="Label" Assembly="BaseControls">
+      <MyObject Name="DescriptionLabel" Type="Label" Assembly="BaseControls">
         <Top>
           <Calculate>
             <Expression>{0} + 5</Expression>
@@ -890,7 +678,7 @@
           </Calculate>
         </Top>
         <Left>
-          <Object Name="NameLabel">
+          <Object Name="OrderNumberLabel">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -904,7 +692,7 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="EmailLabel">
+                <Object Name="DescriptionLabel">
                   <Property Name="Left" />
                 </Object>
               </Item>
@@ -915,17 +703,17 @@
         <TextAlign>MiddleLeft</TextAlign>
         <FontStyle>LabelFontStyle</FontStyle>
         <ForeColor>LabelForeColor</ForeColor>
-        <Text>E-mail</Text>
+        <Text>Комментарий к заказу</Text>
       </MyObject>
 
-      <MyObject Name="EmailTextBox" Type="TextBox" Assembly="BaseControls">
+      <MyObject Name="DescriptionTextBox" Type="TextBox" Assembly="BaseControls">
         <Top>
-          <Object Name="EmailLabel">
+          <Object Name="DescriptionLabel">
             <Property Name="Bottom" />
           </Object>
         </Top>
         <Left>
-          <Object Name="EmailLabel">
+          <Object Name="DescriptionLabel">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -939,21 +727,38 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="EmailTextBox">
+                <Object Name="DescriptionTextBox">
                   <Property Name="Left" />
                 </Object>
               </Item>
             </Items>
           </Calculate>
         </Width>
-        <Text>
-          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
-            <Fields>
-              <Field Name="Email" />
-            </Fields>
-          </DataConnection>
-        </Text>
+        <Height>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="DescriptionLabel">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Height>
+        <Multiline>True</Multiline>
+        <Text />
       </MyObject>
+
+
+
+
+
 
 
 
@@ -1028,11 +833,6 @@
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Text>Сохранить</Text>
         <TabIndex>1</TabIndex>
-        <Enabled>
-          <Condition Name="CheckingFiredFalseEqualCondition" />
-        </Enabled>
-        <DisabledMode>True</DisabledMode>
-        <DisabledText>Одно или несколько полей заполнены некорректно.</DisabledText>
         <Commands>
           <Command Name="SaveSequentialCommand" />
         </Commands>

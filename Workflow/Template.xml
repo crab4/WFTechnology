@@ -43,7 +43,7 @@
         select template.city_try_delete({CityId}::smallint);
       </Text>
     </SqlQuery>
-    
+
     <SqlQuery Name="ClientSelectSqlQuery">
       <Text>
         select
@@ -57,7 +57,7 @@
         order by cl.title
       </Text>
     </SqlQuery>
-    
+
     <SqlQuery Name="ClientByIdSelectSqlQuery">
       <Text>
         Select
@@ -71,7 +71,7 @@
         where client.client_id = {ClientId};
       </Text>
     </SqlQuery>
-    
+
     <SqlQuery Name="ClientInsertSqlQuery">
       <Text>
         insert into template.client(
@@ -91,7 +91,7 @@
         returning client_id;
       </Text>
     </SqlQuery>
-    
+
     <SqlQuery Name="ClientUpdateSqlQuery">
       <Text>
         update template.client
@@ -105,7 +105,7 @@
           client_id = {ClientId};
       </Text>
     </SqlQuery>
-    
+
     <SqlQuery Name="ClientDeleteSqlQuery">
       <Text>
         delete from template.client where client_id = {ClientId};
@@ -126,6 +126,78 @@
       </Text>
     </SqlQuery>
 
+    <SqlQuery Name="OrderSelectSqlQuery">
+      <Text>
+        SELECT 
+          order_id as "OrderId", 
+          client_id as "ClientId",
+          order_number as "OrderNumber", 
+          order_date as "OrderDate", 
+          order_description as "OrderDescription"
+        FROM
+         template."order"
+        where deleted = false;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderInsertSqlQuery">
+      <Text>
+        insert into template.order
+          (order_number, order_date, order_description, client_id) values
+          ({OrderNumber}, {OrderDate}, {OrderDescription}, {ClientId}) 
+        returning order_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderUpdateSqlQuery">
+      <Text>
+				update  template.order set
+				  client_id = {ClientId},
+				  order_number = {OrderNumber},
+				  order_date = {OrderDate], 
+				  order_description = {OrderDescription}
+				where order_id = {OrderId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderDeleteSqlQuery">
+      <Text>
+        update template.order set
+          deleted = True,
+          date_deleted = now()
+        where order_id = {OrderId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderSelectByIdSqlQuery">
+      <Text>
+        SELECT 
+          order_id as "OrderId", 
+          client_id as "ClientId",
+          order_number as "OrderNumber", 
+          order_date as "OrderDate", 
+          order_description as "OrderDescription"
+        FROM
+         template."order"
+        where
+          order_id = {OrderId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="ClientShortSelectSqlQuery">
+      <Text>
+        SELECT
+          client.client_id AS "ClientId",
+          client.title AS "ClientTitle",
+          client.phone as "ClientPhone",
+          city.title as "CityTitle"
+        FROM
+          template.client
+          join template.city using (city_id)
+        ORDER BY client.title;
+      </Text>
+    </SqlQuery>
+
 
   </SqlQueries>
 
@@ -133,7 +205,7 @@
     <Permission Name="CityViewSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
         <SqlQuery Name="CitySelectSqlQuery" />
-        <SqlQuery Name="CityShortSelectSqlQuery"/>
+        <SqlQuery Name="CityShortSelectSqlQuery" />
       </SqlQueries>
     </Permission>
     <Permission Name="CityEditSqlQueryPermission" Type="SqlQueryPermission">
@@ -143,7 +215,7 @@
         <SqlQuery Name="CityDeleteSqlQuery" />
       </SqlQueries>
     </Permission>
-    
+
     <Permission Name="ClientViewSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
         <SqlQuery Name="ClientSelectSqlQuery" />
@@ -155,6 +227,27 @@
         <SqlQuery Name="ClientInsertSqlQuery" />
         <SqlQuery Name="ClientUpdateSqlQuery" />
         <SqlQuery Name="ClientDeleteSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="OrderViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="OrderSelectSqlQuery" />
+        <SqlQuery Name="OrderSelectByIdSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="OrderEditSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="OrderInsertSqlQuery" />
+        <SqlQuery Name="OrderUpdateSqlQuery" />
+        <SqlQuery Name="OrderDeleteSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="ClientToOrderViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="ClientShortSelectSqlQuery" />
       </SqlQueries>
     </Permission>
   </Permissions>
@@ -171,7 +264,7 @@
         <Permission Name="CityEditSqlQueryPermission" />
       </Permissions>
     </Role>
-    
+
     <Role Name="ClientViewRole">
       <Permissions>
         <Permission Name="ClientViewSqlQueryPermission" />
@@ -183,6 +276,20 @@
         <Permission Name="ClientViewSqlQueryPermission" />
       </Permissions>
     </Role>
+
+    <Role Name="OrderViewRole">
+      <Permissions>
+        <Permission Name="OrderViewSqlQueryPermission" />
+        <Permission Name="ClientToOrderViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
+    <Role Name="OrderEditRole">
+      <Permissions>
+        <Permission Name="OrderEditSqlQueryPermission" />
+        <Permission Name="OrderViewSqlQueryPermission" />
+        <Permission Name="ClientToOrderViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
   </Roles>
 
   <Groups>
@@ -190,6 +297,7 @@
       <Roles>
         <Role Name="CityEditRole" />
         <Role Name="ClientEditRole" />
+        <Role Name="OrderEditRole" />
       </Roles>
     </Group>
   </Groups>

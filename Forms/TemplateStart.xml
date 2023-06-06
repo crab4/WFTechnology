@@ -32,14 +32,77 @@
     </FontStyles>
   </Appearance>
 
-  <DataConnections> </DataConnections>
+  <DataConnections>
+    <DataConnection Name="OrderSelectPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="OrderSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="OrderId" />
+          <Field Name="ClientId" />
+          <Field Name="OrderNumber" />
+          <Field Name="OrderDate" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="OrderDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="OrderId">
+          <Value>
+            <Object Name="OrderDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">OrderId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="OrderDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
+    </DataConnection>
+  </DataConnections>
 
   <Conditions>
     <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
+
+    <Condition Name="OrderSelectedGreaterCondition" Type="GreaterCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OrderDatabaseTable">
+            <Property Name="SelectedRowsCount" />
+          </Object>
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
   </Conditions>
 
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
+
+    <Command Name="OrderDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OrderDeleteSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="OrderEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">Order\TemplateOrderEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="Edit">
+          <Input Name="Edit">False</Input>
+        </Parameter>
+        <Parameter Name="OrderId">
+          <Input Name="OderId" />
+        </Parameter>
+      </Parameters>
+    </Command>
   </Commands>
 
   <Executions>
@@ -246,7 +309,9 @@
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Commands> </Commands>
+        <Commands>
+          <Command Name="OrderEditFormShowCommand" />
+        </Commands>
       </MyObject>
 
       <MyObject Name="OrderEditButton" Type="Button" Assembly="BaseControls">
@@ -277,21 +342,32 @@
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>Требуется выбрать заказ</DisabledText>
+        <Enabled>
+          <Condition Name="OrderSelectedGreaterCondition" />
+        </Enabled>
         <Commands> </Commands>
       </MyObject>
-      
+
       <MyObject Name="OrderDeleteButton" Type="Button" Assembly="BaseControls">
-        <Top><Calculate>
-          <Expression>{0} + 5</Expression>
-          <Items>
-            <Item><Object Name="OrderEditButton">
-              <Property Name="Bottom"/>
-            </Object></Item>
-          </Items>
-        </Calculate></Top>
-        <Left><Object Name="OrderAddButton">
-          <Property Name="Left"/>
-        </Object></Left>
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="OrderEditButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="OrderAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
         <Height>40</Height>
         <Width>40</Width>
         <Hint>Удалить запись...</Hint>
@@ -302,7 +378,13 @@
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>Требуется выбрать заказ</DisabledText>
+        <Enabled>
+          <Condition Name="OrderSelectedGreaterCondition" />
+        </Enabled>
         <Commands>
+          <Command Name="OrderDeleteSaveCommand" />
         </Commands>
       </MyObject>
 
