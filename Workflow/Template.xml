@@ -53,6 +53,72 @@
         order by cl.title
       </Text>
     </SqlQuery>
+    
+    <SqlQuery Name="ClientByIdSelectSqlQuery">
+      <Text>
+        Select
+          client.title as "Name",
+          client.city_id as "CityId",
+          client.date_of_birth as "DateOfBirth",
+          client.email as "Email",
+          client.phone as "Phone" 
+        from
+          template.client
+        where client.client_id = {ClientId};
+      </Text>
+    </SqlQuery>
+    
+    <SqlQuery Name="ClientInsertSqlQuery">
+      <Text>
+        insert into template.client(
+          city_id,
+          date_of_birth,
+          title,
+          email,
+          phone
+        )
+        values(
+          {CityId},
+          {DateOfBirth},
+          {Name},
+          {Email},
+          {Phone}
+        )
+        returning client_id;
+      </Text>
+    </SqlQuery>
+    
+    <SqlQuery Name="ClientUpdateSqlQuery">
+      <Text>
+        update template.client
+        set
+          city_id = {CityId},
+          date_of_birth = {DateOfBirth},
+          title = {Name},
+          email = {Email},
+          phone = {Phone}
+        where
+          client_id = {ClientId};
+      </Text>
+    </SqlQuery>
+    
+    <SqlQuery Name="ClientDeleteSqlQuery">
+      <Text>
+        delete from template.client where client_id = {ClientId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="CityShortSelectSqlQuery">
+      <Text>
+        SELECT
+          city.city_id AS "CityId",
+          city.title AS "Title"
+        FROM
+          template.city
+        ORDER BY city.title;
+      </Text>
+    </SqlQuery>
+
 
   </SqlQueries>
 
@@ -60,6 +126,7 @@
     <Permission Name="CityViewSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
         <SqlQuery Name="CitySelectSqlQuery" />
+        <SqlQuery Name="CityShortSelectSqlQuery"/>
       </SqlQueries>
     </Permission>
     <Permission Name="CityEditSqlQueryPermission" Type="SqlQueryPermission">
@@ -73,6 +140,14 @@
     <Permission Name="ClientViewSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
         <SqlQuery Name="ClientSelectSqlQuery" />
+        <SqlQuery Name="ClientByIdSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+    <Permission Name="ClientEditSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="ClientInsertSqlQuery" />
+        <SqlQuery Name="ClientUpdateSqlQuery" />
+        <SqlQuery Name="ClientDeleteSqlQuery" />
       </SqlQueries>
     </Permission>
   </Permissions>
@@ -95,13 +170,19 @@
         <Permission Name="ClientViewSqlQueryPermission" />
       </Permissions>
     </Role>
+    <Role Name="ClientEditRole">
+      <Permissions>
+        <Permission Name="ClientEditSqlQueryPermission" />
+        <Permission Name="ClientViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
   </Roles>
 
   <Groups>
     <Group Name="GuestGroup">
       <Roles>
         <Role Name="CityEditRole" />
-        <Role Name="ClientViewRole" />
+        <Role Name="ClientEditRole" />
       </Roles>
     </Group>
   </Groups>

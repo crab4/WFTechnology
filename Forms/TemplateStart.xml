@@ -44,6 +44,30 @@
         </Fields>
       </SqlQuery>
     </DataConnection>
+
+    <DataConnection Name="ClientDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="ClientId">
+          <Value>
+            <Object Name="ClientDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">ClientId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="ClientDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
+      <Refresh>
+        <DataConnection Name="ClientPrimaryGetDataConnection" />
+      </Refresh>
+    </DataConnection>
+
   </DataConnections>
 
   <Conditions>
@@ -59,6 +83,21 @@
         <Item>0</Item>
       </Items>
       <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="ClientDatabaseTableCellDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
+      <Table Name="ClientDatabaseTable" />
+    </Condition>
+
+    <Condition Name="ClientEditUpdateTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="ClientEditFormShowCommand" Parameter="Updated" />
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
     </Condition>
   </Conditions>
 
@@ -77,6 +116,31 @@
         </Parameter>
       </Parameters>
     </Command>
+
+    <Command Name="ClientViewDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="ClientPrimaryGetDataConnection" Packet="True" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="ClientSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="ClientDatabaseTable">
+        <Property Name="SelectRowByFieldValue">
+          <Parameters>
+            <Parameter Name="ColumnName">ClientId</Parameter>
+            <Parameter Name="Value">
+              <Command Name="ClientEditFormShowCommand" Parameter="ClientId" />
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+    
+    <Command Name="ClientDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="ClientDeleteSetDataConnection" />
+      </DataConnections>
+    </Command>
   </Commands>
 
   <Executions>
@@ -86,6 +150,36 @@
       </ConditionExpression>
       <Commands>
         <Command Name="FormCloseCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="ClientDatabaseTableCellDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="ClientEditFormShowCommand">
+          <Input Name="Edit">True</Input>
+          <Input Name="ClientId">
+            <Object Name="ClientDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">ClientId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Input>
+        </Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="ClientEditUpdateTrueEqualCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="ClientViewDataConnectionRefreshCommand" />
+        <Command Name="ClientSelectInTableValueSetCommand" />
       </Commands>
     </Execution>
   </Executions>
@@ -352,7 +446,7 @@
         <Enabled>
           <Condition Name="ClientSelectedGreaterCondition" />
         </Enabled>
-        <Commands> </Commands>
+        <Commands ><Command Name="ClientDeleteSaveCommand"></Command></Commands>
       </MyObject>
 
     </MyObject>

@@ -2,6 +2,7 @@
 <Form Name="TemplateCityListForm" Width="500" Height="300" FormBorderStyle="Sizable" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" BackColor="ThemeBackgroundColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True">
   <Parameters>
     <Parameter Name="Title">Города</Parameter>
+    <Parameter Name="Updated">False</Parameter>
   </Parameters>
 
   <Appearance>
@@ -16,6 +17,7 @@
       <Color Name="LabelForeColor" Red="100" Green="100" Blue="100" Alpha="255" />
       <Color Name="TableBackgroundColor" Red="200" Green="200" Blue="200" Alpha="255" />
       <Color Name="TableArchiveColor" Red="230" Green="230" Blue="230" Alpha="255" />
+      
 
       <!-- Стили кнопок -->
       <Color Name="ButtonFlatBorderColor" Red="225" Green="225" Blue="225" Alpha="255" />
@@ -104,12 +106,12 @@
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
     <Command Name="CityAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">Cities/TemplateCityEdit.xml</Xml>
+      <Xml Type="Path">City/TemplateCityEdit.xml</Xml>
       <Show Type="None" />
     </Command>
 
     <Command Name="CityEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">Cities/TemplateCityEdit.xml</Xml>
+      <Xml Type="Path">City/TemplateCityEdit.xml</Xml>
       <Show Type="None" />
       <Parameters>
         <Parameter Name="CityTitle">
@@ -187,16 +189,14 @@
       </Object>
     </Command>
 
-    <Command Name="CityDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="CityPrimaryGetDataConnection" Packet="True" />
-      </DataConnections>
-    </Command>
-
     <Command Name="CityDatabaseTableSaveCommand" Type="SaveCommand" Assembly="Commands">
       <DataConnections>
         <DataConnection Name="CityDatabaseTableSetDataConnection" />
       </DataConnections>
+    </Command>
+    
+    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Updated">True</Parameter>
     </Command>
   </Commands>
 
@@ -572,7 +572,8 @@
         <Text>Сохранить</Text>
         <Commands>
           <Command Name="CityDatabaseTableSaveCommand" />
-          <Command Name="CityDataConnectionRefreshCommand"></Command>
+          <Command Name="UpdatedTrueValueSetCommand"></Command>
+          <Command Name="FormCloseCommand"></Command>
         </Commands>
       </MyObject>
     </MyObject>

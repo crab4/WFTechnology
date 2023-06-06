@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateClientEditForm" Width="700" Height="400" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateClientEditForm" Width="400" Height="350" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
@@ -45,13 +45,161 @@
     </FontStyles>
   </Appearance>
 
-  <DataConnections> </DataConnections>
+  <DataConnections>
+    <DataConnection Name="ClientPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="ClientByIdSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="Name" />
+          <Field Name="CityId" />
+          <Field Name="DateOfBirth" />
+          <Field Name="Email" />
+          <Field Name="Phone" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="ClientId">
+            <Value>
+              <Parameter Name="ClientId" />
+            </Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="CityShortPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="CityShortSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="CityId" />
+          <Field Name="Title" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="ClientInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="CityId">
+          <Value>
+            <Object Name="CityComboBox">
+              <Property Name="Value" />
+            </Object>
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Name">
+          <Value>
+            <Object Name="NameTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="DateOfBirth">
+          <Value>
+            <Object Name="DateOfBirthDateTimePicker" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Email">
+          <Value>
+            <Object Name="EmailTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Phone">
+          <Value>
+            <Object Name="PhoneTextBox" />
+          </Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="ClientInsertSqlQuery" Type="Insert" />
+      </SqlQueries>
+    </DataConnection>
+
+    <DataConnection Name="ClientUpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="ClientId">
+          <Value>
+            <Parameter Name="ClientId" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Name">
+          <Value>
+            <Object Name="NameTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="CityId">
+          <Value>
+            <Object Name="CityComboBox">
+              <Property Name="Value" />
+            </Object>
+          </Value>
+        </Parameter>
+        <Parameter NativeName="DateOfBirth">
+          <Value>
+            <Object Name="DateOfBirthDateTimePicker" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Email">
+          <Value>
+            <Object Name="EmailTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Phone">
+          <Value>
+            <Object Name="PhoneTextBox" />
+          </Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="ClientUpdateSqlQuery" Type="Update" />
+      </SqlQueries>
+    </DataConnection>
+
+  </DataConnections>
 
   <Conditions>
     <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
 
     <Condition Name="EscapeKeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
       <Key Value="Escape" />
+    </Condition>
+
+    <Condition Name="TemplateCityListUpdatedEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="CityListFormShowCommand" Parameter="Updated" />
+        </Item>
+        <Item>True</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="FormChangedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Form>
+            <Property Name="FormChanged" />
+          </Form>
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="SaveOnCloseMessageBoxCommandYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Command Name="SaveOnCloseMessageBoxCommand" />
+        </Item>
+        <Item>Yes</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="SaveOnCloseMessageBoxCommandNoEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Command Name="SaveOnCloseMessageBoxCommand" />
+        </Item>
+        <Item>No</Item>
+      </Items>
     </Condition>
   </Conditions>
 
@@ -64,24 +212,114 @@
 
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
       <Commands>
+        <If>
+          <When>
+            <Parameter Name="Edit" />
+          </When>
+          <Then>
+            <Command Name="ClientUpdateSaveCommand" />
+          </Then>
+          <Else>
+            <Command Name="ClientInsertSaveCommand" />
+            <Command Name="ClientIdValueSetCommand" />
+          </Else>
+        </If>
         <Command Name="UpdatedTrueValueSetCommand" />
         <Command Name="FormCloseCommand" />
       </Commands>
     </Command>
+
+    <Command Name="CityListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">City/TemplateCityList.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="CityShortDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="CityShortPrimaryGetDataConnection" Packet="True" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="ClientInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="ClientInsertSetDataConnection" />
+      </DataConnections>
+    </Command>
+    <Command Name="ClientUpdateSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="ClientUpdateSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="ClientIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="ClientId">
+        <Command Name="ClientInsertSaveCommand" />
+      </Parameter>
+    </Command>
+
+    <Command Name="SaveOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Сохранение</Caption>
+      <Text>Форма содержит несохранённые изменения.\rСохранить их перед закрытием?</Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNoCancel" />
+    </Command>
+
   </Commands>
 
   <Executions>
     <Execution>
       <ConditionExpression>
+        <And>
+          <Condition Name="FormChangedTrueEqualCondition" />
+          <Or>
+            <Condition Name="FormClosingCondition" />
+            <Condition Name="EscapeKeyDownCondition" />
+          </Or>
+        </And>
+      </ConditionExpression>
+      <Commands>
+        <Command Name="SaveOnCloseMessageBoxCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="SaveOnCloseMessageBoxCommandYesEqualCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="SaveSequentialCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
         <Or>
-          <Condition Name="FormClosingCondition" />
-          <Condition Name="EscapeKeyDownCondition" />
+          <Condition Name="SaveOnCloseMessageBoxCommandNoEqualCondition" />
+          <And>
+            <Or>
+              <Condition Name="FormClosingCondition" />
+              <Condition Name="EscapeKeyDownCondition" />
+            </Or>
+            <Not>
+              <Condition Name="FormChangedTrueEqualCondition" />
+            </Not>
+          </And>
         </Or>
       </ConditionExpression>
       <Commands>
         <Command Name="FormCloseCommand" />
       </Commands>
     </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="TemplateCityListUpdatedEqualCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="CityShortDataConnectionRefreshCommand" />
+      </Commands>
+    </Execution>
+
   </Executions>
 
   <MyObjects>
@@ -173,16 +411,424 @@
       <BackColor>ThemeBackgroundColor</BackColor>
 
       <!-- Insert your content-->
-      <MyObject Name="CheckLabel" Type="Label" Assembly="BaseControls">
+
+      <MyObject Name="NameLabel" Type="Label" Assembly="BaseControls">
         <Top>5</Top>
-        <Left>5</Left>
-        <Height>25</Height>
-        <Width>150</Width>
-        <TextAlign>MiddleCenter</TextAlign>
+        <Left>10</Left>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="NameLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <Height>20</Height>
+        <TextAlign>MiddleLeft</TextAlign>
+        <FontStyle>LabelFontStyle</FontStyle>
+        <ForeColor>LabelForeColor</ForeColor>
+        <Text>Имя(ФИО)</Text>
+      </MyObject>
+
+      <MyObject Name="NameTextBox" Type="TextBox" Assembly="BaseControls">
+        <Top>
+          <Object Name="NameLabel">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Object Name="NameLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="NameTextBox">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
         <Text>
-          <Parameter Name="ClientId" />
+          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="Name" />
+            </Fields>
+          </DataConnection>
         </Text>
       </MyObject>
+
+      <MyObject Name="DateOfBirthLabel" Type="Label" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="NameTextBox">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="NameLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="DateOfBirthLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <Height>20</Height>
+        <TextAlign>MiddleLeft</TextAlign>
+        <FontStyle>LabelFontStyle</FontStyle>
+        <ForeColor>LabelForeColor</ForeColor>
+        <Text>Дата рождения</Text>
+      </MyObject>
+
+      <MyObject Name="DateOfBirthDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
+        <Top>
+          <Object Name="DateOfBirthLabel">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Object Name="DateOfBirthLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>150</Width>
+        <Format>dd MMMM yyyy</Format>
+        <ShowCalendar>True</ShowCalendar>
+        <NullValue Show="True" />
+        <Value>
+          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="DateOfBirth" />
+            </Fields>
+          </DataConnection>
+        </Value>
+      </MyObject>
+
+      <MyObject Name="CityLabel" Type="Label" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="DateOfBirthDateTimePicker">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="NameLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="CityLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <Height>20</Height>
+        <TextAlign>MiddleLeft</TextAlign>
+        <FontStyle>LabelFontStyle</FontStyle>
+        <ForeColor>LabelForeColor</ForeColor>
+        <Text>Город</Text>
+      </MyObject>
+
+      <MyObject Name="CityComboBox" Type="ComboBox" Assembly="BaseControls">
+        <Top>
+          <Object Name="CityLabel">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Object Name="CityLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - {2} - 15</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="CityComboBox">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="CityListButton">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <NullValue Show="True" />
+        <NullValueTitle>[Не выбрано]</NullValueTitle>
+        <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
+        <ValueList>
+          <DataConnection SourceDataConnection="CityShortPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="CityId" />
+              <Field Name="Title" />
+            </Fields>
+          </DataConnection>
+        </ValueList>
+        <Value>
+          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="CityId" />
+            </Fields>
+          </DataConnection>
+        </Value>
+      </MyObject>
+
+      <MyObject Name="CityListButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Object Name="CityComboBox">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Left>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="CityComboBox">
+                  <Property Name="Right" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Left>
+        <Height>22</Height>
+        <Width>22</Width>
+        <Hint>Список городов...</Hint>
+        <BackgroundImage>Images\16x16\list.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Commands>
+          <Command Name="CityListFormShowCommand" />
+        </Commands>
+      </MyObject>
+
+      <MyObject Name="PhoneLabel" Type="Label" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="CityComboBox">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="NameLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="PhoneLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <Height>20</Height>
+        <TextAlign>MiddleLeft</TextAlign>
+        <FontStyle>LabelFontStyle</FontStyle>
+        <ForeColor>LabelForeColor</ForeColor>
+        <Text>Телефон</Text>
+      </MyObject>
+
+      <MyObject Name="PhoneTextBox" Type="TextBox" Assembly="BaseControls">
+        <Top>
+          <Object Name="PhoneLabel">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Object Name="PhoneLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="PhoneTextBox">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <Text>
+          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="Phone" />
+            </Fields>
+          </DataConnection>
+        </Text>
+      </MyObject>
+
+      <MyObject Name="EmailLabel" Type="Label" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="PhoneTextBox">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="NameLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="EmailLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <Height>20</Height>
+        <TextAlign>MiddleLeft</TextAlign>
+        <FontStyle>LabelFontStyle</FontStyle>
+        <ForeColor>LabelForeColor</ForeColor>
+        <Text>E-mail</Text>
+      </MyObject>
+
+      <MyObject Name="EmailTextBox" Type="TextBox" Assembly="BaseControls">
+        <Top>
+          <Object Name="EmailLabel">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Object Name="EmailLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="EmailTextBox">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <Text>
+          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="Email" />
+            </Fields>
+          </DataConnection>
+        </Text>
+      </MyObject>
+
+
+
+
+
 
     </MyObject>
 
