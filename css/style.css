@@ -1,0 +1,139 @@
+@charset "UTF-8";
+/*Обнуление*/
+* {
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+:focus, :active {
+  outline: none;
+}
+
+a:focus, a:active {
+  outline: none;
+}
+
+nav, footer, header, aside {
+  display: block;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-size: 100%;
+  line-height: 1;
+  font-size: 14px;
+  -ms-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+input, button, textarea {
+  font-family: inherit;
+}
+
+input::-ms-clear {
+  display: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+button::-moz-focus-inner {
+  padding: 0;
+  border: 0;
+}
+
+a, a:visited {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+ul li {
+  list-style: none;
+}
+
+img {
+  vertical-align: top;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/*--------------------*/
+.wrapper {
+  width: 100%;
+  padding-top: 25px;
+  display: flex;
+  flex-direction: column;
+}
+.wrapper .row {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+  padding-left: 30px;
+}
+.wrapper .column {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  margin-right: 20px;
+  width: 50%;
+}
+.wrapper .text {
+  width: 50%;
+  font-size: 16px;
+}
+.wrapper a.text-link {
+  font-size: 20px;
+  color: #18272F;
+  position: relative;
+  text-decoration: none;
+  width: auto;
+}
+.wrapper a.text-link::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  border-radius: 4px;
+  background-color: #18272F;
+  bottom: -2px;
+  left: 0;
+  transform-origin: right;
+  transform: scaleX(0);
+  transition: transform 0.3s ease-in-out;
+}
+.wrapper a.text-link:hover::before {
+  transform-origin: left;
+  transform: scaleX(1);
+}
+.wrapper .line-black {
+  border: none;
+  background-color: black;
+  color: black;
+  height: 2px;
+  margin-bottom: 10px;
+}
+.wrapper .images {
+  border: 1px solid #ddd; /* Gray border */
+  border-radius: 4px; /* Rounded border */
+  padding: 5px; /* Some padding */
+  width: 150px; /* Set a small width */
+}
+.wrapper .images:hover {
+  box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+}/*# sourceMappingURL=style.css.map */
