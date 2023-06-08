@@ -41,6 +41,7 @@
           <Field Name="ClientId" />
           <Field Name="OrderNumber" />
           <Field Name="OrderDate" />
+          <Field Name="CityId" />
         </Fields>
       </SqlQuery>
     </DataConnection>
@@ -64,6 +65,26 @@
         <SqlQuery Name="OrderDeleteSqlQuery" Type="Delete" />
       </SqlQueries>
     </DataConnection>
+
+    <DataConnection Name="ClientPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="ClientSimpleSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="ClientId" />
+          <Field Name="ClientTitle" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="CityPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="CitySimpleSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="CityId" />
+          <Field Name="CityTitle" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
   </DataConnections>
 
   <Conditions>
@@ -79,6 +100,10 @@
         <Item>0</Item>
       </Items>
       <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="OrderDatabaseTableCellDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
+      <Table Name="OrderDatabaseTable" />
     </Condition>
   </Conditions>
 
@@ -99,9 +124,82 @@
           <Input Name="Edit">False</Input>
         </Parameter>
         <Parameter Name="OrderId">
-          <Input Name="OderId" />
+          <Input Name="OrderId" />
         </Parameter>
       </Parameters>
+    </Command>
+
+    <Command Name="OrderDatabaseTableSelectRowValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="OrderDatabaseTable">
+        <Property Name="SelectRowByFieldValue">
+          <Parameters>
+            <Parameter Name="ColumnName">OrderId</Parameter>
+            <Parameter Name="Value">
+              <Command Name="OrderEditFormShowCommand" Parameter="OrderId" />
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+
+    <Command Name="OrderEditSequentialCommand" Type="SequentialCommand" Assembly="Commands">
+      <Commands>
+        <Command Name="OrderEditFormShowCommand">
+          <Input Name="Edit">True</Input>
+          <Input Name="OrderId">
+            <Object Name="OrderDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">OrderId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Input>
+        </Command>
+      </Commands>
+    </Command>
+
+    <Command Name="TestMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Test</Caption>
+      <Text>
+        <Object Name="OrderDatabaseTable">
+          <Property Name="SelectedRowCellValueByColumnName">
+            <Parameters>
+              <Parameter Name="ColumnName">OrderId</Parameter>
+            </Parameters>
+          </Property>
+        </Object>
+      </Text>
+      <Icon Type="Information" />
+      <Buttons Type="Ok" />
+    </Command>
+
+    <Command Name="OrderDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OrderSelectPrimaryGetDataConnection" Packet="True" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="CityDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="CityPrimaryGetDataConnection" Packet="True" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="ClientDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="ClientPrimaryGetDataConnection" Packet="True" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="ClientFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">Client\TemplateClientList.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="CityFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">City\TemplateCityList.xml</Xml>
+      <Show Type="None" />
     </Command>
   </Commands>
 
@@ -114,11 +212,82 @@
         <Command Name="FormCloseCommand" />
       </Commands>
     </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="OrderEditFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderDataConnectionRefreshCommand" />
+        <Command Name="OrderDatabaseTableSelectRowValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="OrderDatabaseTableCellDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderEditSequentialCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="CityFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="CityDataConnectionRefreshCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="ClientFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="ClientDataConnectionRefreshCommand" />
+      </Commands>
+    </Execution>
   </Executions>
+
+  <MainMenu>
+    <MenuItem Name="FileMenuItem" Type="MenuItem">
+      <Title>Файл</Title>
+      <Items>
+        <MenuItem Name="FileRefreshMenuItem" Type="MenuItem">
+          <Title>Обновить</Title>
+          <Command Name="OrderDataConnectionRefreshCommand" />
+        </MenuItem>
+
+        <MenuItem Name="FileSeparator" Type="Separator" />
+
+        <MenuItem Name="FileExitMenuItem" Type="MenuItem">
+          <Title>Выход</Title>
+          <Command Name="FormCloseCommand" />
+        </MenuItem>
+      </Items>
+    </MenuItem>
+
+    <MenuItem Name="ListMenuItem" Type="MenuItem">
+      <Title>Списки</Title>
+      <Items>
+        <MenuItem Name="CityMenuItem" Type="MenuItem">
+          <Title>Города...</Title>
+          <Command Name="CityFormShowCommand" />
+        </MenuItem>
+
+        <MenuItem Name="ClientMenuItem" Type="MenuItem">
+          <Title>Клиенты...</Title>
+          <Command Name="ClientFormShowCommand" />
+        </MenuItem>
+      </Items>
+    </MenuItem>
+  </MainMenu>
 
   <MyObjects>
     <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
-      <Top>0</Top>
+      <Top>24</Top>
       <Left>0</Left>
       <Height>50</Height>
       <Width>
@@ -272,11 +441,27 @@
             <Title>Город</Title>
             <Width>150</Width>
             <MinimumWidth>150</MinimumWidth>
+            <Substitution SourceColumn="CityId">
+              <DataConnection SourceDataConnection="CityPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="CityId" />
+                  <Field Name="CityTitle" />
+                </Fields>
+              </DataConnection>
+            </Substitution>
           </Column>
           <Column Name="ClientTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
             <Title>Клиент</Title>
             <Width>200</Width>
             <MinimumWidth>200</MinimumWidth>
+            <Substitution SourceColumn="ClientId">
+              <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="ClientId" />
+                  <Field Name="ClientTitle" />
+                </Fields>
+              </DataConnection>
+            </Substitution>
           </Column>
         </Columns>
       </MyObject>
@@ -347,7 +532,9 @@
         <Enabled>
           <Condition Name="OrderSelectedGreaterCondition" />
         </Enabled>
-        <Commands> </Commands>
+        <Commands>
+          <Command Name="OrderEditSequentialCommand" />
+        </Commands>
       </MyObject>
 
       <MyObject Name="OrderDeleteButton" Type="Button" Assembly="BaseControls">
@@ -385,6 +572,7 @@
         </Enabled>
         <Commands>
           <Command Name="OrderDeleteSaveCommand" />
+          <Command Name="OrderDataConnectionRefreshCommand" />
         </Commands>
       </MyObject>
 

@@ -9,15 +9,75 @@
 </head>
 
 <body>
-  Cheat sheet:
-  ctrl + Q Format
-  Crtl + , comment
-  ctrl + . Cdata
 
-  ctrl + [] - step to next\prev att
-  ctrl + '; '- step to next\prev elem
+  <!--  -->
+  ctrl + Q autoFormat
+  crtl + , comment
+  ctrl + shift + / comment
+  ctrl + shift + \ uncomment
+  ctrl + . cdata
+
+  <!-- Важна раскладка  -->
+  ctrl + [] - прыжки по аттрибутам
+  ctrl + '; '- прыжки по вводным данным
 
   Alt+0171 и Alt+0187. «»
+
+  <!-- Никогда не пренебрегай SequentialCommand
+        Практически при любом редактировании сущности нужно делать несколько команд, лучше их совместить в секвенцию, чтобы:
+      1. точно знать при просмотре кода кнопки, что она делает и не носиться как курица туда-сюда, а получить удобную ссылку в командс.
+      2. в случае дублирования кода не придётся снова вводить десять тысяч переменных, можно будет просто продублировать seq -->
+
+  <!-- Возможность отключить все изменения на дочерних элементах -->
+  <Enabled>False</Enabled> 
+
+
+  <!-- Создание архивной кнопки и последовательность действий:
+    https://wfsys.gitbook.io/wt-practice/main/lesson_deleting_related_data#priznak-arkhivnoi-zapisi
+    И хотя в реализации есть различия, алгоритм удобный.
+  -->
+  
+
+  <!-- sql filter with period -->
+  WITH _filter AS (
+      SELECT
+        CASE
+          WHEN {Filter} = 'Today'
+          THEN CURRENT_DATE::timestamp
+          WHEN {Filter} = 'CurrentWeek'
+          THEN date_trunc('week', CURRENT_DATE::timestamp)
+          WHEN {Filter} = 'Fortnight'
+          THEN date_trunc('week', CURRENT_DATE::timestamp) - interval '7d'
+          WHEN {Filter} = 'Period'
+          THEN {StartDate}::timestamp
+        END AS start_date,
+    
+        CASE
+          WHEN {Filter} = 'Today'
+          THEN CURRENT_DATE + interval '1d - 1s'
+          WHEN {Filter} = 'CurrentWeek'
+          THEN date_trunc('week', CURRENT_DATE::timestamp) + interval '7d - 1s'
+          WHEN {Filter} = 'Fortnight'
+          THEN date_trunc('week', CURRENT_DATE::timestamp) + interval '7d - 1s'
+          WHEN {Filter} = 'Period'
+          THEN {EndDate}::timestamp + interval '1d - 1s'
+        END AS end_date
+    )
+    
+    SELECT
+      O.order_id AS "OrderId",
+      O.client_id AS "ClientId",
+      C.city_id AS "CityId",
+      O.order_number AS "OrderNumber",
+      O.order_date AS "OrderDate"
+    FROM
+      template.order O
+      LEFT JOIN template.client C USING(client_id)
+      LEFT JOIN _filter ON true
+    WHERE
+      NOT O.deleted AND
+      O.order_date BETWEEN _filter.start_date AND _filter.end_date
+    ORDER BY O.order_number ASC;
 </body>
 
 </html>

@@ -156,12 +156,12 @@
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
     <Command Name="CityAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">City/TemplateCityEdit.xml</Xml>
+      <Xml Type="Path">TemplateCityEdit.xml</Xml>
       <Show Type="None" />
     </Command>
 
     <Command Name="CityEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">City/TemplateCityEdit.xml</Xml>
+      <Xml Type="Path">TemplateCityEdit.xml</Xml>
       <Show Type="None" />
       <Parameters>
         <Parameter Name="CityTitle">
@@ -671,7 +671,7 @@
         <Height>40</Height>
         <Width>40</Width>
         <Hint>Добавить запись...</Hint>
-        <BackgroundImage>Images\24x24\plus.png</BackgroundImage>
+        <BackgroundImage>..\Images\24x24\plus.png</BackgroundImage>
         <BackgroundImageLayout>Center</BackgroundImageLayout>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
@@ -704,7 +704,7 @@
         <Height>40</Height>
         <Width>40</Width>
         <Hint>Редактировать запись...</Hint>
-        <BackgroundImage>Images\24x24\pencil.png</BackgroundImage>
+        <BackgroundImage>..\Images\24x24\pencil.png</BackgroundImage>
         <BackgroundImageLayout>Center</BackgroundImageLayout>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
@@ -745,7 +745,7 @@
         <Height>40</Height>
         <Width>40</Width>
         <Hint>Удалить запись...</Hint>
-        <BackgroundImage>Images\24x24\delete.png</BackgroundImage>
+        <BackgroundImage>..\Images\24x24\delete.png</BackgroundImage>
         <BackgroundImageLayout>Center</BackgroundImageLayout>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
@@ -805,9 +805,9 @@
               <When>
                 <Condition Name="SelectedCityIsArchiveEqualCondition" />
               </When>
-              <Then>Images\24x24\unarchive.png</Then>
+              <Then>..\Images\24x24\unarchive.png</Then>
             </Case>
-            <Case>Images\24x24\archive.png</Case>
+            <Case>..\Images\24x24\archive.png</Case>
           </Switch>
         </BackgroundImage>
         <BackgroundImageLayout>Center</BackgroundImageLayout>
@@ -888,7 +888,7 @@
         <TextAlign>MiddleCenter</TextAlign>
         <FontStyle>ButtonFontStyle</FontStyle>
         <ImageAlign>MiddleLeft</ImageAlign>
-        <Image>Images\24x24\content-save.png</Image>
+        <Image>..\Images\24x24\content-save.png</Image>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>

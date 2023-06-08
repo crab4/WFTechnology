@@ -13,7 +13,7 @@
       </Switch>
     </Parameter>
     <Parameter Name="CityTitle" />
-    <Parameter Name="Archive"></Parameter>
+    <Parameter Name="Archive" />
     <Parameter Name="Updated">False</Parameter>
     <Parameter Name="Edit">False</Parameter>
   </Parameters>
@@ -319,13 +319,8 @@
         <Text>Наименование</Text>
       </MyObject>
       <MyObject Name="CityTitleTextBox" Type="TextBox" Assembly="BaseControls">
-        <ReadOnly><Switch>
-          <Case>
-            <When><Parameter Name="Archive" /></When>
-            <Then>True</Then>
-          </Case>
-          <Case>False</Case>
-        </Switch></ReadOnly>
+        <ReadOnly><Parameter Name="Archive" />
+        </ReadOnly>
         <Top>
           <Object Name="TitleLabel">
             <Property Name="Bottom" />
@@ -406,7 +401,7 @@
         <TextAlign>MiddleCenter</TextAlign>
         <FontStyle>ButtonFontStyle</FontStyle>
         <ImageAlign>MiddleLeft</ImageAlign>
-        <Image>Images\24x24\content-save.png</Image>
+        <Image>..\Images\24x24\content-save.png</Image>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>

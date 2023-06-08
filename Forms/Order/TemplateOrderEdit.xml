@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <Form Name="TemplateOrderEditForm" Width="320" Height="500" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
+    <Parameter Name="OrderId" />
     <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
       <Switch>
@@ -12,8 +13,8 @@
         </Case>
         <Case>Создание заказа</Case>
       </Switch>
+
     </Parameter>
-    <Parameter Name="OrderId" />
     <Parameter Name="Updated">False</Parameter>
   </Parameters>
 
@@ -50,7 +51,6 @@
       <SqlQuery Name="OrderSelectByIdSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
-          <Field Name="OrderId" />
           <Field Name="ClientId" />
           <Field Name="OrderNumber" />
           <Field Name="OrderDate" />
@@ -75,6 +75,17 @@
           <Field Name="ClientPhone" />
           <Field Name="CityTitle" />
         </Fields>
+        <Parameters>
+          <Parameter NativeName="ClientId">
+            <Value>
+              <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="ClientId"/>
+                </Fields>
+              </DataConnection>
+            </Value>
+          </Parameter>
+        </Parameters>
       </SqlQuery>
     </DataConnection>
 
@@ -117,7 +128,9 @@
         </Parameter>
         <Parameter NativeName="OrderDate">
           <Value>
-            <Object Name="OrderDateDateTimePicker" />
+            <Object Name="OrderDateDateTimePicker">
+              <Property Name="Value" />
+            </Object>
           </Value>
         </Parameter>
         <Parameter NativeName="ClientId">
@@ -139,6 +152,17 @@
       <SqlQueries>
         <SqlQuery Name="OrderUpdateSqlQuery" Type="Update" />
       </SqlQueries>
+    </DataConnection>
+
+    <DataConnection Name="ClientSecondaryGetDataConnection" Type="SecondaryGetDataConnection" Assembly="DataConnections">
+      <SourceDataConnection Name="ClientShortPrimaryGetDataConnection" />
+      <Filter>
+        <Field NativeName="ClientId" />
+        <Value>
+          <Object Name="ClientComboBox" />
+        </Value>
+        <DataType Type="IntegerDataType" />
+      </Filter>
     </DataConnection>
   </DataConnections>
 
@@ -675,7 +699,13 @@
           </Calculate>
         </Width>
         <ReadOnly>True</ReadOnly>
-        <Text />
+        <Text>
+          <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
+            <Fields>
+              <Field Name="CityTitle" />
+            </Fields>
+          </DataConnection>
+        </Text>
       </MyObject>
 
       <MyObject Name="PhoneLabel" Type="Label" Assembly="BaseControls">
@@ -748,7 +778,13 @@
             </Items>
           </Calculate>
         </Width>
-        <Text />
+        <Text>
+          <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
+            <Fields>
+              <Field Name="ClientPhone" />
+            </Fields>
+          </DataConnection>
+        </Text>
         <Mask>Phone</Mask>
       </MyObject>
 

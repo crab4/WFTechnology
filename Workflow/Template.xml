@@ -50,7 +50,8 @@
           cl.client_id as "ClientId",
           cl.title as "Name",
           ct.title as "CityTitle",
-          cl.phone as "Phone"
+          cl.phone as "Phone",
+          cl.archive as "Archive"
         from
           template.client cl
           left join template.city ct using(city_id)
@@ -108,7 +109,7 @@
 
     <SqlQuery Name="ClientDeleteSqlQuery">
       <Text>
-        delete from template.client where client_id = {ClientId};
+        select template.client_try_delete({ClientId}::bigint);
       </Text>
     </SqlQuery>
 
@@ -128,22 +129,24 @@
 
     <SqlQuery Name="OrderSelectSqlQuery">
       <Text>
-        SELECT 
-          order_id as "OrderId", 
-          client_id as "ClientId",
-          order_number as "OrderNumber", 
-          order_date as "OrderDate", 
-          order_description as "OrderDescription"
-        FROM
-         template."order"
-        where deleted = false;
+       select 
+		  ord.order_id as "OrderId",
+		  ord.client_id as "ClientId",
+		  ord.order_number as "OrderNumber",
+		  ord.order_date as "OrderDate",
+		  ord.description as "OrderDescription",
+		  client.city_id as "CityId"
+  
+		from template.order ord
+		join template.client on client.client_id = ord.client_id
+		where ord.deleted = false;
       </Text>
     </SqlQuery>
 
     <SqlQuery Name="OrderInsertSqlQuery">
       <Text>
         insert into template.order
-          (order_number, order_date, order_description, client_id) values
+          (order_number, order_date, description, client_id) values
           ({OrderNumber}, {OrderDate}, {OrderDescription}, {ClientId}) 
         returning order_id;
       </Text>
@@ -154,8 +157,8 @@
 				update  template.order set
 				  client_id = {ClientId},
 				  order_number = {OrderNumber},
-				  order_date = {OrderDate], 
-				  order_description = {OrderDescription}
+				  order_date = {OrderDate}, 
+				  description = {OrderDescription}
 				where order_id = {OrderId};
       </Text>
     </SqlQuery>
@@ -172,11 +175,10 @@
     <SqlQuery Name="OrderSelectByIdSqlQuery">
       <Text>
         SELECT 
-          order_id as "OrderId", 
           client_id as "ClientId",
           order_number as "OrderNumber", 
           order_date as "OrderDate", 
-          order_description as "OrderDescription"
+          description as "OrderDescription"
         FROM
          template."order"
         where
@@ -194,7 +196,35 @@
         FROM
           template.client
           join template.city using (city_id)
+        where
+          not client.archive or
+          client.client_id = {ClientId}
         ORDER BY client.title;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="ClientSimpleSqlQuery">
+      <Text>
+        select
+          client.client_id as "ClientId",
+          client.title as "ClientTitle"
+        from template.client
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="CitySimpleSqlQuery">
+      <Text>
+        select
+	        city.city_id as "CityId",
+	        city.title as "CityTitle"
+        from template.city
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="ClientArchiveSqlQuery">
+      <Text>
+        update template.client
+          set archive = not archive where client_id = {ClientId};
       </Text>
     </SqlQuery>
 
@@ -227,6 +257,7 @@
         <SqlQuery Name="ClientInsertSqlQuery" />
         <SqlQuery Name="ClientUpdateSqlQuery" />
         <SqlQuery Name="ClientDeleteSqlQuery" />
+        <SqlQuery Name="ClientArchiveSqlQuery" />
       </SqlQueries>
     </Permission>
 
@@ -234,6 +265,9 @@
       <SqlQueries>
         <SqlQuery Name="OrderSelectSqlQuery" />
         <SqlQuery Name="OrderSelectByIdSqlQuery" />
+        <SqlQuery Name="CitySimpleSqlQuery" />
+        <SqlQuery Name="ClientShortSelectSqlQuery" />
+        <SqlQuery Name="ClientSimpleSqlQuery" />
       </SqlQueries>
     </Permission>
 
@@ -245,11 +279,6 @@
       </SqlQueries>
     </Permission>
 
-    <Permission Name="ClientToOrderViewSqlQueryPermission" Type="SqlQueryPermission">
-      <SqlQueries>
-        <SqlQuery Name="ClientShortSelectSqlQuery" />
-      </SqlQueries>
-    </Permission>
   </Permissions>
 
   <Roles>
@@ -280,14 +309,12 @@
     <Role Name="OrderViewRole">
       <Permissions>
         <Permission Name="OrderViewSqlQueryPermission" />
-        <Permission Name="ClientToOrderViewSqlQueryPermission" />
       </Permissions>
     </Role>
     <Role Name="OrderEditRole">
       <Permissions>
         <Permission Name="OrderEditSqlQueryPermission" />
         <Permission Name="OrderViewSqlQueryPermission" />
-        <Permission Name="ClientToOrderViewSqlQueryPermission" />
       </Permissions>
     </Role>
   </Roles>
