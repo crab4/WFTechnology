@@ -129,7 +129,30 @@
 
     <SqlQuery Name="OrderSelectSqlQuery">
       <Text>
-       select 
+    WITH _filter AS (
+      SELECT
+        CASE
+          WHEN {Filter} = 'Today'
+          THEN CURRENT_DATE::timestamp
+          WHEN {Filter} = 'CurrentWeek'
+          THEN date_trunc('week', CURRENT_DATE::timestamp)
+          WHEN {Filter} = 'Fortnight'
+          THEN date_trunc('week', CURRENT_DATE::timestamp) - interval '7d'
+          WHEN {Filter} = 'Period'
+          THEN {StartDate}::timestamp
+        END AS start_date,
+    
+        CASE
+          WHEN {Filter} = 'Today'
+          THEN CURRENT_DATE + interval '1d - 1s'
+          WHEN {Filter} = 'CurrentWeek'
+          THEN date_trunc('week', CURRENT_DATE::timestamp) + interval '7d - 1s'
+          WHEN {Filter} = 'Fortnight'
+          THEN date_trunc('week', CURRENT_DATE::timestamp) + interval '7d - 1s'
+          WHEN {Filter} = 'Period'
+          THEN {EndDate}::timestamp + interval '1d - 1s'
+        END AS end_date
+    )  select 
 		  ord.order_id as "OrderId",
 		  ord.client_id as "ClientId",
 		  ord.order_number as "OrderNumber",
@@ -138,8 +161,10 @@
 		  client.city_id as "CityId"
   
 		from template.order ord
-		join template.client on client.client_id = ord.client_id
-		where ord.deleted = false;
+		left join template.client on client.client_id = ord.client_id
+        left join _filter on true
+        where not ord.deleted and
+        ord.order_date between _filter.start_date and _filter.end_date;
       </Text>
     </SqlQuery>
 
