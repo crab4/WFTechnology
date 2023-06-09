@@ -33,51 +33,19 @@
 
 
   <!-- Создание архивной кнопки и последовательность действий:
-    https://wfsys.gitbook.io/wt-practice/main/lesson_deleting_related_data#priznak-arkhivnoi-zapisi
     И хотя в реализации есть различия, алгоритм удобный.
   -->
+  https://wfsys.gitbook.io/wt-practice/main/lesson_deleting_related_data#priznak-arkhivnoi-zapisi
+ 
   
+  <!-- Фильтры. При проверке в БД не забывать, что сервер отправляет ещё парочку запросов самостоятельно -->
+  https://wfsys.gitbook.io/wt-practice/main/lesson_filters#globalnye-filtry
+ 
 
-  <!-- sql filter with period -->
-  WITH _filter AS (
-      SELECT
-        CASE
-          WHEN {Filter} = 'Today'
-          THEN CURRENT_DATE::timestamp
-          WHEN {Filter} = 'CurrentWeek'
-          THEN date_trunc('week', CURRENT_DATE::timestamp)
-          WHEN {Filter} = 'Fortnight'
-          THEN date_trunc('week', CURRENT_DATE::timestamp) - interval '7d'
-          WHEN {Filter} = 'Period'
-          THEN {StartDate}::timestamp
-        END AS start_date,
-    
-        CASE
-          WHEN {Filter} = 'Today'
-          THEN CURRENT_DATE + interval '1d - 1s'
-          WHEN {Filter} = 'CurrentWeek'
-          THEN date_trunc('week', CURRENT_DATE::timestamp) + interval '7d - 1s'
-          WHEN {Filter} = 'Fortnight'
-          THEN date_trunc('week', CURRENT_DATE::timestamp) + interval '7d - 1s'
-          WHEN {Filter} = 'Period'
-          THEN {EndDate}::timestamp + interval '1d - 1s'
-        END AS end_date
-    )
-    
-    SELECT
-      O.order_id AS "OrderId",
-      O.client_id AS "ClientId",
-      C.city_id AS "CityId",
-      O.order_number AS "OrderNumber",
-      O.order_date AS "OrderDate"
-    FROM
-      template.order O
-      LEFT JOIN template.client C USING(client_id)
-      LEFT JOIN _filter ON true
-    WHERE
-      NOT O.deleted AND
-      O.order_date BETWEEN _filter.start_date AND _filter.end_date
-    ORDER BY O.order_number ASC;
+
+  <!-- Создание ключа в Postgres не через серийник -->
+  CREATE SEQUENCE schema.table_id_seq;
+  table_id smallint NOT NULL DEFAULT nextval('schema.table_id_seq'::regclass),
 </body>
 
 </html>

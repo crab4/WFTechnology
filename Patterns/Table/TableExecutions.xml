@@ -1,0 +1,42 @@
+<Execution>
+  <ConditionExpression>
+    <Condition Name="{ItemName}DoubleClickCondition" />
+  </ConditionExpression>
+  <Commands>
+    <Command Name="{ItemName}EditFormShowCommand" />
+  </Commands>
+</Execution>
+
+<Execution>
+  <ConditionExpression>
+	<Command Name="{ItemName}AddFormShowCommand" Parameter="Updated" />
+  </ConditionExpression>
+  <Commands>
+	<Command Name="{ItemName}DataConnectionRefreshCommand" />
+	<Command Name="{ItemName}SelectInTableValueSetCommand">
+	  <Command Name="{ItemName}AddFormShowCommand" Parameter="{ItemName}Id" />
+	</Command>
+  </Commands>
+</Execution>
+
+<Execution>
+  <ConditionExpression>
+	<Command Name="{ItemName}EditFormShowCommand" Parameter="Updated" />
+  </ConditionExpression>
+  <Commands>
+	<Command Name="{ItemName}DataConnectionRefreshCommand" />
+	<Command Name="{ItemName}SelectInTableValueSetCommand">
+	  <Command Name="{ItemName}EditFormShowCommand" Parameter="{ItemName}Id" />
+	</Command>
+  </Commands>
+</Execution>
+
+<Execution>
+  <ConditionExpression>
+	<Command Name="{ItemName}DeleteMessageBoxCommand" Parameter="Yes" />
+  </ConditionExpression>
+  <Commands>
+	<Command Name="{ItemName}DeleteSaveCommand" />
+	<Command Name="UpdatedTrueValueSetCommand" />
+  </Commands>
+</Execution>

@@ -1,0 +1,12 @@
+﻿<Role Name="{ItemName}ViewRole">
+  <Permissions>
+    <Permission Name="{ItemName}ViewSqlQueryPermission" />
+  </Permissions>
+</Role>
+
+<Role Name="{ItemName}EditRole">
+  <Permissions>
+    <Permission Name="{ItemName}ViewSqlQueryPermission" />
+    <Permission Name="{ItemName}EditSqlQueryPermission" />
+  </Permissions>
+</Role>

@@ -15,7 +15,8 @@
     </Parameter>
     <Parameter Name="ClientId" />
     <Parameter Name="Updated">False</Parameter>
-    <Parameter Name="Archive"></Parameter>
+    <Parameter Name="Archive" />
+    <Parameter Name="ClientTitle" />
   </Parameters>
 
   <Appearance>
@@ -350,12 +351,13 @@
       <Icon Type="Question" />
       <Buttons Type="YesNo" />
     </Command>
+    
 
   </Commands>
 
   <Checkings>
     <Checking>
-      <Object Name="NameTextBox" />
+      <Object Name="NameTextBox"/>
       <ConditionExpression>
         <Condition Name="NameTextBoxIsNullOrEmptyCondition" />
       </ConditionExpression>
@@ -385,6 +387,8 @@
   </Checkings>
 
   <Executions>
+    
+    
     <Execution>
       <ConditionExpression>
         <And>
@@ -498,8 +502,18 @@
       </MyObject>
     </MyObject>
 
-    <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls" >
-      <Enabled>False</Enabled>
+    <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls">
+      <Enabled>
+        <Switch>
+          <Case>
+            <When>
+              <Parameter Name="Archive" />
+            </When>
+            <Then>False</Then>
+          </Case>
+          <Case>True</Case>
+        </Switch>
+      </Enabled>
       <Top>
         <Object Name="HeadPanel">
           <Property Name="Bottom" />
@@ -570,7 +584,7 @@
         <Text>Имя(ФИО)</Text>
       </MyObject>
 
-      <MyObject Name="NameTextBox" Type="TextBox" Assembly="BaseControls" >
+      <MyObject Name="NameTextBox" Type="TextBox" Assembly="BaseControls">
         <Top>
           <Object Name="NameLabel">
             <Property Name="Bottom" />
@@ -610,11 +624,23 @@
           </Switch>
         </ReadOnly>
         <Text>
-          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
-            <Fields>
-              <Field Name="Name" />
-            </Fields>
-          </DataConnection>
+          <Switch>
+            <Case>
+              <When>
+                <Parameter Name="Edit" />
+              </When>
+              <Then>
+                <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+                  <Fields>
+                    <Field Name="Name" />
+                  </Fields>
+                </DataConnection>
+              </Then>
+            </Case>
+            <Case>
+              <Parameter Name="ClientTitle" />
+            </Case>
+          </Switch>
         </Text>
       </MyObject>
 
@@ -660,8 +686,8 @@
         <Text>Дата рождения</Text>
       </MyObject>
 
-      <MyObject Name="DateOfBirthDateTimePicker" Type="DateTimePicker" Assembly="BaseControls" >
-        
+      <MyObject Name="DateOfBirthDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
+
         <Top>
           <Object Name="DateOfBirthLabel">
             <Property Name="Bottom" />

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="{WorkflowName}{EntityName}EditForm" Width="700" Height="400" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="{WorkflowName}{ItemName}EditForm" Width="450" Height="250" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
@@ -8,12 +8,12 @@
           <When>
             <Parameter Name="Edit" />
           </When>
-          <Then>{EditFormTitle}</Then>
+          <Then>{EditItemTitle}</Then>
         </Case>
-        <Case>{AddFormTitle}</Case>
+        <Case>{AddItemTitle}</Case>
       </Switch>
     </Parameter>
-    <Parameter Name="{EntityName}Id" />
+    <Parameter Name="{ItemName}Id" />
     <Parameter Name="Updated">False</Parameter>
   </Parameters>
 
@@ -46,32 +46,32 @@
   </Appearance>
 
   <DataConnections>
-    <DataConnection Name="{EntityName}PrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+    <DataConnection Name="{ItemName}PrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <ManualLoad>
         <Not>
           <Parameter Name="Edit" />
         </Not>
       </ManualLoad>
-      <SqlQuery Name="{EntityName}ByIdSelectSqlQuery" Type="Select">
+      <SqlQuery Name="{ItemName}ByIdSelectSqlQuery" Type="Select">
         <Workflow Name="{WorkflowName}" />
         <Fields>
-          <Field Name="{EntityName}Id" />
+          <Field Name="{ItemName}Id" />
           <Field Name="Title" />
         </Fields>
         <Parameters>
-          <Parameter NativeName="{EntityName}Id">
+          <Parameter NativeName="{ItemName}Id">
             <Value>
-              <Parameter Name="{EntityName}Id" />
+              <Parameter Name="{ItemName}Id" />
             </Value>
           </Parameter>
         </Parameters>
       </SqlQuery>
     </DataConnection>
 
-    <DataConnection Name="{EntityName}InsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+    <DataConnection Name="{ItemName}InsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
       <Workflow Name="{WorkflowName}" />
       <SqlQueries>
-        <SqlQuery Name="{EntityName}InsertSqlQuery" Type="Insert" />
+        <SqlQuery Name="{ItemName}InsertSqlQuery" Type="Insert" />
       </SqlQueries>
       <Parameters>
         <Parameter NativeName="Title">
@@ -82,15 +82,15 @@
       </Parameters>
     </DataConnection>
 
-    <DataConnection Name="{EntityName}UpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+    <DataConnection Name="{ItemName}UpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
       <Workflow Name="{WorkflowName}" />
       <SqlQueries>
-        <SqlQuery Name="{EntityName}UpdateSqlQuery" Type="Update" />
+        <SqlQuery Name="{ItemName}UpdateSqlQuery" Type="Update" />
       </SqlQueries>
       <Parameters>
-        <Parameter NativeName="{EntityName}Id">
+        <Parameter NativeName="{ItemName}Id">
           <Value>
-            <Parameter Name="{EntityName}Id" />
+            <Parameter Name="{ItemName}Id" />
           </Value>
         </Parameter>
         <Parameter NativeName="Title">
@@ -163,21 +163,21 @@
       <Buttons Type="YesNo" />
     </Command>
 
-    <Command Name="{EntityName}InsertSaveCommand" Type="SaveCommand" Assembly="Commands">
+    <Command Name="{ItemName}InsertSaveCommand" Type="SaveCommand" Assembly="Commands">
       <DataConnections>
-        <DataConnection Name="{EntityName}InsertSetDataConnection" />
+        <DataConnection Name="{ItemName}InsertSetDataConnection" />
       </DataConnections>
     </Command>
 
-    <Command Name="{EntityName}UpdateSaveCommand" Type="SaveCommand" Assembly="Commands">
+    <Command Name="{ItemName}UpdateSaveCommand" Type="SaveCommand" Assembly="Commands">
       <DataConnections>
-        <DataConnection Name="{EntityName}UpdateSetDataConnection" />
+        <DataConnection Name="{ItemName}UpdateSetDataConnection" />
       </DataConnections>
     </Command>
 
-    <Command Name="{EntityName}IdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Parameter Name="{EntityName}Id">
-        <Command Name="{EntityName}InsertSaveCommand" />
+    <Command Name="{ItemName}IdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="{ItemName}Id">
+        <Command Name="{ItemName}InsertSaveCommand" />
       </Parameter>
     </Command>
 
@@ -188,11 +188,11 @@
             <Parameter Name="Edit" />
           </When>
           <Then>
-            <Command Name="{EntityName}UpdateSaveCommand" />
+            <Command Name="{ItemName}UpdateSaveCommand" />
           </Then>
           <Else>
-            <Command Name="{EntityName}InsertSaveCommand" />
-            <Command Name="{EntityName}IdValueSetCommand" />
+            <Command Name="{ItemName}InsertSaveCommand" />
+            <Command Name="{ItemName}IdValueSetCommand" />
           </Else>
         </If>
         <Command Name="UpdatedTrueValueSetCommand" />
@@ -280,7 +280,7 @@
       </Width>
       <BackColor>HeadBackgroundColor</BackColor>
 
-      <MyObject Name="HeadLabel" Type="Label" Assembly="BaseControls" ChangeForm="False">
+      <MyObject Name="HeadLabel" Type="Label" Assembly="BaseControls">
         <Top>0</Top>
         <Left>10</Left>
         <Height>
@@ -412,7 +412,7 @@
           </Calculate>
         </Width>
         <Text>
-          <DataConnection SourceDataConnection="{EntityName}PrimaryGetDataConnection">
+          <DataConnection SourceDataConnection="{ItemName}PrimaryGetDataConnection">
             <Fields>
               <Field Name="Title" />
             </Fields>
@@ -420,7 +420,6 @@
         </Text>
         <TabIndex>1</TabIndex>
       </MyObject>
-	  
     </MyObject>
 
     <MyObject Name="FootSeparatePanel" Type="Panel" Assembly="BaseControls">
@@ -462,7 +461,7 @@
       <TabIndex>2</TabIndex>
       <BackColor>ThemeBackgroundColor</BackColor>
 
-      <MyObject Name="{FooterButtonName}Button" Type="Button" Assembly="BaseControls">
+      <MyObject Name="SaveButton" Type="Button" Assembly="BaseControls">
         <Top>5</Top>
         <Right>
           <Formula>
@@ -481,13 +480,13 @@
         <TextAlign>MiddleCenter</TextAlign>
         <FontStyle>ButtonFontStyle</FontStyle>
         <ImageAlign>MiddleLeft</ImageAlign>
-        <Image>Images\24x24{FooterButtonIcon}</Image>
+        <Image>Images\24x24\content-save.png</Image>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Text>{FooterButtonText}</Text>
+        <Text>Сохранить</Text>
         <TabIndex>1</TabIndex>
         <Enabled>
           <And>

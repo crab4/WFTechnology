@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Snippet>
+  <Name>Table</Name>
+  <ShortName>table</ShortName>
+  <Description>Таблица DatabaseTable с кнопками управления (добавить, редактировать и удалить) и форма редактирования. Вложенная сущность.
+
+Начальные условия.
+Курсор должен стоять там, где идет описание графических объектов.
+
+Применение.
+В текущий файл будут добавлены: DatabaseTable, три кнопки Button, DataConnection для загрузки списка вложенных сущностей, DataConnection для удаления вложенной сущности и сопутствующие вспогательные условия, команды и действия.
+
+Также будет создана форма с карточкой редактирования вложенной сущности.
+
+А в серверный xml-файл будут добавлены необходимые запросы.</Description>
+  <FileTypes>
+    <FileType Value="Form" />
+  </FileTypes>
+  <ContextCheckings>
+    <Checking Type="ObjectsContextChecker" />
+  </ContextCheckings>
+  <Actions>
+    <VariableCollector Type="EnvironmentNamesCollector" />
+    <VariableCollector Type="WorkflowNameCollector" />
+    <Input Type="Wizard">
+      <Page>
+        <Title>Настройки паттерна Table</Title>
+        <Description>Таблица DatabaseTable с кнопками управления (добавить, редактировать и удалить) и форма редактирования. Вложенная сущность.</Description>
+        <FieldDescription>
+          <Text>Начальные условия. Курсор должен стоять там, где идет описание графических объектов.</Text>
+        </FieldDescription>
+        <FieldDescription>
+          <Text>Применение. В текущий файл будут добавлены: DatabaseTable, три кнопки Button, DataConnection для загрузки списка вложенных сущностей, DataConnection для удаления вложенной сущности и сопутствующие вспогательные условия, команды и действия.</Text>
+        </FieldDescription>
+        <FieldDescription>
+          <Text>Также будет создана форма с карточкой редактирования вложенной сущности.</Text>
+        </FieldDescription>
+        <FieldDescription>
+          <Text>А в серверный xml-файл будут добавлены необходимые запросы.</Text>
+        </FieldDescription>
+		
+        <Variable Name="WorkflowSchemeName">
+          <Type Value="Text" />
+          <Text>Имя схемы БД (например, "template")</Text>
+        </Variable>
+        <Variable Name="ItemTable">
+          <Type Value="Text" />
+          <Text>Имя таблицы БД для сущности списка (например, "contacts")</Text>
+        </Variable>
+		
+        <Variable Name="ItemName">
+          <Type Value="Text" />
+          <Text>Имя сущности, которая будет вкладываться (например, "Contacts")</Text>
+        </Variable>
+        <Variable Name="ItemTitle">
+          <Type Value="Text" />
+          <Text>Название сущности, которая будет вкладываться (например, "Контакты")</Text>
+        </Variable>
+		
+        <Variable Name="ParentObjectName">
+          <Type Value="Text" />
+          <Text>Родительский объект-контейнер (например, "ContentPanel")</Text>
+          <Default>[ContentPanel]</Default>
+        </Variable>
+		
+        <Variable Name="AddItemTitle">
+          <Type Value="Text" />
+          <Text>Заголовок формы для создания сущности (например, "Добавление контакта")</Text>
+          <Default>Добавление |</Default>
+        </Variable>
+        <Variable Name="EditItemTitle">
+          <Type Value="Text" />
+          <Text>Заголовок формы для редактирования сущности (например, "Редактирование контакта")</Text>
+          <Default>Редактирование |</Default>
+        </Variable>
+      </Page>
+    </Input>
+    <Insert Place="Caret">
+    	<Xml Path="Table\TableCaret.xml" />
+    </Insert>
+    <Insert Place="DataConnections">
+    	<Xml Path="Table\TableDataConnections.xml" />
+    </Insert>
+    <Insert Place="Conditions">
+    	<Xml Path="Table\TableConditions.xml" />
+    </Insert>
+    <Insert Place="Commands">
+    	<Xml Path="Table\TableCommands.xml" />
+    </Insert>
+    <Insert Place="Executions">
+    	<Xml Path="Table\TableExecutions.xml" />
+    </Insert>
+    <Insert Place="WorkflowSqlQueries">
+      <Xml Path="Table\TableWorkflowQueries.xml" />
+    </Insert>
+    <Insert Place="WorkflowPermissions">
+      <Xml Path="Table\TableWorkflowPermissions.xml" />
+    </Insert>
+    <Insert Place="WorkflowRoles">
+      <Xml Path="Table\TableWorkflowRoles.xml" />
+    </Insert>
+    <Insert Place="WorkflowGroups">
+      <Xml Path="Table\TableWorkflowGroups.xml" />
+    </Insert>
+    <CreateFile>
+      <Template>Table\TableItemEditForm.xml</Template>
+      <FileName>{WorkflowName}{ItemName}Edit.xml</FileName>
+    </CreateFile>
+  	<CopyFile>
+  		<Source>Table\24x24\delete.png</Source>
+  		<Destination>Images\24x24\delete.png</Destination>
+  	</CopyFile>
+  	<CopyFile>
+  		<Source>Table\24x24\pencil.png</Source>
+  		<Destination>Images\24x24\pencil.png</Destination>
+  	</CopyFile>
+  	<CopyFile>
+  		<Source>Table\24x24\plus.png</Source>
+  		<Destination>Images\24x24\plus.png</Destination>
+  	</CopyFile>
+  </Actions>
+</Snippet>

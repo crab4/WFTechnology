@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FilePattern>
+  <Name>ArchiveList</Name>
+  <Description>Шаблонный список с поддержкой архива.
+    
+Примечание.
+После применения требуется отдельно создать команду для запуска формы списка.</Description>
+  <Actions>
+    <VariableCollector Type="EnvironmentNamesCollector" />
+    <VariableCollector Type="WorkflowNameCollector" />
+    <Input Type="Wizard">
+      <Page>
+        <Title>Настройки паттерна ArchiveList</Title>
+        <Description>Шаблонный список с поддержкой архива.</Description>
+        <FieldDescription>
+          <Text>Примечание. После применения требуется отдельно создать команду для запуска формы списка.</Text>
+        </FieldDescription>
+		
+        <Variable Name="WorkflowSchemeName">
+          <Type Value="Text" />
+          <Text>Имя схемы БД (например, "template")</Text>
+        </Variable>
+		
+        <Variable Name="ItemTable">
+          <Type Value="Text" />
+          <Text>Имя таблицы БД для сущности списка (например, "city")</Text>
+        </Variable>
+		
+        <Variable Name="ListTitle">
+          <Type Value="Text" />
+          <Text>Название списка (например, "Города")</Text>
+        </Variable>
+		
+        <Variable Name="ItemName">
+          <Type Value="Text" />
+          <Text>Имя сущности списка (например, "City")</Text>
+        </Variable>
+        <Variable Name="AddItemTitle">
+          <Type Value="Text" />
+          <Text>Заголовок формы для создания сущности (например, "Добавление города")</Text>
+          <Default>Добавление |</Default>
+        </Variable>
+        <Variable Name="EditItemTitle">
+          <Type Value="Text" />
+          <Text>Заголовок формы для редактирования сущности (например, "Редактирование города")</Text>
+          <Default>Редактирование |</Default>
+        </Variable>
+      </Page>
+    </Input>
+    <Insert Place="WorkflowSqlQueries">
+      <Xml Path="ArchiveList\ListWorkflowQueries.xml" />
+    </Insert>
+    <Insert Place="WorkflowPermissions">
+      <Xml Path="ArchiveList\ListWorkflowPermissions.xml" />
+    </Insert>
+    <Insert Place="WorkflowRoles">
+      <Xml Path="ArchiveList\ListWorkflowRoles.xml" />
+    </Insert>
+    <Insert Place="WorkflowGroups">
+      <Xml Path="ArchiveList\ListWorkflowGroups.xml" />
+    </Insert>
+    <CreateFile>
+      <Template>ArchiveList\ListForm.xml</Template>
+      <FileName>{WorkflowName}{ItemName}List.xml</FileName>
+    </CreateFile>
+    <CreateFile>
+      <Template>ArchiveList\ListItemEditForm.xml</Template>
+      <FileName>{WorkflowName}{ItemName}Edit.xml</FileName>
+    </CreateFile>
+    <CopyFile>
+      <Source>ArchiveList\24x24\content-save.png</Source>
+      <Destination>Images\24x24\content-save.png</Destination>
+    </CopyFile>
+    <CopyFile>
+      <Source>ArchiveList\24x24\delete.png</Source>
+      <Destination>Images\24x24\delete.png</Destination>
+    </CopyFile>
+    <CopyFile>
+      <Source>ArchiveList\24x24\archive.png</Source>
+      <Destination>Images\24x24\archive.png</Destination>
+    </CopyFile>
+    <CopyFile>
+      <Source>ArchiveList\24x24\unarchive.png</Source>
+      <Destination>Images\24x24\unarchive.png</Destination>
+    </CopyFile>
+    <CopyFile>
+      <Source>ArchiveList\24x24\pencil.png</Source>
+      <Destination>Images\24x24\pencil.png</Destination>
+    </CopyFile>
+    <CopyFile>
+      <Source>ArchiveList\24x24\plus.png</Source>
+      <Destination>Images\24x24\plus.png</Destination>
+    </CopyFile>
+  </Actions>
+</FilePattern>

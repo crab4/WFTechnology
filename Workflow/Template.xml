@@ -55,6 +55,7 @@
         from
           template.client cl
           left join template.city ct using(city_id)
+        where {SearchKeyword} ISNULL or cl.title ilike '%' || {SearchKeyword} || '%'
         order by cl.title
       </Text>
     </SqlQuery>
@@ -127,6 +128,25 @@
       </Text>
     </SqlQuery>
 
+    <SqlQuery Name="OrderDeleteSelectSqlQuery">
+      <Text>
+     select 
+      ord.order_id as "OrderId",
+      ord.client_id as "ClientId",
+      ord.order_number as "OrderNumber",
+      ord.order_date as "OrderDate",
+      ord.description as "OrderDescription",
+      client.city_id as "CityId",
+      ord.date_deleted as "DateDeleted"
+  
+    from template.order ord
+    left join template.client on client.client_id = ord.client_id
+        where ord.deleted and
+        ord.order_date between convert_date_filter({StartDate}::timestamp) and convert_date_filter({EndDate}::timestamp);
+
+</Text>
+    </SqlQuery>
+
     <SqlQuery Name="OrderSelectSqlQuery">
       <Text>
     WITH _filter AS (
@@ -164,7 +184,7 @@
 		left join template.client on client.client_id = ord.client_id
         left join _filter on true
         where not ord.deleted and
-        ord.order_date between _filter.start_date and _filter.end_date;
+        ord.order_date between convert_date_filter(_filter.start_date) and convert_date_filter(_filter.end_date);
       </Text>
     </SqlQuery>
 
@@ -293,6 +313,7 @@
         <SqlQuery Name="CitySimpleSqlQuery" />
         <SqlQuery Name="ClientShortSelectSqlQuery" />
         <SqlQuery Name="ClientSimpleSqlQuery" />
+        <SqlQuery Name="OrderDeleteSelectSqlQuery" />
       </SqlQueries>
     </Permission>
 

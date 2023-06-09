@@ -267,6 +267,11 @@
         <Input />
       </Object>
     </Command>
+
+    <Command Name="OrderDeleteListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">Order\TemplateOrderDeleteList.xml</Xml>
+      <Show Type="None" />
+    </Command>
   </Commands>
 
   <Executions>
@@ -346,6 +351,16 @@
         <MenuItem Name="ClientMenuItem" Type="MenuItem">
           <Title>Клиенты...</Title>
           <Command Name="ClientFormShowCommand" />
+        </MenuItem>
+      </Items>
+    </MenuItem>
+
+    <MenuItem Name="LogMenuItem" Type="MenuItem">
+      <Title>Журналы</Title>
+      <Items>
+        <MenuItem Name="LogDeletedOrdersMenuItem" Type="MenuItem">
+          <Title>Список удалённых заказов</Title>
+          <Command Name="OrderDeleteListFormShowCommand" />
         </MenuItem>
       </Items>
     </MenuItem>

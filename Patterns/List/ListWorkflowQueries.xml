@@ -1,0 +1,55 @@
+﻿<!--============================================================-->
+<!--==={ListTitle}===-->
+<!--============================================================-->
+<SqlQuery Name="{ItemName}SelectSqlQuery">
+  <Text>  
+    SELECT
+      {ItemTable}.{ItemTable}_id AS "{ItemName}Id",
+      {ItemTable}.title AS "Title"
+    FROM
+      {WorkflowSchemeName}.{ItemTable}
+    ORDER BY {ItemTable}.title;
+  </Text>
+</SqlQuery>
+
+<SqlQuery Name="{ItemName}ByIdSelectSqlQuery">
+  <Text>
+    SELECT
+      {ItemTable}.{ItemTable}_id AS "{ItemName}Id",
+      {ItemTable}.title AS "Title"
+    FROM
+      {WorkflowSchemeName}.{ItemTable}
+    WHERE
+      {ItemTable}.{ItemTable}_id = {{ItemName}Id};
+  </Text>
+</SqlQuery>
+
+<SqlQuery Name="{ItemName}InsertSqlQuery">
+  <Text>
+	INSERT INTO {WorkflowSchemeName}.{ItemTable} (
+	  title
+	)
+	VALUES (
+	  \{Title}
+	)
+	RETURNING {ItemTable}_id;
+  </Text>
+</SqlQuery>
+
+<SqlQuery Name="{ItemName}UpdateSqlQuery">
+  <Text>
+    UPDATE {WorkflowSchemeName}.{ItemTable}
+    SET
+      title = \{Title}
+    WHERE
+      {ItemTable}_id = {{ItemName}Id};
+  </Text>
+</SqlQuery>
+
+<SqlQuery Name="{ItemName}DeleteSqlQuery">
+  <Text>
+	DELETE FROM {WorkflowSchemeName}.{ItemTable}
+	WHERE
+	  {ItemTable}_id = {{ItemName}Id};
+  </Text>
+</SqlQuery>

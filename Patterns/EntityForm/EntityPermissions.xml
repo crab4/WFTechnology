@@ -1,0 +1,12 @@
+﻿<Permission Name="{EntityName}ViewSqlQueryPermission" Type="SqlQueryPermission">
+  <SqlQueries>
+    <SqlQuery Name="{EntityName}ByIdSelectSqlQuery" />
+  </SqlQueries>
+</Permission>
+
+<Permission Name="{EntityName}EditSqlQueryPermission" Type="SqlQueryPermission">
+  <SqlQueries>
+    <SqlQuery Name="{EntityName}InsertSqlQuery" />
+    <SqlQuery Name="{EntityName}UpdateSqlQuery" />
+  </SqlQueries>
+</Permission>
