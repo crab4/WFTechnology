@@ -273,6 +273,174 @@
       </Text>
     </SqlQuery>
 
+    <!--============================================================-->
+    <!--===Единицы измерения===-->
+    <!--============================================================-->
+    <SqlQuery Name="UnitSelectSqlQuery">
+      <Text>  
+        SELECT
+          unit.unit_id AS "UnitId",
+          unit.title AS "Title",
+          unit.archive AS "Archive"
+        FROM
+          template.unit
+        ORDER BY unit.title;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="UnitByIdSelectSqlQuery">
+      <Text>
+        SELECT
+          unit.unit_id AS "UnitId",
+          unit.title AS "Title"
+        FROM
+          template.unit
+        WHERE
+          unit.unit_id = {UnitId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="UnitInsertSqlQuery">
+      <Text>
+    	INSERT INTO template.unit (
+    	  title
+    	)
+    	VALUES (
+    	  {Title}
+    	)
+    	RETURNING unit_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="UnitUpdateSqlQuery">
+      <Text>
+        UPDATE template.unit
+        SET
+          title = {Title}
+        WHERE
+          unit_id = {UnitId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="UnitArchiveUpdateSqlQuery">
+      <Text>
+        UPDATE template.unit
+        SET
+          archive = NOT archive
+        WHERE
+          unit_id = {UnitId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="UnitDeleteSqlQuery">
+      <Text>
+        SELECT template.unit_try_delete({UnitId});
+      </Text>
+    </SqlQuery>
+
+    <!--============================================================-->
+    <!--===Категория ТМЦ===-->
+    <!--============================================================-->
+    <SqlQuery Name="MaterialCategoryByIdSelectSqlQuery">
+      <Text>
+        SELECT
+          material_category.title AS "Title",
+          material_category.parent_material_category_id as "ParentMaterialCategoryId"
+        FROM
+          template.material_category
+        WHERE
+          material_category.material_category_id = {MaterialCategoryId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialCategoryInsertSqlQuery">
+      <Text>
+    	INSERT INTO template.material_category (
+    	  title,
+          parent_material_category_id
+    	)
+    	VALUES (
+    	  {Title},
+          {ParentMaterialCategoryId}
+    	)
+    	RETURNING material_category_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialCategoryUpdateSqlQuery">
+      <Text>
+        UPDATE template.material_category
+        SET
+          title = {Title}, parent_material_category_id = {ParentMaterialCategoryId}
+        WHERE
+          material_category_id = {MaterialCategoryId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="ParentMaterialCategorySelectSqlQuery">
+      <Text>
+         WITH RECURSIVE tree_tmp (material_category_id, parent_material_category_id, title, path) AS (
+      SELECT material_category_id, parent_material_category_id, title, ARRAY[material_category_id]::bigint[]
+      FROM parent_mc
+    
+      UNION ALL
+    
+      SELECT MC.material_category_id, MC.parent_material_category_id, MC.title, T.path || ARRAY[MC.material_category_id]::bigint[]
+      FROM
+        mc_tmp MC
+      JOIN tree_tmp T ON T.material_category_id = MC.parent_material_category_id
+    ), mc_tmp AS (
+      SELECT *
+      FROM template.material_category
+      WHERE material_category_id IS DISTINCT FROM {MaterialCategoryId} OR {WithChild}
+    ), parent_mc AS (
+      SELECT *
+      FROM mc_tmp
+      WHERE parent_material_category_id IS NULL
+    )
+    
+    SELECT
+      T.material_category_id AS "MaterialCategoryId",
+      CASE WHEN array_length(T.path, 1) > 1 THEN COALESCE(repeat('—', (array_length(T.path, 1) - 1)), '') || ' ' ELSE '' END || T.title  AS "Title"
+    FROM
+      tree_tmp T
+      ORDER BY T.path, T.material_category_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialCategoryListSqlQuery">
+      <Text>
+        Select
+          mc.material_category_id as "MaterialCategoryId",
+          mc.title as "Title"
+        from
+          template.material_category mc
+          order by mc.title, mc.material_category_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialCategoryRelationSqlQuery">
+      <Text>
+        select material_category_id as "MaterialCategoryId",
+          parent_material_category_id as "ParentMaterialCategoryId"
+         from 
+          template.material_category;         
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialCategoryDeleteSqlQuery">
+      <Text>
+        Select template.material_category_try_delete({MaterialCategoryId}::bigint);
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialCategoryDeleteCascadeSqlQuery">
+      <Text>
+        select template.material_category_delete_cascade({MaterialCategoryId}::bigint);
+      </Text>
+    </SqlQuery>
+
+
 
   </SqlQueries>
 
@@ -325,6 +493,40 @@
       </SqlQueries>
     </Permission>
 
+    <Permission Name="UnitViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="UnitSelectSqlQuery" />
+        <SqlQuery Name="UnitByIdSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="UnitEditSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="UnitInsertSqlQuery" />
+        <SqlQuery Name="UnitUpdateSqlQuery" />
+        <SqlQuery Name="UnitArchiveUpdateSqlQuery" />
+        <SqlQuery Name="UnitDeleteSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="MaterialCategoryViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="MaterialCategoryByIdSelectSqlQuery" />
+        <SqlQuery Name="ParentMaterialCategorySelectSqlQuery" />
+        <SqlQuery Name="MaterialCategoryListSqlQuery" />
+        <SqlQuery Name="MaterialCategoryRelationSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="MaterialCategoryEditSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="MaterialCategoryInsertSqlQuery" />
+        <SqlQuery Name="MaterialCategoryUpdateSqlQuery" />
+        <SqlQuery Name="MaterialCategoryDeleteCascadeSqlQuery" />
+        <SqlQuery Name="MaterialCategoryDeleteSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
   </Permissions>
 
   <Roles>
@@ -363,6 +565,30 @@
         <Permission Name="OrderViewSqlQueryPermission" />
       </Permissions>
     </Role>
+
+    <Role Name="UnitViewRole">
+      <Permissions>
+        <Permission Name="UnitViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
+    <Role Name="UnitEditRole">
+      <Permissions>
+        <Permission Name="UnitViewSqlQueryPermission" />
+        <Permission Name="UnitEditSqlQueryPermission" />
+      </Permissions>
+    </Role>
+
+    <Role Name="MaterialCategoryViewRole">
+      <Permissions>
+        <Permission Name="MaterialCategoryViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
+    <Role Name="MaterialCategoryEditRole">
+      <Permissions>
+        <Permission Name="MaterialCategoryViewSqlQueryPermission" />
+        <Permission Name="MaterialCategoryEditSqlQueryPermission" />
+      </Permissions>
+    </Role>
   </Roles>
 
   <Groups>
@@ -371,7 +597,10 @@
         <Role Name="CityEditRole" />
         <Role Name="ClientEditRole" />
         <Role Name="OrderEditRole" />
+        <Role Name="UnitEditRole" />
+        <Role Name="MaterialCategoryEditRole" />
       </Roles>
     </Group>
+
   </Groups>
 </Workflow>

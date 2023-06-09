@@ -1,0 +1,827 @@
+<?xml version="1.0"?>
+<Form Name="TemplateUnitListForm" Width="700" Height="600" FormBorderStyle="Sizable" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" BackColor="ThemeBackgroundColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True">
+  <Parameters>
+    <Parameter Name="Title">Единицы измерения</Parameter>
+    <Parameter Name="Updated">False</Parameter>
+  </Parameters>
+
+  <Appearance>
+    <Colors>
+      <Color Name="ThemeForeColor" Red="0" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeBackgroundColor" Red="255" Green="255" Blue="255" Alpha="255" />
+      <Color Name="ThemeFlatColor" Red="255" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeSeparateBackgroundColor" Red="225" Green="225" Blue="225" Alpha="255" />
+
+      <Color Name="HeadBackgroundColor" Red="221" Green="232" Blue="246" Alpha="255" />
+      <Color Name="HeadForeColor" Red="70" Green="70" Blue="70" Alpha="255" />
+
+      <Color Name="LabelForeColor" Red="100" Green="100" Blue="100" Alpha="255" />
+      <Color Name="TableBackgroundColor" Red="200" Green="200" Blue="200" Alpha="255" />
+      <Color Name="TableArchiveColor" Red="230" Green="230" Blue="230" Alpha="255" />
+
+      <!-- Стили кнопок -->
+      <Color Name="ButtonFlatBorderColor" Red="225" Green="225" Blue="225" Alpha="255" />
+      <Color Name="ButtonFlatMouseDownBackColor" Red="201" Green="219" Blue="241" Alpha="255" />
+      <Color Name="ButtonFlatMouseOverBackColor" Red="228" Green="237" Blue="248" Alpha="255" />
+    </Colors>
+
+    <FontStyles>
+      <FontStyle Name="ThemeFontStyle" Font="Segoe UI" Size="9" />
+      <FontStyle Name="HeadFontStyle" Font="Segoe UI" Size="15" />
+      <FontStyle Name="LabelFontStyle" Font="Segoe UI" Size="9" Italic="True" />
+      <FontStyle Name="ButtonFontStyle" Font="Segoe UI" Size="10" />
+    </FontStyles>
+  </Appearance>
+
+  <DataConnections>
+    <DataConnection Name="UnitPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="UnitSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="UnitId" />
+          <Field Name="Title" />
+          <Field Name="Archive" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="UnitArchiveSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="UnitArchiveUpdateSqlQuery" Type="Update" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="UnitId">
+          <Value>
+            <Object Name="UnitDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">UnitId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+    </DataConnection>
+
+    <DataConnection Name="UnitDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="UnitDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="UnitId">
+          <Value>
+            <Object Name="UnitDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">UnitId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+	  <Refresh>
+		<DataConnection Name="UnitPrimaryGetDataConnection" />
+	  </Refresh>
+    </DataConnection>
+  </DataConnections>
+
+  <Conditions>
+    <Condition Name="FormLoadedCondition" Type="FormLoadedCondition" Assembly="Conditions" />
+
+    <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
+
+    <Condition Name="EscapeKeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
+      <Key Value="Escape" />
+    </Condition>
+
+    <Condition Name="F5KeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
+      <Key Value="F5" />
+    </Condition>
+
+    <Condition Name="UnitSelectedCondition" Type="GreaterCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="UnitDatabaseTable">
+            <Property Name="SelectedRowsCount" />
+          </Object>
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="SelectedUnitIsArchiveCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="UnitDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">Archive</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="UnitCellDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
+      <Table Name="UnitDatabaseTable" />
+    </Condition>
+	
+    <Condition Name="UnitAddFormUpdatedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="UnitAddFormShowCommand" Parameter="Updated" />
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="UnitEditFormUpdatedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="UnitEditFormShowCommand" Parameter="Updated" />
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+  </Conditions>
+
+  <Commands>
+    <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
+
+    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Updated">True</Parameter>
+    </Command>
+
+    <Command Name="UnitDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="UnitPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="UnitAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateUnitEdit.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="UnitEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateUnitEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="UnitId">
+          <Object Name="UnitDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">UnitId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="UnitArchiveSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="UnitArchiveSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="UnitDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="UnitDeleteSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="UnitDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Вы действительно хотите удалить выбранную запись?</Text>
+      <Buttons Type="YesNo" />
+      <Icon Type="Question" />
+    </Command>
+
+    <Command Name="UnitTryDeleteUsedMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Невозможно удалить запись, так как она используется в программе.\rЗапись перемещена в архив.</Text>
+      <Icon Type="Information" />
+      <Buttons Type="Ok" />
+    </Command>
+
+    <Command Name="UnitArchiveMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Архив</Caption>
+      <Text>
+        <Switch>
+          <Case>
+            <When>
+              <Condition Name="SelectedUnitIsArchiveCondition" />
+            </When>
+            <Then>Вы действительно хотите восстановить выбранную запись из архива?</Then>
+          </Case>
+          <Case>Вы действительно хотите перенести выбранную запись в архив?</Case>
+        </Switch>
+      </Text>
+      <Buttons Type="YesNo" />
+      <Icon Type="Question" />
+    </Command>
+
+    <Command Name="EditingArchiveUnitMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption />
+      <Text>Для редактирования восстановите запись из архива.</Text>
+      <Icon Type="Warning" />
+      <Buttons Type="Ok" />
+    </Command>
+
+    <Command Name="UnitSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="UnitDatabaseTable">
+        <Property Name="SelectRowByFieldValue">
+          <Parameters>
+            <Parameter Name="ColumnName">UnitId</Parameter>
+            <Parameter Name="Value">
+              <Input />
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+  </Commands>
+
+  <Executions>
+    <Execution>
+      <ConditionExpression>
+        <Or>
+          <Condition Name="FormClosingCondition" />
+          <Condition Name="EscapeKeyDownCondition" />
+        </Or>
+      </ConditionExpression>
+      <Commands>
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="UnitAddFormUpdatedTrueEqualCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="UnitDataConnectionRefreshCommand" />
+        <Command Name="UnitSelectInTableValueSetCommand">
+          <Command Name="UnitAddFormShowCommand" Parameter="UnitId" />
+        </Command>
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="UnitEditFormUpdatedTrueEqualCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="UnitDataConnectionRefreshCommand" />
+        <Command Name="UnitSelectInTableValueSetCommand">
+          <Command Name="UnitEditFormShowCommand" Parameter="UnitId" />
+        </Command>
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="UnitArchiveMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="UnitArchiveSaveCommand" />
+        <Command Name="UnitDataConnectionRefreshCommand" />
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="UnitDeleteMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="UnitDeleteSaveCommand" />
+        <If>
+          <When>
+            <Not>
+              <Command Name="UnitDeleteSaveCommand" />
+            </Not>
+          </When>
+          <Then>
+            <Command Name="UnitTryDeleteUsedMessageBoxCommand" />
+          </Then>
+        </If>		
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="UnitCellDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <Condition Name="SelectedUnitIsArchiveCondition" />
+          </When>
+          <Then>
+            <Command Name="EditingArchiveUnitMessageBoxCommand" />
+          </Then>
+          <Else>
+            <Command Name="UnitEditFormShowCommand" />
+          </Else>
+        </If>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="F5KeyDownCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="UnitDataConnectionRefreshCommand" />
+      </Commands>
+    </Execution>
+  </Executions>
+
+  <MyObjects>
+    <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
+      <Top>0</Top>
+      <Left>0</Left>
+      <Height>50</Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>2</TabIndex>
+      <BackColor>HeadBackgroundColor</BackColor>
+
+      <MyObject Name="HeadLabel" Type="Label" Assembly="BaseControls">
+        <Top>0</Top>
+        <Left>10</Left>
+        <Height>
+          <Object Name="HeadPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ArchiveFilterComboBox">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="HeadLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <FontStyle>HeadFontStyle</FontStyle>
+        <ForeColor>HeadForeColor</ForeColor>
+        <TextAlign>MiddleLeft</TextAlign>
+        <Text>
+          <Parameter Name="Title" />
+        </Text>
+      </MyObject>
+
+      <MyObject Name="ArchiveFilterComboBox" Type="ComboBox" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>Ceiling(({0} - {1}) / 2)</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="ArchiveFilterComboBox">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Right>
+          <Calculate>
+            <Expression>{0} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Right>
+        <Width>100</Width>
+        <TabIndex>1</TabIndex>
+        <NullValue Show="True" Title="Все" />
+        <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
+        <ValueList>
+          <Structure Type="Table">
+            <Row>
+              <Item>False</Item>
+              <Item>Актуальные</Item>
+            </Row>
+            <Row>
+              <Item>True</Item>
+              <Item>Архивные</Item>
+            </Row>
+          </Structure>
+        </ValueList>
+        <Value>False</Value>
+      </MyObject>
+    </MyObject>
+
+    <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="HeadPanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>0</Left>
+      <Height>
+        <Calculate>
+          <Expression>{0} - {1}</Expression>
+          <Items>
+            <Item>
+              <Form>
+                <Property Name="Height" />
+              </Form>
+            </Item>
+            <Item>
+              <Object Name="ContentPanel">
+                <Property Name="Top" />
+              </Object>
+            </Item>
+          </Items>
+        </Calculate>
+      </Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>1</TabIndex>
+      <BackColor>ThemeBackgroundColor</BackColor>
+
+      <MyObject Name="UnitDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
+        <Top>5</Top>
+        <Left>10</Left>
+        <Height>
+          <Calculate>
+            <Expression>{0} - {1}*2</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="UnitDatabaseTable">
+                  <Property Name="Top" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1}*2 - {2} - 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="UnitDatabaseTable">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="UnitAddButton">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <AllowResizeColumns Value="False" />
+        <AllowResizeRows Value="False" />
+        <AllowInsert>False</AllowInsert>
+        <AllowUpdate>False</AllowUpdate>
+        <AllowDelete>False</AllowDelete>
+        <AutoSizeColumnsMode Value="Fill" />
+        <TabIndex>2</TabIndex>
+        <SourceDataConnection Name="UnitPrimaryGetDataConnection" />
+        <Columns>
+          <Column Name="UnitId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>№</Title>
+            <Width>30</Width>
+            <AutoFill Type="RowNumber" />
+            <Alignment Value="MiddleCenter" />
+            <AutoSizeMode Value="None" />
+          </Column>
+          <Column Name="Title" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Название</Title>
+            <Width>150</Width>
+            <AutoSizeMode Value="None" />
+          </Column>
+          <Column Name="Archive" Type="DatabaseTableColumnCheckBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+            <Filter FilterNullValue="False">
+              <Object Name="ArchiveFilterComboBox" />
+            </Filter>
+          </Column>
+        </Columns>
+        <Formatting>
+          <BackColor Name="TableArchiveColor">
+            <Expression>Archive AND {0}</Expression>
+            <Items>
+              <Item>
+                <Not>
+                  <Object Name="ArchiveFilterComboBox" />
+                </Not>
+              </Item>
+            </Items>
+          </BackColor>
+        </Formatting>
+      </MyObject>
+
+      <MyObject Name="UnitAddButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Object Name="UnitDatabaseTable">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Left>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="UnitDatabaseTable">
+                  <Property Name="Right" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Left>
+        <Width>40</Width>
+        <Height>40</Height>
+        <TabIndex>3</TabIndex>
+        <Hint>Добавить запись...</Hint>
+        <BackgroundImage>..\Images\24x24\plus.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Commands>
+          <Command Name="UnitAddFormShowCommand" />
+        </Commands>
+      </MyObject>
+
+      <MyObject Name="UnitEditButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="UnitAddButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="UnitAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="UnitAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="UnitAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <TabIndex>4</TabIndex>
+        <Hint>Редактировать запись...</Hint>
+        <BackgroundImage>..\Images\24x24\pencil.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <And>
+            <Condition Name="UnitSelectedCondition" />
+            <Not>
+              <Condition Name="SelectedUnitIsArchiveCondition" />
+            </Not>
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="UnitEditFormShowCommand" />
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="UnitSelectedCondition" />
+                </Not>
+              </When>
+              <Then>Выберите запись для редактирования.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="SelectedUnitIsArchiveCondition" />
+              </When>
+              <Then>Для редактирования восстановите запись из архива.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+      </MyObject>
+
+      <MyObject Name="UnitDeleteButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="UnitEditButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="UnitAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="UnitAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="UnitAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <TabIndex>5</TabIndex>
+        <Hint>Удалить запись</Hint>
+        <BackgroundImage>..\Images\24x24\delete.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <And>
+            <Not>
+              <Condition Name="SelectedUnitIsArchiveCondition" />
+            </Not>
+            <Condition Name="UnitSelectedCondition" />
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="UnitDeleteMessageBoxCommand" />
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="UnitSelectedCondition" />
+                </Not>
+              </When>
+              <Then>Выберите запись для удаления.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="SelectedUnitIsArchiveCondition" />
+              </When>
+              <Then>Нельзя удалить архивную запись.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+      </MyObject>
+
+      <MyObject Name="UnitArchiveButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="UnitDeleteButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="UnitAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="UnitAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="UnitAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <TabIndex>6</TabIndex>
+        <Hint>
+          <Switch>
+            <Case>
+              <When>
+                <Condition Name="SelectedUnitIsArchiveCondition" />
+              </When>
+              <Then>Восстановить запись из архива</Then>
+            </Case>
+            <Case>Перенести запись в архив</Case>
+          </Switch>
+        </Hint>
+        <BackgroundImage>
+          <Switch>
+            <Case>
+              <When>
+                <Or>
+                  <Condition Name="SelectedUnitIsArchiveCondition" />
+                  <Object Name="ArchiveFilterComboBox" />
+                </Or>
+              </When>
+              <Then>..\Images\24x24\unarchive.png</Then>
+            </Case>
+            <Case>..\Images\24x24\archive.png</Case>
+          </Switch>
+        </BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <Condition Name="UnitSelectedCondition" />
+        </Enabled>
+        <Commands>
+          <Command Name="UnitArchiveMessageBoxCommand" />
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Object Name="ArchiveFilterComboBox" />
+              </When>
+              <Then>Для восстановления из архива выберите запись.</Then>
+            </Case>
+            <Case>Для переноса в архив выберите запись.</Case>
+          </Switch>
+        </DisabledText>
+      </MyObject>
+    </MyObject>
+
+  </MyObjects>
+</Form>

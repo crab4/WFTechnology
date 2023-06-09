@@ -272,6 +272,16 @@
       <Xml Type="Path">Order\TemplateOrderDeleteList.xml</Xml>
       <Show Type="None" />
     </Command>
+
+    <Command Name="UnitListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">Unit\TemplateUnitList.xml</Xml>
+      <Show Type="None" />
+    </Command>
+    
+    <Command Name="MaterialListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">Material\TemplateMaterialList.xml</Xml>
+      <Show Type="None" />
+    </Command>
   </Commands>
 
   <Executions>
@@ -351,6 +361,17 @@
         <MenuItem Name="ClientMenuItem" Type="MenuItem">
           <Title>Клиенты...</Title>
           <Command Name="ClientFormShowCommand" />
+        </MenuItem>
+
+        <MenuItem Name="UnitSeparator" Type="Separator" />
+        <MenuItem Name="UnitMenuItem" Type="MenuItem">
+          <Title>Ед.измерения</Title>
+          <Command Name="UnitListFormShowCommand" />
+        </MenuItem>
+        
+        <MenuItem Name="MaterialMenuItem" Type="MenuItem">
+          <Title>ТМЦ</Title>
+          <Command Name="MaterialListFormShowCommand"></Command>
         </MenuItem>
       </Items>
     </MenuItem>

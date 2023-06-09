@@ -1,0 +1,615 @@
+<?xml version="1.0"?>
+<Form Name="TemplateMaterialListForm" Width="1000" Height="600" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+  <Parameters>
+    <Parameter Name="Title">Товарно-материальные ценности</Parameter>
+    <Parameter Name="Updated">False</Parameter>
+  </Parameters>
+
+  <Appearance>
+    <Colors>
+      <Color Name="ThemeForeColor" Red="0" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeBackgroundColor" Red="255" Green="255" Blue="255" Alpha="255" />
+      <Color Name="ThemeFlatColor" Red="255" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeSeparateBackgroundColor" Red="225" Green="225" Blue="225" Alpha="255" />
+
+      <Color Name="HeadBackgroundColor" Red="221" Green="232" Blue="246" Alpha="255" />
+      <Color Name="HeadForeColor" Red="70" Green="70" Blue="70" Alpha="255" />
+
+      <Color Name="LabelForeColor" Red="100" Green="100" Blue="100" Alpha="255" />
+      <Color Name="TableBackgroundColor" Red="200" Green="200" Blue="200" Alpha="255" />
+      <Color Name="TableArchiveColor" Red="230" Green="230" Blue="230" Alpha="255" />
+
+      <!-- Стили кнопок -->
+      <Color Name="ButtonFlatBorderColor" Red="225" Green="225" Blue="225" Alpha="255" />
+      <Color Name="ButtonFlatMouseDownBackColor" Red="201" Green="219" Blue="241" Alpha="255" />
+      <Color Name="ButtonFlatMouseOverBackColor" Red="228" Green="237" Blue="248" Alpha="255" />
+    </Colors>
+
+    <FontStyles>
+      <FontStyle Name="ThemeFontStyle" Font="Segoe UI" Size="9" />
+      <FontStyle Name="HeadFontStyle" Font="Segoe UI" Size="15" />
+      <FontStyle Name="LabelFontStyle" Font="Segoe UI" Size="9" Italic="True" />
+      <FontStyle Name="ButtonFontStyle" Font="Segoe UI" Size="10" />
+    </FontStyles>
+  </Appearance>
+
+  <DataConnections>
+    <DataConnection Name="MaterialCategoryPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQueries>
+        <SqlQuery Name="MaterialCategoryListSqlQuery" Type="Select">
+          <Workflow Name="Template" />
+          <Fields>
+            <Field Name="MaterialCategoryId" />
+            <Field Name="Title" />
+          </Fields>
+        </SqlQuery>
+        <SqlQuery Name="MaterialCategoryRelationSqlQuery" Type="Select">
+          <Workflow Name="Template" />
+          <Fields>
+            <Field Name="MaterialCategoryId" />
+            <Field Name="ParentMaterialCategoryId" />
+          </Fields>
+        </SqlQuery>
+      </SqlQueries>
+    </DataConnection>
+
+
+    <DataConnection Name="MaterialCategoryDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="MaterialCategoryId">
+          <Value>
+            <Object Name="MaterialCategoryDatabaseTree">
+              <Property Name="SelectedItemId" />
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="MaterialCategoryDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
+    </DataConnection>
+
+    <DataConnection Name="MaterialCategoryDeleteCascadeSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="MaterialcategoryId">
+          <Value>
+            <Object Name="MaterialCategoryDatabaseTree">
+              <Property Name="SelectedItemId" />
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="MaterialCategoryDeleteCascadeSqlQuery" Type="Delete" />
+      </SqlQueries>
+      <Refresh>
+        <DataConnection Name="MaterialCategoryPrimaryGetDataConnection" />
+        <!-- После создания требуется добавить MaterialPrimary -->
+      </Refresh>
+    </DataConnection>
+
+  </DataConnections>
+
+  <Conditions>
+    <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
+
+    <Condition Name="MaterialCategorySelectIsNotNullCondition" Type="IsNotNullCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="MaterialCategoryDatabaseTree">
+            <Property Name="SelectedItemId" />
+          </Object>
+        </Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="MaterialCategoryDatabaseTreeDoubleClickCondition" Type="DoubleClickCondition" Assembly="Conditions">
+      <Object Name="MaterialCategoryDatabaseTree" />
+    </Condition>
+
+    <Condition Name="MaterialCategoryDeleteCommandIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Command Name="MaterialCategoryDeleteSaveCommand" />
+        </Item>
+      </Items>
+    </Condition>
+  </Conditions>
+
+  <Commands>
+    <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
+
+    <Command Name="MaterialCategoryAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateMaterialCategoryEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="ParentMaterialCategoryId">
+          <Object Name="MaterialCategoryDatabaseTree">
+            <Property Name="SelectedItemId" />
+          </Object>
+        </Parameter>
+      </Parameters>
+      <Multiple Allow="True" />
+    </Command>
+
+    <Command Name="MaterialCategoryEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateMaterialCategoryEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="MaterialCategoryId">
+          <Object Name="MaterialCategoryDatabaseTree">
+            <Property Name="SelectedItemId" />
+          </Object>
+        </Parameter>
+      </Parameters>
+      <Multiple Allow="True" />
+    </Command>
+
+    <Command Name="MaterialCategoryDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Вы уверены, что хотите удалить категорию?</Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNo" />
+    </Command>
+
+    <Command Name="MaterialCategoryTryDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>
+        <String>
+          <Format>{0}\rВы можете попытаться удалить выбранную категорию вместе с вложенными элементами. В случае невозможости удаления, записи будут отправлены в архив.\rПродолжить?</Format>
+          <Items>
+            <Item>
+              <Command Name="MaterialCategoryDeleteSaveCommand" />
+            </Item>
+          </Items>
+        </String>
+      </Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNo" />
+    </Command>
+
+    <Command Name="MetarialCategoryDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="MaterialCategoryPrimaryGetDataConnection" Packet="True" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Updated">True</Parameter>
+    </Command>
+
+    <Command Name="MaterialCategorySelectInTreeValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="MaterialCategoryDatabaseTree">
+        <Property Name="SelectedItemId">
+          <Input />
+        </Property>
+      </Object>
+    </Command>
+
+
+    <Command Name="MaterialCategoryDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="MaterialCategoryDeleteSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="MaterialcategoryDeleteCascadeSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="MaterialCategoryDeleteCascadeSetDataConnection" />
+      </DataConnections>
+    </Command>
+  </Commands>
+
+  <Executions>
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="FormClosingCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="MaterialCategoryDatabaseTreeDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="MaterialCategoryEditFormShowCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="MaterialCategoryAddFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="MetarialCategoryDataConnectionRefreshCommand" />
+        <Command Name="MaterialCategorySelectInTreeValueSetCommand">
+          <Command Name="MaterialCategoryAddFormShowCommand" Parameter="MaterialCategoryId" />
+        </Command>
+        <Command Name="UpdatedTrueValueSetCommand"> </Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="MaterialCategoryEditFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="MetarialCategoryDataConnectionRefreshCommand" />
+        <Command Name="MaterialCategorySelectInTreeValueSetCommand">
+          <Command Name="MaterialCategorySelectInTreeValueSetCommand" Parameter="Updated" />
+        </Command>
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="MaterialCategoryDeleteMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="MaterialCategoryDeleteSaveCommand" />
+        <If>
+          <When>
+            <Condition Name="MaterialCategoryDeleteCommandIsNullCondition" />
+          </When>
+          <Then>
+            <Command Name="MetarialCategoryDataConnectionRefreshCommand" />
+            <Command Name="UpdatedTrueValueSetCommand" />
+          </Then>
+          <Else>
+            <Command Name="MaterialCategoryTryDeleteMessageBoxCommand" />
+          </Else>
+        </If>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="MaterialCategoryTryDeleteMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="MaterialcategoryDeleteCascadeSaveCommand" />
+      </Commands>
+    </Execution>
+  </Executions>
+
+  <MyObjects>
+    <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
+      <Top>0</Top>
+      <Left>0</Left>
+      <Height>50</Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <BackColor>HeadBackgroundColor</BackColor>
+
+      <MyObject Name="HeadLabel" Type="Label" Assembly="BaseControls" ChangeForm="False">
+        <Top>0</Top>
+        <Left>10</Left>
+        <Height>
+          <Object Name="HeadPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="HeadLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <FontStyle>HeadFontStyle</FontStyle>
+        <ForeColor>HeadForeColor</ForeColor>
+        <TextAlign>MiddleLeft</TextAlign>
+        <Text>
+          <Parameter Name="Title" />
+        </Text>
+      </MyObject>
+    </MyObject>
+
+    <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="HeadPanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>0</Left>
+      <Height>
+        <Calculate>
+          <Expression>{0} - {1}</Expression>
+          <Items>
+            <Item>
+              <Form>
+                <Property Name="Height" />
+              </Form>
+            </Item>
+            <Item>
+              <Object Name="ContentPanel">
+                <Property Name="Top" />
+              </Object>
+            </Item>
+          </Items>
+        </Calculate>
+      </Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>1</TabIndex>
+      <BackColor>ThemeBackgroundColor</BackColor>
+
+      <!-- Insert your content-->
+      <MyObject Name="MaterialCategoryPanel" Type="Panel" Assembly="BaseControls">
+        <Top>0</Top>
+        <Left>0</Left>
+        <Height>
+          <Object Name="ContentPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>400</Width>
+
+        <MyObject Name="MaterialcategoryLabel" Type="Label" Assembly="BaseControls">
+          <Top>5</Top>
+          <Left>10</Left>
+          <Width>
+            <Object Name="MaterialCategoryPanel">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>20</Height>
+          <TextAlign>MiddleLeft</TextAlign>
+          <FontStyle>LabelFontStyle</FontStyle>
+          <ForeColor>LabelForeColor</ForeColor>
+          <Text>Категории</Text>
+        </MyObject>
+
+        <MyObject Name="MaterialCategoryDatabaseTree" Type="DatabaseTree" Assembly="ComplexControls">
+          <Top>
+            <Object Name="MaterialcategoryLabel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>5</Left>
+          <Height>
+            <Calculate>
+              <Expression>{0} - {1} - 15</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MaterialCategoryPanel">
+                    <Property Name="Height" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="MaterialcategoryLabel">
+                    <Property Name="Height" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Height>
+          <Width>
+            <Calculate>
+              <Expression>{0}- {1} - 20</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MaterialCategoryPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="MaterialCategoryAddButton">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <Items>
+            <DataConnection SourceDataConnection="MaterialCategoryPrimaryGetDataConnection">
+              <SourceQuery Name="MaterialCategoryListSqlQuery">
+                <Fields>
+                  <Field Name="MaterialCategoryId" />
+                  <Field Name="Title" />
+                </Fields>
+              </SourceQuery>
+              <SourceQuery Name="MaterialCategoryRelationSqlQuery">
+                <Fields>
+                  <Field Name="MaterialCategoryId" />
+                  <Field Name="ParentMaterialCategoryId" />
+                </Fields>
+              </SourceQuery>
+            </DataConnection>
+          </Items>
+        </MyObject>
+
+        <MyObject Name="MaterialCategoryAddButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Object Name="MaterialCategoryDatabaseTree">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MaterialCategoryDatabaseTree">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Height>40</Height>
+          <Width>40</Width>
+          <Hint>Добавить запись...</Hint>
+          <BackgroundImage>..\Images\24x24\plus.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Commands>
+            <Command Name="MaterialCategoryAddFormShowCommand" />
+          </Commands>
+        </MyObject>
+
+        <MyObject Name="MaterialCategoryEditButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MaterialCategoryAddButton">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="MaterialCategoryAddButton">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Height>40</Height>
+          <Width>40</Width>
+          <Hint>Редактировать запись...</Hint>
+          <BackgroundImage>..\Images\24x24\pencil.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Enabled>
+            <Condition Name="MaterialCategorySelectIsNotNullCondition" />
+          </Enabled>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>Требуется выбрать категорию</DisabledText>
+          <Commands>
+            <Command Name="MaterialCategoryEditFormShowCommand" />
+          </Commands>
+        </MyObject>
+
+        <MyObject Name="MaterialCategoryDeleteButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MaterialCategoryEditButton">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="MaterialCategoryAddButton">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Height>40</Height>
+          <Width>40</Width>
+          <Hint>Удалить запись...</Hint>
+          <BackgroundImage>..\Images\24x24\delete.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>Требуется выбрать категорию</DisabledText>
+          <Enabled>
+            <Condition Name="MaterialCategorySelectIsNotNullCondition" />
+          </Enabled>
+          <Commands>
+            <Command Name="MaterialCategoryDeleteMessageBoxCommand" />
+          </Commands>
+        </MyObject>
+
+
+      </MyObject>
+
+      <MyObject Name="MaterialSeparatePanel" Type="Panel" Assembly="BaseControls">
+        <Top>5</Top>
+        <Left>
+          <Object Name="MaterialCategoryPanel">
+            <Property Name="Right" />
+          </Object>
+        </Left>
+        <Height>
+          <Calculate>
+            <Expression>{0} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Height>
+        <Width>1</Width>
+        <BackColor>ThemeSeparateBackgroundColor</BackColor>
+      </MyObject>
+
+      <MyObject Name="MaterialPanel" Type="Panel" Assembly="BaseControls">
+        <Top>0</Top>
+        <Left>
+          <Object Name="MaterialSeparatePanel">
+            <Property Name="Right" />
+          </Object>
+        </Left>
+        <Height>
+          <Object Name="ContentPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1}</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="MaterialSeparatePanel">
+                  <Property Name="Right" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+      </MyObject>
+
+
+    </MyObject>
+  </MyObjects>
+</Form>
