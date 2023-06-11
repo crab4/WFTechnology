@@ -3,6 +3,8 @@
   <Parameters>
     <Parameter Name="Title">Единицы измерения</Parameter>
     <Parameter Name="Updated">False</Parameter>
+    <Parameter Name="SelectionMode">False</Parameter>
+    <Parameter Name="UnitId" />
   </Parameters>
 
   <Appearance>
@@ -83,9 +85,9 @@
           </Value>
         </Parameter>
       </Parameters>
-	  <Refresh>
-		<DataConnection Name="UnitPrimaryGetDataConnection" />
-	  </Refresh>
+      <Refresh>
+        <DataConnection Name="UnitPrimaryGetDataConnection" />
+      </Refresh>
     </DataConnection>
   </DataConnections>
 
@@ -133,7 +135,7 @@
     <Condition Name="UnitCellDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
       <Table Name="UnitDatabaseTable" />
     </Condition>
-	
+
     <Condition Name="UnitAddFormUpdatedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
       <AlwaysChange Value="True" />
       <Items>
@@ -155,6 +157,7 @@
       </Items>
       <DataType Type="BooleanDataType" />
     </Condition>
+
   </Conditions>
 
   <Commands>
@@ -171,12 +174,12 @@
     </Command>
 
     <Command Name="UnitAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">TemplateUnitEdit.xml</Xml>
+      <Xml Type="Path">..\Unit\TemplateUnitEdit.xml</Xml>
       <Show Type="None" />
     </Command>
 
     <Command Name="UnitEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">TemplateUnitEdit.xml</Xml>
+      <Xml Type="Path">..\Unit\TemplateUnitEdit.xml</Xml>
       <Show Type="None" />
       <Parameters>
         <Parameter Name="Edit">True</Parameter>
@@ -254,6 +257,26 @@
         </Property>
       </Object>
     </Command>
+
+    <Command Name="UnitIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="UnitId">
+        <Object Name="UnitDatabaseTable">
+          <Property Name="SelectedRowCellValueByColumnName">
+            <Parameters>
+              <Parameter Name="ColumnName">UnitId</Parameter>
+            </Parameters>
+          </Property>
+        </Object>
+      </Parameter>
+    </Command>
+
+    <Command Name="SelectUnitSequentialCommand" Type="SequentialCommand" Assembly="Commands">
+      <Commands>
+        <Command Name="UnitIdValueSetCommand" />
+        <Command Name="UpdatedTrueValueSetCommand" />
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Command>
   </Commands>
 
   <Executions>
@@ -321,7 +344,7 @@
           <Then>
             <Command Name="UnitTryDeleteUsedMessageBoxCommand" />
           </Then>
-        </If>		
+        </If>
         <Command Name="UpdatedTrueValueSetCommand" />
       </Commands>
     </Execution>
@@ -339,7 +362,18 @@
             <Command Name="EditingArchiveUnitMessageBoxCommand" />
           </Then>
           <Else>
-            <Command Name="UnitEditFormShowCommand" />
+            <If>
+              <When>
+                <Parameter Name="SelectionMode" />
+              </When>
+              <Then>
+                <Command Name="SelectUnitSequentialCommand" />
+              </Then>
+              <Else>
+                <Command Name="UnitEditFormShowCommand" />
+              </Else>
+            </If>
+
           </Else>
         </If>
       </Commands>
@@ -447,7 +481,19 @@
             </Row>
           </Structure>
         </ValueList>
-        <Value>False</Value>
+        <Value>
+          <Switch>
+            <Case>
+              <When>
+                <Parameter Name="SelectionMode" />
+              </When>
+              <Then>
+                <Parameter Name="UnitId" />
+              </Then>
+            </Case>
+            <Case>False</Case>
+          </Switch>
+        </Value>
       </MyObject>
     </MyObject>
 
@@ -463,9 +509,23 @@
           <Expression>{0} - {1}</Expression>
           <Items>
             <Item>
-              <Form>
-                <Property Name="Height" />
-              </Form>
+              <Switch>
+                <Case>
+                  <When>
+                    <Parameter Name="SelectionMode" />
+                  </When>
+                  <Then>
+                    <Object Name="FootSeparatePanel">
+                      <Property Name="Top" />
+                    </Object>
+                  </Then>
+                </Case>
+                <Case>
+                  <Form>
+                    <Property Name="Height" />
+                  </Form>
+                </Case>
+              </Switch>
             </Item>
             <Item>
               <Object Name="ContentPanel">
@@ -823,5 +883,91 @@
       </MyObject>
     </MyObject>
 
+    <MyObject Name="FootSeparatePanel" Type="Panel" Assembly="BaseControls">
+      <Bottom>
+        <Object Name="FootPanel">
+          <Property Name="Top" />
+        </Object>
+      </Bottom>
+      <Left>5</Left>
+      <Height>1</Height>
+      <Width>
+        <Calculate>
+          <Expression>{0} - 10</Expression>
+          <Items>
+            <Item>
+              <Form>
+                <Property Name="Width" />
+              </Form>
+            </Item>
+          </Items>
+        </Calculate>
+      </Width>
+      <AutoScroll>False</AutoScroll>
+      <BackColor>ThemeSeparateBackgroundColor</BackColor>
+      <Visible>
+        <Parameter Name="SelectionMode" />
+      </Visible>
+    </MyObject>
+
+    <MyObject Name="FootPanel" Type="Panel" Assembly="BaseControls">
+      <Bottom>
+        <Form>
+          <Property Name="Height" />
+        </Form>
+      </Bottom>
+      <Left>0</Left>
+      <Height>40</Height>
+      <BackColor>ThemeBackgroundColor</BackColor>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <Visible>
+        <Parameter Name="SelectionMode" />
+      </Visible>
+
+      <MyObject Name="SelectionButton" Type="Button" Assembly="BaseControls">
+        <Top>5</Top>
+        <Right>
+          <Formula>
+            <Minus DataType="IntegerDataType">
+              <Item>
+                <Object Name="FootPanel">
+                  <Property Name="Right" />
+                </Object>
+              </Item>
+              <Item>5</Item>
+            </Minus>
+          </Formula>
+        </Right>
+        <Height>30</Height>
+        <Width>200</Width>
+        <TextAlign>MiddleCenter</TextAlign>
+        <FontStyle>ButtonFontStyle</FontStyle>
+        <ImageAlign>MiddleLeft</ImageAlign>
+        <Image>..\Images\24x24\check.png</Image>
+        <Text>Выбрать</Text>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <And>
+            <Condition Name="UnitSelectedCondition" />
+            <Not>
+              <Condition Name="SelectedUnitIsArchiveCondition" />
+            </Not>
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="SelectUnitSequentialCommand" />
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>Чтобы продолжить, необходимо выбрать запись в таблице.</DisabledText>
+      </MyObject>
+    </MyObject>
   </MyObjects>
 </Form>

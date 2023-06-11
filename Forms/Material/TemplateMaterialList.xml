@@ -41,7 +41,27 @@
           <Fields>
             <Field Name="MaterialCategoryId" />
             <Field Name="Title" />
+            <Field Name="Archive" />
+            <Field Name="ArchiveForFilter" />
           </Fields>
+          <Filter Type="Nested">
+            <Or>
+              <Filter FilterByNullValue="False">
+                <Field NativeName="Archive" />
+                <Value>
+                  <Object Name="ArchiveComboBox" />
+                </Value>
+                <DataType Type="BooleanDataType" />
+              </Filter>
+              <Filter FilterByNullValue="False">
+                <Field NativeName="ArchiveForFilter" />
+                <Value>
+                  <Object Name="ArchiveComboBox" />
+                </Value>
+                <DataType Type="BooleanDataType" />
+              </Filter>
+            </Or>
+          </Filter>
         </SqlQuery>
         <SqlQuery Name="MaterialCategoryRelationSqlQuery" Type="Select">
           <Workflow Name="Template" />
@@ -86,9 +106,173 @@
       </SqlQueries>
       <Refresh>
         <DataConnection Name="MaterialCategoryPrimaryGetDataConnection" />
-        <!-- После создания требуется добавить MaterialPrimary -->
+        <DataConnection Name="ParentMaterialPrimaryGetDataConnection" />
       </Refresh>
     </DataConnection>
+
+    <DataConnection Name="ParentMaterialPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="MaterialSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="MaterialId" />
+          <Field Name="Title" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+
+    <DataConnection Name="MaterialDeleteDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="MaterialDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="MaterialId">
+          <Value>
+            <Object Name="MaterialDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">MaterialId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <Refresh>
+        <DataConnection Name="ParentMaterialPrimaryGetDataConnection" />
+      </Refresh>
+    </DataConnection>
+
+    <DataConnection Name="UnitPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="UnitSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="UnitId" />
+          <Field Name="ShortTitle" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="MaterialPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="MaterialSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="MaterialId" />
+          <Field Name="Title" />
+          <Field Name="MaterialCategoryId" />
+          <Field Name="UnitId" />
+          <Field Name="UnitPrice" />
+          <Field Name="Archive" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="MaterialSecondaryGetDataConnection" Type="SecondaryGetDataConnection" Assembly="DataConnections">
+      <SourceDataConnection Name="MaterialPrimaryGetDataConnection" />
+      <Filter>
+        <Field NativeName="MaterialCategoryId" />
+        <Value>
+          <Object Name="MaterialCategoryDatabaseTree">
+            <Property Name="SelectedItemId" />
+          </Object>
+        </Value>
+        <DataType Type="IntegerDataType" />
+      </Filter>
+    </DataConnection>
+
+    <DataConnection Name="SelectMaterialCategoryArchiveSecondaryGetDataConnection" Type="SecondaryGetDataConnection" Assembly="DataConnections">
+      <SourceDataConnection Name="MaterialCategoryPrimaryGetDataConnection" />
+      <Filter>
+        <Field NativeName="MaterialCategoryId" />
+        <Value>
+          <Object Name="MaterialCategoryDatabaseTree">
+            <Property Name="SelectedItemId" />
+          </Object>
+        </Value>
+        <DataType Type="IntegerDataType" />
+      </Filter>
+    </DataConnection>
+
+    <DataConnection Name="AllSelectMaterialCategoryArchiveSecondaryGetDataConnection" Type="SecondaryGetDataConnection" Assembly="DataConnections">
+      <SourceDataConnection Name="MaterialCategoryPrimaryGetDataConnection" />
+      <Filter>
+        <Field NativeName="Archive" />
+        <Value>
+          <Object Name="ArchiveComboBox">
+            <Property Name="Value" />
+          </Object>
+        </Value>
+        <DataType Type="BooleanDataType" />
+      </Filter>
+    </DataConnection>
+
+    <DataConnection Name="MaterialCategoryArchiveSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="MaterialCategoryId">
+          <Value>
+            <Object Name="MaterialCategoryDatabaseTree">
+              <Property Name="SelectedItemId" />
+            </Object>
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Archive">
+          <Value>
+            <Not>
+              <DataConnection SourceDataConnection="SelectMaterialCategoryArchiveSecondaryGetDataConnection">
+                <Fields>
+                  <Field Name="Archive" />
+                </Fields>
+              </DataConnection>
+            </Not>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="MaterialCategoryArchiveSqlQuery" Type="Update" />
+      </SqlQueries>
+      <Refresh>
+        <DataConnection Name="MaterialCategoryPrimaryGetDataConnection" />
+      </Refresh>
+    </DataConnection>
+
+    <DataConnection Name="MaterialArchiveSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="MaterialId">
+          <Value>
+            <Object Name="MaterialDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">MaterialId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Archive">
+          <Value>
+            <Not>
+              <Object Name="MaterialDatabaseTable">
+                <Property Name="SelectedRowCellValueByColumnName">
+                  <Parameters>
+                    <Parameter Name="ColumnName">Archive</Parameter>
+                  </Parameters>
+                </Property>
+              </Object>
+            </Not>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="MaterialArchiveSqlQuery" Type="Update" />
+      </SqlQueries>
+      <Refresh>
+        <DataConnection Name="MaterialPrimaryGetDataConnection" />
+      </Refresh>
+    </DataConnection>
+
 
   </DataConnections>
 
@@ -117,6 +301,52 @@
         </Item>
       </Items>
     </Condition>
+
+    <Condition Name="MaterialSelectedCondition" Type="NotEqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="MaterialDatabaseTable">
+            <Property Name="SelectedRowsCount" />
+          </Object>
+        </Item>
+        <Item>0</Item>
+      </Items>
+
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="MaterialDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
+      <Table Name="MaterialDatabaseTable" />
+    </Condition>
+
+    <Condition Name="MaterialCategoryIsArchiveEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <DataConnection SourceDataConnection="SelectMaterialCategoryArchiveSecondaryGetDataConnection">
+            <Fields>
+              <Field Name="Archive" />
+            </Fields>
+          </DataConnection>
+        </Item>
+        <Item>True</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="MaterialIsArchiveEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="MaterialDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">Archive</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Item>
+        <Item>True</Item>
+      </Items>
+    </Condition>
+
   </Conditions>
 
   <Commands>
@@ -202,6 +432,100 @@
         <DataConnection Name="MaterialCategoryDeleteCascadeSetDataConnection" />
       </DataConnections>
     </Command>
+
+    <Command Name="ParentMaterialDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="ParentMaterialPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+    <Command Name="MaterialDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="MaterialDeleteDataConnection" />
+      </DataConnections>
+    </Command>
+    <Command Name="MaterialAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateMaterialEdit.xml</Xml>
+      <Parameters>
+        <Parameter Name="MaterialCategoryId">
+          <Object Name="MaterialCategoryDatabaseTree">
+            <Property Name="SelectedItemId" />
+          </Object>
+        </Parameter>
+      </Parameters>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="MaterialEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateMaterialEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="MaterialId">
+          <Object Name="MaterialDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">MaterialId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="MaterialSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="MaterialDatabaseTable">
+        <Property Name="SelectRowByFieldValue">
+          <Parameters>
+            <Parameter Name="ColumnName">MaterialId</Parameter>
+            <Parameter Name="Value">
+              <Input />
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+    <Command Name="MaterialDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Вы действительно хотите удалить выбранную запись?</Text>
+      <Buttons Type="YesNo" />
+      <Icon Type="Question" />
+    </Command>
+
+    <Command Name="MaterialDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="MaterialPrimaryGetDataConnection" Packet="True" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="MaterialCategoryArchiveSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="MaterialCategoryArchiveSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="MaterialArchiveSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="MaterialArchiveSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="TestMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>
+        <DataConnection SourceDataConnection="SelectMaterialCategoryArchiveSecondaryGetDataConnection">
+          <Fields>
+            <Field Name="Archive" />
+          </Fields>
+        </DataConnection>
+      </Caption>
+      <Text>
+        <Object Name="MaterialCategoryDatabaseTree">
+          <Property Name="SelectedItemId" />
+        </Object>
+      </Text>
+      <Icon Type="Information" />
+      <Buttons Type="Ok" />
+    </Command>
+
   </Commands>
 
   <Executions>
@@ -278,6 +602,49 @@
         <Command Name="MaterialcategoryDeleteCascadeSaveCommand" />
       </Commands>
     </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="MaterialDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="MaterialEditFormShowCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="MaterialAddFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="MaterialDataConnectionRefreshCommand" />
+        <Command Name="MaterialSelectInTableValueSetCommand">
+          <Command Name="MaterialAddFormShowCommand" Parameter="MaterialId" />
+        </Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="MaterialEditFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="MaterialDataConnectionRefreshCommand" />
+        <Command Name="MaterialSelectInTableValueSetCommand">
+          <Command Name="MaterialEditFormShowCommand" Parameter="MaterialId" />
+        </Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="MaterialDeleteMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="MaterialDeleteSaveCommand" />
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
   </Executions>
 
   <MyObjects>
@@ -302,7 +669,7 @@
         </Height>
         <Width>
           <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
+            <Expression>{0} - {1} - 20 - {2}</Expression>
             <Items>
               <Item>
                 <Object Name="HeadPanel">
@@ -314,6 +681,11 @@
                   <Property Name="Left" />
                 </Object>
               </Item>
+              <Item>
+                <Object Name="ArchiveComboBox">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
             </Items>
           </Calculate>
         </Width>
@@ -323,6 +695,53 @@
         <Text>
           <Parameter Name="Title" />
         </Text>
+      </MyObject>
+
+      <MyObject Name="ArchiveComboBox" Type="ComboBox" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>Ceiling(({0} - {1}) / 2) </Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="ArchiveComboBox">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Right>
+          <Calculate>
+            <Expression>{0} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Right>
+        <Width>100</Width>
+        <NullValue Show="True" Title="Все" />
+        <ValueList>
+          <Structure Type="Table">
+            <Row>
+              <Item>False</Item>
+              <Item>Активные</Item>
+            </Row>
+            <Row>
+              <Item>True</Item>
+              <Item>Архивные</Item>
+            </Row>
+          </Structure>
+        </ValueList>
+        <Value>False</Value>
       </MyObject>
     </MyObject>
 
@@ -425,6 +844,7 @@
               </Items>
             </Calculate>
           </Width>
+          <Sorted>True</Sorted>
           <Items>
             <DataConnection SourceDataConnection="MaterialCategoryPrimaryGetDataConnection">
               <SourceQuery Name="MaterialCategoryListSqlQuery">
@@ -552,6 +972,87 @@
           </Commands>
         </MyObject>
 
+        <MyObject Name="MaterialCategoryArchiveButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MaterialCategoryDeleteButton">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="MaterialCategoryAddButton">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Object Name="MaterialCategoryAddButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>
+            <Object Name="MaterialCategoryAddButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <TabIndex>6</TabIndex>
+          <Hint>
+            <Switch>
+              <Case>
+                <When>
+                  <Condition Name="MaterialCategoryIsArchiveEqualCondition" />
+                </When>
+                <Then>Восстановить запись из архива</Then>
+              </Case>
+              <Case>Перенести запись в архив</Case>
+            </Switch>
+          </Hint>
+          <BackgroundImage>
+            <Switch>
+              <Case>
+                <When>
+                  <Or>
+                    <Condition Name="MaterialCategoryIsArchiveEqualCondition" />
+                    <Object Name="ArchiveComboBox" />
+                  </Or>
+                </When>
+                <Then>..\Images\24x24\unarchive.png</Then>
+              </Case>
+              <Case>..\Images\24x24\archive.png</Case>
+            </Switch>
+          </BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Enabled>
+            <Condition Name="MaterialCategorySelectIsNotNullCondition" />
+          </Enabled>
+          <Commands>
+            <Command Name="MaterialCategoryArchiveSaveCommand" />
+          </Commands>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>
+            <Switch>
+              <Case>
+                <When>
+                  <Condition Name="MaterialCategoryIsArchiveEqualCondition" />
+                </When>
+                <Then>Для восстановления из архива выберите запись.</Then>
+              </Case>
+              <Case>Для переноса в архив выберите запись.</Case>
+            </Switch>
+          </DisabledText>
+        </MyObject>
+
+
 
       </MyObject>
 
@@ -607,9 +1108,357 @@
             </Items>
           </Calculate>
         </Width>
+
+        <MyObject Name="MaterialLabel" Type="Label" Assembly="BaseControls">
+          <Top>5</Top>
+          <Left>10</Left>
+          <Width>
+            <Calculate>
+              <Expression>{0} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MaterialPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <Height>20</Height>
+          <TextAlign>MiddleLeft</TextAlign>
+          <FontStyle>LabelFontStyle</FontStyle>
+          <ForeColor>LabelForeColor</ForeColor>
+          <Text>Товарно-материальные ценности</Text>
+        </MyObject>
+
+        <MyObject Name="MaterialDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
+          <Top>
+            <Object Name="MaterialLabel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="MaterialLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Height>
+            <Calculate>
+              <Expression>{0} - {1} - 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MaterialPanel">
+                    <Property Name="Height" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="MaterialDatabaseTable">
+                    <Property Name="Top" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Height>
+          <Width>
+            <Calculate>
+              <Expression>{0} - {1}*2 - {2} - 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MaterialPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="MaterialDatabaseTable">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="MaterialAddButton">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <AllowResizeColumns Value="False" />
+          <AllowResizeRows Value="False" />
+          <AllowInsert>False</AllowInsert>
+          <AllowUpdate>False</AllowUpdate>
+          <AllowDelete>False</AllowDelete>
+          <AutoSizeColumnsMode Value="Fill" />
+          <SourceDataConnection Name="MaterialSecondaryGetDataConnection" />
+          <Columns>
+            <Column Name="MaterialId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+            </Column>
+            <Column Name="UnitId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+            </Column>
+            <Column Name="Archive" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+              <Filter FilterNullValue="False">
+                <Object Name="ArchiveComboBox" />
+              </Filter>
+            </Column>
+            <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>№</Title>
+              <Width>30</Width>
+              <AutoFill Type="RowNumber" />
+              <Alignment Value="MiddleCenter" />
+              <AutoSizeMode Value="None" />
+            </Column>
+            <Column Name="Title" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Наименование</Title>
+              <Width>300</Width>
+              <MinimumWidth>100</MinimumWidth>
+              <AutoSizeMode Value="Fill" />
+            </Column>
+            <Column Name="UnitShortTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Ед.Измерения</Title>
+              <AutoSizeMode Value="None" />
+              <Width>100</Width>
+              <Substitution SourceColumn="UnitId">
+                <DataConnection SourceDataConnection="UnitPrimaryGetDataConnection">
+                  <Fields>
+                    <Field Name="UnitId" />
+                    <Field Name="ShortTitle" />
+                  </Fields>
+                </DataConnection>
+              </Substitution>
+            </Column>
+            <Column Name="UnitPrice" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Цена продажи</Title>
+              <Width>100</Width>
+              <Visible />
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" Format="N2" />
+              <Alignment Value="MiddleRight" />
+            </Column>
+          </Columns>
+          <Formatting>
+            <BackColor Name="TableArchiveColor">
+              <Expression>Archive AND {0}</Expression>
+              <Items>
+                <Item>
+                  <Not>
+                    <Object Name="ArchiveComboBox" />
+                  </Not>
+                </Item>
+              </Items>
+            </BackColor>
+          </Formatting>
+        </MyObject>
+
+        <MyObject Name="MaterialAddButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Object Name="MaterialDatabaseTable">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MaterialDatabaseTable">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Width>40</Width>
+          <Height>40</Height>
+          <TabIndex>3</TabIndex>
+          <Hint>Добавить запись...</Hint>
+          <BackgroundImage>..\Images\24x24\plus.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Commands>
+            <Command Name="MaterialAddFormShowCommand" />
+          </Commands>
+        </MyObject>
+
+        <MyObject Name="MaterialEditButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MaterialAddButton">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="MaterialAddButton">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Object Name="MaterialAddButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>
+            <Object Name="MaterialAddButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <TabIndex>4</TabIndex>
+          <Hint>Редактировать запись...</Hint>
+          <BackgroundImage>..\Images\24x24\pencil.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Enabled>
+            <Condition Name="MaterialSelectedCondition" />
+          </Enabled>
+          <Commands>
+            <Command Name="MaterialEditFormShowCommand" />
+          </Commands>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>Выберите запись для редактирования.</DisabledText>
+        </MyObject>
+
+        <MyObject Name="MaterialDeleteButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MaterialEditButton">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="MaterialAddButton">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Object Name="MaterialAddButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>
+            <Object Name="MaterialAddButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <TabIndex>5</TabIndex>
+          <Hint>Удалить запись</Hint>
+          <BackgroundImage>..\Images\24x24\delete.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Enabled>
+            <Condition Name="MaterialSelectedCondition" />
+          </Enabled>
+          <Commands>
+            <Command Name="MaterialDeleteMessageBoxCommand" />
+          </Commands>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>Выберите запись для удаления.</DisabledText>
+        </MyObject>
+
+        <MyObject Name="MaterialArchiveButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MaterialDeleteButton">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="MaterialAddButton">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Object Name="MaterialAddButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>
+            <Object Name="MaterialAddButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <TabIndex>6</TabIndex>
+          <Hint>
+            <Switch>
+              <Case>
+                <When>
+                  <Condition Name="MaterialCategoryIsArchiveEqualCondition" />
+                </When>
+                <Then>Восстановить запись из архива</Then>
+              </Case>
+              <Case>Перенести запись в архив</Case>
+            </Switch>
+          </Hint>
+          <BackgroundImage>
+            <Switch>
+              <Case>
+                <When>
+                  <Or>
+                    <Condition Name="MaterialCategoryIsArchiveEqualCondition" />
+                    <Object Name="ArchiveComboBox" />
+                  </Or>
+                </When>
+                <Then>..\Images\24x24\unarchive.png</Then>
+              </Case>
+              <Case>..\Images\24x24\archive.png</Case>
+            </Switch>
+          </BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Enabled>
+            <Condition Name="MaterialSelectedCondition" />
+          </Enabled>
+          <Commands>
+            <Command Name="MaterialArchiveSaveCommand" />
+          </Commands>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>
+            <Switch>
+              <Case>
+                <When>
+                  <Object Name="ArchiveComboBox" />
+                </When>
+                <Then>Для восстановления из архива выберите запись.</Then>
+              </Case>
+              <Case>Для переноса в архив выберите запись.</Case>
+            </Switch>
+          </DisabledText>
+        </MyObject>
       </MyObject>
-
-
     </MyObject>
+
   </MyObjects>
 </Form>

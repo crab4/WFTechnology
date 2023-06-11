@@ -480,7 +480,7 @@
         <TextAlign>MiddleCenter</TextAlign>
         <FontStyle>ButtonFontStyle</FontStyle>
         <ImageAlign>MiddleLeft</ImageAlign>
-        <Image>Images\24x24\content-save.png</Image>
+        <Image>..\Images\24x24\content-save.png</Image>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
