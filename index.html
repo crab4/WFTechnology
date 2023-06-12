@@ -91,8 +91,28 @@
       </div>
       <a target="_blank" href="images/7.png"><img class="images" src="images/7.png" alt="7"></a>
     </div>
+    
+    
+    <hr class="line-black">
+    <div class="row">
+      <div class="column">
+        <a href="https://wfsys.gitbook.io/wt-practice/main/lesson_pattern_add-edit#kartochka-pozicii-zakaza" class="text-link">
+          Разные шаблоны.
+        </a>
+      </div>
+      <a target="_blank" href="images/8.png"><img class="images" src="images/8.png" alt="8"></a>
+    </div>
 
-
+    <hr class="line-black">
+    <div class="row">
+      <div class="column">
+        <a href="https://wfsys.gitbook.io/wt-practice/main/lesson_pattern_add-edit#sozdanie-chernovika" class="text-link">
+          Правильно TemplateStart.xml. на этой же странице есть ещё Tamplate в несокльких местах.
+        </a>
+      </div>
+      <a target="_blank" href="images/9.png"><img class="images" src="images/9.png" alt="9"></a>
+    </div>
+    
   </div>
 
 
@@ -118,3 +138,25 @@ green
 white
 white
 pink
+
+<Commands>
+  <If>
+    <When>
+      <Condition Name="OrderPositionIsUsedCondition" />
+    </When>
+    <Then>
+      <Command Name="OrderPositionInfoDeleteMessageBoxCommand" />
+    </Then>
+    <Else>
+      <Command Name="OrderPositionQuestionDeleteMessageBoxCommand" />
+      <If>
+        <When>
+          <Command Name="OrderPositionQuestionDeleteMessageBoxCommand" Parameter="Yes" />
+        </When>
+        <Then>
+          <Command Name="OrderPositionDeleteCommand" />
+        </Then>
+      </If>
+    </Else>
+  </If>
+</Commands>

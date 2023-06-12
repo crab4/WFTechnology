@@ -184,15 +184,15 @@
 		left join template.client on client.client_id = ord.client_id
         left join _filter on true
         where not ord.deleted and
-        ord.order_date between convert_date_filter(_filter.start_date) and convert_date_filter(_filter.end_date);
+        ord.order_date between convert_date_filter(_filter.start_date) and convert_date_filter(_filter.end_date) and
+        ord.added;
       </Text>
     </SqlQuery>
 
-    <SqlQuery Name="OrderInsertSqlQuery">
+    <SqlQuery Name="EmptyOrderInsertSqlQuery">
       <Text>
-        insert into template.order
-          (order_number, order_date, description, client_id) values
-          ({OrderNumber}, {OrderDate}, {OrderDescription}, {ClientId}) 
+        insert into template.order (added)
+        values(false) 
         returning order_id;
       </Text>
     </SqlQuery>
@@ -203,7 +203,8 @@
 				  client_id = {ClientId},
 				  order_number = {OrderNumber},
 				  order_date = {OrderDate}, 
-				  description = {OrderDescription}
+				  description = {OrderDescription},
+                  added = True
 				where order_id = {OrderId};
       </Text>
     </SqlQuery>
@@ -565,6 +566,111 @@
       </Text>
     </SqlQuery>
 
+    <SqlQuery Name="OrderPositionByOrderSqlQuery">
+      <Text>
+         SELECT
+	      OP.order_position_id AS "OrderPositionId",
+	      OP.material_id AS "MaterialId",
+	      OP.quantity AS "Quantity",
+	      OP.unit_price AS "UnitPrice"
+	    FROM
+	      template.order_position OP
+	    WHERE
+	      OP.order_id = {OrderId}
+	    ORDER BY OP.order_position_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderPositionInsertSqlQuery">
+      <Text>
+        insert into template.order_position
+        (
+          order_id, material_id, quantity, unit_price
+        )
+        values
+        (
+          {OrderId}, {MaterialId}, {Quantity}, {UnitPrice}
+        )
+        returning order_position_id
+        ;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderPositionUpdateSqlQuery">
+      <Text>
+        update template.order_position
+        set
+          material_id = {MaterialId},
+          quantit = {Quantity},
+          unit_price = {UnitPrice},
+        where order_position_id = {OrderPositionId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderPositionByIdSqlQuery">
+      <Text>
+        select
+          op.material_id as "MaterialId",
+          op.quantity as "Quantity",
+          op.unit_price as "UnitPrice"
+        from
+          template.order_position op
+        where
+          op.order_position_id = {OrderPositionId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialSimpleSelectSqlQuery">
+      <Text>
+        select 
+		  m.material_id as "MaterialId",
+		  m.title as "Title",
+		  mc.title as "MaterialCategoryTitle",
+		  u.short_title as "UnitShortTitle"
+		from 
+		  template.material m
+		  left join template.material_category mc using(material_category_id)
+		  left join template.unit u using (unit_id)
+		order by m.title
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderPositionDeleteSqlQuery">
+      <Text>delete from template.order_position where {OrderPositionId} = order_position_id</Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialShortSelectSqlQuery">
+      <Text>
+        SELECT
+	      M.material_id AS "MaterialId",
+	      M.title AS "Title",
+	      M.material_category_id AS "MaterialCategoryId",
+	      MC.title AS "MaterialCategoryTitle",
+	      U.short_title AS "UnitShortTitle",
+	      M.unit_price AS "UnitPrice"
+	    FROM
+	      template.material M
+	      LEFT JOIN template.material_category MC USING(material_category_id)
+	      LEFT JOIN template.unit U USING(unit_id)
+	    WHERE
+	      NOT M.archive OR M.material_id = {MaterialId}
+	    ORDER BY M.title;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="EmptyOrderDeleteSqlQuery">
+      <Text>
+        delete from template.order_position op
+        using template.order o
+        where op.order_id = o.order_id and
+        not o.added and
+        op.order_id = {OrderId};
+        
+        delete from template.order
+        where not added and order_id = {OrderId};
+      </Text>
+    </SqlQuery>
+
 
 
   </SqlQueries>
@@ -612,9 +718,10 @@
 
     <Permission Name="OrderEditSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
-        <SqlQuery Name="OrderInsertSqlQuery" />
+        <SqlQuery Name="EmptyOrderInsertSqlQuery" />
         <SqlQuery Name="OrderUpdateSqlQuery" />
         <SqlQuery Name="OrderDeleteSqlQuery" />
+        <SqlQuery Name="EmptyOrderDeleteSqlQuery" />
       </SqlQueries>
     </Permission>
 
@@ -667,6 +774,28 @@
         <SqlQuery Name="MaterialDeleteSqlQuery" />
         <SqlQuery Name="UnitShortSelectSqlQuery" />
         <SqlQuery Name="MaterialArchiveSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="OrderPositionViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="OrderPositionByOrderSqlQuery" />
+        <SqlQuery Name="OrderPositionByIdSqlQuery" />
+        <SqlQuery Name="MaterialSimpleSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="OrderPositionEditSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="OrderPositionDeleteSqlQuery" />
+        <SqlQuery Name="OrderPositionInsertSqlQuery" />
+        <SqlQuery Name="OrderPositionUpdateSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="ViewMaterialSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="MaterialShortSelectSqlQuery" />
       </SqlQueries>
     </Permission>
 
@@ -744,6 +873,22 @@
         <Permission Name="MaterialEditSqlQueryPermission" />
       </Permissions>
     </Role>
+
+    <Role Name="OrderPositionViewRole">
+      <Permissions>
+        <Permission Name="OrderPositionViewSqlQueryPermission" />
+        <Permission Name="ViewMaterialSqlQueryPermission" />
+      </Permissions>
+    </Role>
+
+    <Role Name="OrderPositionEditRole">
+      <Permissions>
+        <Permission Name="OrderPositionViewSqlQueryPermission" />
+        <Permission Name="OrderPositionEditSqlQueryPermission" />
+        <Permission Name="ViewMaterialSqlQueryPermission" />
+
+      </Permissions>
+    </Role>
   </Roles>
 
   <Groups>
@@ -755,6 +900,7 @@
         <Role Name="UnitEditRole" />
         <Role Name="MaterialCategoryEditRole" />
         <Role Name="MaterialEditRole" />
+        <Role Name="OrderPositionEditRole" />
       </Roles>
     </Group>
 

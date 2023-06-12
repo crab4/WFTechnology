@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateOrderEditForm" Width="320" Height="500" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateOrderEditForm" Width="1000" Height="700" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="OrderId" />
     <Parameter Name="Edit">False</Parameter>
@@ -89,35 +89,6 @@
       </SqlQuery>
     </DataConnection>
 
-    <DataConnection Name="OrderInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
-      <Workflow Name="Template" />
-      <Parameters>
-        <Parameter NativeName="OrderNumber">
-          <Value>
-            <Object Name="OrderNumberTextBox" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="OrderDate">
-          <Value>
-            <Object Name="OrderDateDateTimePicker" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="ClientId">
-          <Value>
-            <Object Name="ClientComboBox" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="OrderDescription">
-          <Value>
-            <Object Name="DescriptionTextBox" />
-          </Value>
-        </Parameter>
-      </Parameters>
-      <SqlQueries>
-        <SqlQuery Name="OrderInsertSqlQuery" Type="Insert" />
-      </SqlQueries>
-    </DataConnection>
-
     <DataConnection Name="OrderUpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
       <Workflow Name="Template" />
       <Parameters>
@@ -164,9 +135,79 @@
         <DataType Type="IntegerDataType" />
       </Filter>
     </DataConnection>
+
+    <DataConnection Name="OrderPositionPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="OrderPositionByOrderSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="OrderPositionId" />
+          <Field Name="MaterialId" />
+          <Field Name="Quantity" />
+          <Field Name="UnitPrice" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="OrderId">
+            <Value>
+              <Parameter Name="OrderId" />
+            </Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="MaterialPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="MaterialSimpleSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="MaterialId" />
+          <Field Name="Title" />
+          <Field Name="MaterialCategoryTitle" />
+          <Field Name="UnitShortTitle" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="OrderPositionDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="OrderPositionId">
+          <Value>
+            <Object Name="OrderPositionDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">OrderPositionId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <Refresh>
+        <DataConnection Name="OrderPositionPrimaryGetDataConnection" />
+      </Refresh>
+      <SqlQueries>
+        <SqlQuery Name="OrderPositionDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
+    </DataConnection>
+
+    <DataConnection Name="EmptyOrderDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="OrderId">
+          <Value>
+            <Parameter Name="OrderId" />
+          </Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="EmptyOrderDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
+    </DataConnection>
   </DataConnections>
 
   <Conditions>
+    <Condition Name="FormFocusLostCondition" Type="FormFocusLostCondition" Assembly="Conditions" />
+
     <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
 
     <Condition Name="EscapeKeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
@@ -220,6 +261,21 @@
         </Item>
       </Items>
     </Condition>
+
+    <Condition Name="OrderPositionSelectedCondition" Type="NotEqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OrderPositionDatabaseTable">
+            <Property Name="SelectedRowsCount" />
+          </Object>
+        </Item>
+        <Item>0</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="OrderPositionDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
+      <Table Name="OrderPositionDatabaseTable" />
+    </Condition>
   </Conditions>
 
   <Commands>
@@ -232,18 +288,7 @@
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
       <Commands>
         <!-- If edit then Update else insert and get OrderId -->
-        <If>
-          <When>
-            <Parameter Name="Edit" />
-          </When>
-          <Then>
-            <Command Name="OrderUpdateSaveCommand" />
-          </Then>
-          <Else>
-            <Command Name="OrderInsertSaveCommand" />
-            <Command Name="OrderIdValueSetCommand" />
-          </Else>
-        </If>
+        <Command Name="OrderUpdateSaveCommand" />
         <Command Name="UpdatedTrueValueSetCommand" />
         <Command Name="FormCloseCommand" />
       </Commands>
@@ -263,11 +308,6 @@
       <Buttons Type="YesNo" />
     </Command>
 
-    <Command Name="OrderInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="OrderInsertSetDataConnection" />
-      </DataConnections>
-    </Command>
 
     <Command Name="OrderUpdateSaveCommand" Type="SaveCommand" Assembly="Commands">
       <DataConnections>
@@ -275,11 +315,6 @@
       </DataConnections>
     </Command>
 
-    <Command Name="OrderIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Parameter Name="OrderId">
-        <Command Name="OrderInsertSaveCommand" />
-      </Parameter>
-    </Command>
 
     <Command Name="ClientAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
       <Xml Type="Path">../Client/TemplateClientEdit.xml</Xml>
@@ -334,6 +369,87 @@
       </Parameters>
     </Command>
 
+    <Command Name="OrderPositionDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OrderPositionPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+    <Command Name="OrderPositionAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">..\Order\TemplateOrderPositionEdit.xml</Xml>
+      <Parameters>
+        <Parameter Name="OrderId">
+          <Parameter Name="OrderId" />
+        </Parameter>
+      </Parameters>
+      <Show Type="Modal" />
+    </Command>
+
+    <Command Name="OrderPositionEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">..\Order\TemplateOrderPositionEdit.xml</Xml>
+      <Show Type="Modal" />
+      <Parameters>
+        <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="OrderPositionId">
+          <Object Name="OrderPositionDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">OrderPositionId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="OrderPositionDatabaseTableSelectOrderPositionValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="OrderPositionDatabaseTable">
+        <Property Name="SelectRowByFieldValue">
+          <Parameters>
+            <Parameter Name="ColumnName">OrderPositionId</Parameter>
+            <Parameter Name="Value">
+              <Input />
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+
+
+    <Command Name="OrderPositionQuestionDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Вы действительно хотите удалить выбранную запись?</Text>
+      <Buttons Type="YesNo" />
+      <Icon Type="Question" />
+    </Command>
+
+    <Command Name="OrderPositionInfoDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Удаление невозможно, так как выбранная запись используется.</Text>
+      <Icon Type="Information" />
+      <Buttons Type="Ok" />
+    </Command>
+
+    <Command Name="OrderPositionDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OrderPositionDeleteSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="TestMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>
+        <Parameter Name="OrderId" />
+      </Caption>
+      <Text />
+      <Icon Type="Information" />
+      <Buttons Type="Ok" />
+    </Command>
+
+    <Command Name="EmptyOrderDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="EmptyOrderDeleteSetDataConnection" />
+      </DataConnections>
+    </Command>
+
   </Commands>
 
   <Checkings>
@@ -355,6 +471,8 @@
   </Checkings>
 
   <Executions>
+
+
     <Execution>
       <ConditionExpression>
         <And>
@@ -406,6 +524,16 @@
         </Or>
       </ConditionExpression>
       <Commands>
+        <If>
+          <When>
+            <Not>
+              <Parameter Name="Edit" />
+            </Not>
+          </When>
+          <Then>
+            <Command Name="EmptyOrderDeleteSaveCommand" />
+          </Then>
+        </If>
         <Command Name="FormCloseCommand" />
       </Commands>
     </Execution>
@@ -439,6 +567,39 @@
         <Command Name="ClientDataConnectionRefreshCommand" />
         <Command Name="ClientComboBoxValueSetCommand">
           <Command Name="ClientListFormShowCommand" Parameter="SelectedClientId" />
+        </Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="OrderPositionDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderPositionEditFormShowCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="OrderPositionAddFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderPositionDataConnectionRefreshCommand" />
+        <Command Name="OrderPositionDatabaseTableSelectOrderPositionValueSetCommand">
+          <Command Name="OrderPositionAddFormShowCommand" Parameter="OrderPositionId" />
+        </Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="OrderPositionEditFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderPositionDataConnectionRefreshCommand" />
+        <Command Name="OrderPositionDatabaseTableSelectOrderPositionValueSetCommand">
+          <Command Name="OrderPositionEditFormShowCommand" Parameter="OrderPositionId" />
         </Command>
       </Commands>
     </Execution>
@@ -533,556 +694,983 @@
       <BackColor>ThemeBackgroundColor</BackColor>
 
       <!-- Insert your content-->
+      <MyObject Name="CommonPanel" Type="Panel" Assembly="BaseControls">
+        <Top>0</Top>
+        <Left>0</Left>
+        <Height>
+          <Object Name="ContentPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>350</Width>
 
-      <MyObject Name="OrderNumberLabel" Type="Label" Assembly="BaseControls">
+        <MyObject Name="ClientPanel" Type="Panel" Assembly="BaseControls">
+          <Top>00</Top>
+          <Left>0</Left>
+          <Height>
+            <Calculate>
+              <Expression>{0} + 20</Expression>
+              <Items>
+                <Item>
+                  <Object Name="PhoneTextBox">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Height>
+          <Width>
+            <Object Name="CommonPanel">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+
+          <MyObject Name="ClientLabel" Type="Label" Assembly="BaseControls">
+            <Top>5</Top>
+            <Left>10</Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="ClientPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="ClientLabel">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleLeft</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Клиент</Text>
+          </MyObject>
+
+          <MyObject Name="ClientComboBox" Type="ComboBox" Assembly="BaseControls">
+            <Top>
+              <Object Name="ClientLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="ClientLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1} - 20 - {2} - {3}</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="ClientPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="ClientComboBox">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="ClientAddEditButton">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="ClientListButton">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <NullValue Show="True" />
+            <NullValueTitle>[Не выбрано]</NullValueTitle>
+            <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
+            <ValueList>
+              <DataConnection SourceDataConnection="ClientShortPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="ClientId" />
+                  <Field Name="ClientTitle" />
+                </Fields>
+              </DataConnection>
+            </ValueList>
+            <Value>
+              <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="ClientId" />
+                </Fields>
+              </DataConnection>
+            </Value>
+          </MyObject>
+
+          <MyObject Name="ClientAddEditButton" Type="Button" Assembly="BaseControls">
+            <Top>
+              <Object Name="ClientComboBox">
+                <Property Name="Top" />
+              </Object>
+            </Top>
+            <Left>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="ClientComboBox">
+                      <Property Name="Right" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Left>
+            <Height>22</Height>
+            <Width>22</Width>
+            <BackgroundImage>
+              <Switch>
+                <Case>
+                  <When>
+                    <Condition Name="ClientComboBoxIsNullOrEmptyCondition" />
+                  </When>
+                  <Then>..\Images\16x16\plus.png</Then>
+                </Case>
+                <Case>..\Images\16x16\pencil.png</Case>
+              </Switch>
+            </BackgroundImage>
+            <BackgroundImageLayout>Center</BackgroundImageLayout>
+            <Hint>
+              <Switch>
+                <Case>
+                  <When>
+                    <Condition Name="ClientComboBoxIsNullOrEmptyCondition" />
+                  </When>
+                  <Then>Добавить запись...</Then>
+                </Case>
+                <Case>Редактировать запись...</Case>
+              </Switch>
+            </Hint>
+            <FlatStyle>Flat</FlatStyle>
+            <FlatBorderSize>1</FlatBorderSize>
+            <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+            <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+            <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+            <Commands>
+              <If>
+                <When>
+                  <Condition Name="ClientComboBoxIsNullOrEmptyCondition" />
+                </When>
+                <Then>
+                  <Command Name="ClientAddFormShowCommand" />
+                </Then>
+                <Else>
+                  <Command Name="ClientEditFormShowCommand" />
+                </Else>
+              </If>
+            </Commands>
+          </MyObject>
+
+          <MyObject Name="ClientListButton" Type="Button" Assembly="BaseControls">
+            <Top>
+              <Object Name="ClientComboBox">
+                <Property Name="Top" />
+              </Object>
+            </Top>
+            <Left>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="ClientAddEditButton">
+                      <Property Name="Right" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Left>
+            <Height>22</Height>
+            <Width>22</Width>
+            <BackgroundImage>../images/16x16/list.png</BackgroundImage>
+            <BackgroundImageLayout>Center</BackgroundImageLayout>
+            <Hint>Выбрать запись</Hint>
+            <FlatStyle>Flat</FlatStyle>
+            <FlatBorderSize>1</FlatBorderSize>
+            <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+            <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+            <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+            <Commands>
+              <Command Name="ClientListFormShowCommand" />
+            </Commands>
+          </MyObject>
+
+
+
+          <MyObject Name="CityLabel" Type="Label" Assembly="BaseControls">
+            <Top>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="ClientComboBox">
+                      <Property Name="Bottom" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Top>
+            <Left>
+              <Object Name="OrderNumberLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="CommonPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="CityLabel">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleLeft</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Город</Text>
+          </MyObject>
+
+          <MyObject Name="CityTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
+            <Top>
+              <Object Name="CityLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="CityLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="CommonPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="CityTextBox">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <ReadOnly>True</ReadOnly>
+            <Text>
+              <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
+                <Fields>
+                  <Field Name="CityTitle" />
+                </Fields>
+              </DataConnection>
+            </Text>
+          </MyObject>
+
+          <MyObject Name="PhoneLabel" Type="Label" Assembly="BaseControls">
+            <Top>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="CityTextBox">
+                      <Property Name="Bottom" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Top>
+            <Left>
+              <Object Name="OrderNumberLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="CommonPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="PhoneLabel">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleLeft</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Телефон</Text>
+          </MyObject>
+
+          <MyObject Name="PhoneTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
+            <Top>
+              <Object Name="PhoneLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="PhoneLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="CommonPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="PhoneTextBox">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Text>
+              <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
+                <Fields>
+                  <Field Name="ClientPhone" />
+                </Fields>
+              </DataConnection>
+            </Text>
+            <Mask>Phone</Mask>
+          </MyObject>
+        </MyObject>
+
+
+        <MyObject Name="ClientOrderSeparatePanel" Type="Panel" Assembly="BaseControls">
+          <Top>
+            <Object Name="ClientPanel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>5</Left>
+          <Height>1</Height>
+          <Width>
+            <Calculate>
+              <Expression>{0} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="CommonPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <BackColor>ThemeSeparateBackgroundColor</BackColor>
+        </MyObject>
+
+        <MyObject Name="OrderPanel" Type="Panel" Assembly="BaseControls">
+          <Top>
+            <Object Name="ClientOrderSeparatePanel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>0</Left>
+          <Height>
+            <Calculate>
+              <Expression>{0} - {1}</Expression>
+              <Items>
+                <Item>
+                  <Object Name="TotalPanel">
+                    <Property Name="Top" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="ClientPanel">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Height>
+          <Width>
+            <Object Name="CommonPanel">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+
+          <MyObject Name="OrderNumberLabel" Type="Label" Assembly="BaseControls">
+            <Top>5</Top>
+            <Left>10</Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="OrderPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="OrderNumberLabel">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleLeft</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Номер Заказа</Text>
+          </MyObject>
+
+          <MyObject Name="OrderNumberTextBox" Type="TextBox" Assembly="BaseControls">
+            <Top>
+              <Object Name="OrderNumberLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="OrderNumberLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>200</Width>
+            <Text>
+              <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="OrderNumber" />
+                </Fields>
+              </DataConnection>
+            </Text>
+          </MyObject>
+
+          <MyObject Name="OrderDateLabel" Type="Label" Assembly="BaseControls">
+            <Top>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="OrderNumberTextBox">
+                      <Property Name="Bottom" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Top>
+            <Left>
+              <Object Name="OrderNumberLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>200</Width>
+            <Height>20</Height>
+            <TextAlign>MiddleLeft</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Дата и время заказа</Text>
+          </MyObject>
+
+          <MyObject Name="OrderDateDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
+            <Top>
+              <Object Name="OrderDateLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="OrderDateLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>200</Width>
+            <Format>dd MMM yyyy HH:mm</Format>
+            <ShowCalendar>True</ShowCalendar>
+            <NullValue Show="False" />
+            <Value>
+              <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="OrderDate" />
+                </Fields>
+              </DataConnection>
+            </Value>
+          </MyObject>
+
+          <MyObject Name="DescriptionLabel" Type="Label" Assembly="BaseControls">
+            <Top>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="OrderDateDateTimePicker">
+                      <Property Name="Bottom" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Top>
+            <Left>
+              <Object Name="OrderDateDateTimePicker">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="OrderPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="DescriptionLabel">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleLeft</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Комментарий к заказу</Text>
+          </MyObject>
+
+          <MyObject Name="DescriptionTextBox" Type="TextBox" Assembly="BaseControls">
+            <Top>
+              <Object Name="DescriptionLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="DescriptionLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="OrderPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="DescriptionTextBox">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Height>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="OrderPanel">
+                      <Property Name="Height" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="DescriptionLabel">
+                      <Property Name="Bottom" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Height>
+            <Multiline>True</Multiline>
+            <Text />
+          </MyObject>
+
+        </MyObject>
+
+        <MyObject Name="TotalPanel" Type="Panel" Assembly="BaseControls">
+          <Bottom>
+            <Object Name="CommonPanel">
+              <Property Name="Height" />
+            </Object>
+          </Bottom>
+          <Left>0</Left>
+          <Height>60</Height>
+          <Width>
+            <Object Name="CommonPanel">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+
+          <MyObject Name="TotalSumToPayVariable" Type="Variable" Assembly="SimpleControls">
+            <Value>
+              <Object Name="OrderPositionDatabaseTable">
+                <Property Name="ColumnSum">
+                  <Parameters>
+                    <Parameter Name="ColumnName">TotalPrice</Parameter>
+                  </Parameters>
+                </Property>
+              </Object>
+            </Value>
+          </MyObject>
+
+          <MyObject Name="TotalLabel" Type="Label" Assembly="BaseControls">
+            <Top>5</Top>
+            <Left>10</Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - 20</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="TotalPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item />
+                </Items>
+              </Calculate>
+            </Width>
+            <TextAlign>MiddleLeft</TextAlign>
+            <Height>20</Height>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Всего к оплате</Text>
+          </MyObject>
+
+          <MyObject Name="TotalTextBox" Type="TextBox" Assembly="BaseControls">
+            <Top>
+              <Object Name="TotalLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="TotalLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Object Name="TotalLabel">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <TextAlign>Right</TextAlign>
+            <ReadOnly>True</ReadOnly>
+            <Text>
+              <DataTypeFormat Type="DecimalDataType" Format="N2">
+                <Object Name="TotalSumToPayVariable" />
+              </DataTypeFormat>
+            </Text>
+          </MyObject>
+
+
+        </MyObject>
+
+      </MyObject>
+
+      <MyObject Name="ContentOrderPositionSeparatePanel" Type="Panel" Assembly="BaseControls">
         <Top>5</Top>
-        <Left>10</Left>
-        <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="OrderNumberLabel">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Width>
-        <Height>20</Height>
-        <TextAlign>MiddleLeft</TextAlign>
-        <FontStyle>LabelFontStyle</FontStyle>
-        <ForeColor>LabelForeColor</ForeColor>
-        <Text>Номер Заказа</Text>
-      </MyObject>
-
-      <MyObject Name="OrderNumberTextBox" Type="TextBox" Assembly="BaseControls">
-        <Top>
-          <Object Name="OrderNumberLabel">
-            <Property Name="Bottom" />
-          </Object>
-        </Top>
         <Left>
-          <Object Name="OrderNumberLabel">
-            <Property Name="Left" />
+          <Object Name="CommonPanel">
+            <Property Name="Right" />
           </Object>
         </Left>
-        <Width>200</Width>
-        <Text>
-          <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
-            <Fields>
-              <Field Name="OrderNumber" />
-            </Fields>
-          </DataConnection>
-        </Text>
-      </MyObject>
-
-      <MyObject Name="OrderDateLabel" Type="Label" Assembly="BaseControls">
-        <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="OrderNumberTextBox">
-                  <Property Name="Bottom" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Top>
-        <Left>
-          <Object Name="OrderNumberLabel">
-            <Property Name="Left" />
-          </Object>
-        </Left>
-        <Width>200</Width>
-        <Height>20</Height>
-        <TextAlign>MiddleLeft</TextAlign>
-        <FontStyle>LabelFontStyle</FontStyle>
-        <ForeColor>LabelForeColor</ForeColor>
-        <Text>Дата и время заказа</Text>
-      </MyObject>
-
-      <MyObject Name="OrderDateDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
-        <Top>
-          <Object Name="OrderDateLabel">
-            <Property Name="Bottom" />
-          </Object>
-        </Top>
-        <Left>
-          <Object Name="OrderDateLabel">
-            <Property Name="Left" />
-          </Object>
-        </Left>
-        <Width>200</Width>
-        <Format>dd MMM yyyy HH:mm</Format>
-        <ShowCalendar>True</ShowCalendar>
-        <NullValue Show="False" />
-        <Value>
-          <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
-            <Fields>
-              <Field Name="OrderDate" />
-            </Fields>
-          </DataConnection>
-        </Value>
-      </MyObject>
-
-      <MyObject Name="ClientLabel" Type="Label" Assembly="BaseControls">
-        <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="OrderDateDateTimePicker">
-                  <Property Name="Bottom" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Top>
-        <Left>
-          <Object Name="OrderNumberLabel">
-            <Property Name="Left" />
-          </Object>
-        </Left>
-        <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="ClientLabel">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Width>
-        <Height>20</Height>
-        <TextAlign>MiddleLeft</TextAlign>
-        <FontStyle>LabelFontStyle</FontStyle>
-        <ForeColor>LabelForeColor</ForeColor>
-        <Text>Клиент</Text>
-      </MyObject>
-
-      <MyObject Name="ClientComboBox" Type="ComboBox" Assembly="BaseControls">
-        <Top>
-          <Object Name="ClientLabel">
-            <Property Name="Bottom" />
-          </Object>
-        </Top>
-        <Left>
-          <Object Name="ClientLabel">
-            <Property Name="Left" />
-          </Object>
-        </Left>
-        <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 20 - {2} - {3}</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="ClientComboBox">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="ClientAddEditButton">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="ClientListButton">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Width>
-        <NullValue Show="True" />
-        <NullValueTitle>[Не выбрано]</NullValueTitle>
-        <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
-        <ValueList>
-          <DataConnection SourceDataConnection="ClientShortPrimaryGetDataConnection">
-            <Fields>
-              <Field Name="ClientId" />
-              <Field Name="ClientTitle" />
-            </Fields>
-          </DataConnection>
-        </ValueList>
-        <Value>
-          <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
-            <Fields>
-              <Field Name="ClientId" />
-            </Fields>
-          </DataConnection>
-        </Value>
-      </MyObject>
-
-      <MyObject Name="ClientAddEditButton" Type="Button" Assembly="BaseControls">
-        <Top>
-          <Object Name="ClientComboBox">
-            <Property Name="Top" />
-          </Object>
-        </Top>
-        <Left>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="ClientComboBox">
-                  <Property Name="Right" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Left>
-        <Height>22</Height>
-        <Width>22</Width>
-        <BackgroundImage>
-          <Switch>
-            <Case>
-              <When>
-                <Condition Name="ClientComboBoxIsNullOrEmptyCondition" />
-              </When>
-              <Then>..\Images\16x16\plus.png</Then>
-            </Case>
-            <Case>..\Images\16x16\pencil.png</Case>
-          </Switch>
-        </BackgroundImage>
-        <BackgroundImageLayout>Center</BackgroundImageLayout>
-        <Hint>
-          <Switch>
-            <Case>
-              <When>
-                <Condition Name="ClientComboBoxIsNullOrEmptyCondition" />
-              </When>
-              <Then>Добавить запись...</Then>
-            </Case>
-            <Case>Редактировать запись...</Case>
-          </Switch>
-        </Hint>
-        <FlatStyle>Flat</FlatStyle>
-        <FlatBorderSize>1</FlatBorderSize>
-        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
-        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Commands>
-          <If>
-            <When>
-              <Condition Name="ClientComboBoxIsNullOrEmptyCondition" />
-            </When>
-            <Then>
-              <Command Name="ClientAddFormShowCommand" />
-            </Then>
-            <Else>
-              <Command Name="ClientEditFormShowCommand" />
-            </Else>
-          </If>
-        </Commands>
-      </MyObject>
-
-      <MyObject Name="ClientListButton" Type="Button" Assembly="BaseControls">
-        <Top>
-          <Object Name="ClientComboBox">
-            <Property Name="Top" />
-          </Object>
-        </Top>
-        <Left>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="ClientAddEditButton">
-                  <Property Name="Right" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Left>
-        <Height>22</Height>
-        <Width>22</Width>
-        <BackgroundImage>../images/16x16/list.png</BackgroundImage>
-        <BackgroundImageLayout>Center</BackgroundImageLayout>
-        <Hint>Выбрать запись</Hint>
-        <FlatStyle>Flat</FlatStyle>
-        <FlatBorderSize>1</FlatBorderSize>
-        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
-        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Commands>
-          <Command Name="ClientListFormShowCommand" />
-        </Commands>
-      </MyObject>
-
-
-
-      <MyObject Name="CityLabel" Type="Label" Assembly="BaseControls">
-        <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="ClientComboBox">
-                  <Property Name="Bottom" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Top>
-        <Left>
-          <Object Name="OrderNumberLabel">
-            <Property Name="Left" />
-          </Object>
-        </Left>
-        <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="CityLabel">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Width>
-        <Height>20</Height>
-        <TextAlign>MiddleLeft</TextAlign>
-        <FontStyle>LabelFontStyle</FontStyle>
-        <ForeColor>LabelForeColor</ForeColor>
-        <Text>Город</Text>
-      </MyObject>
-
-      <MyObject Name="CityTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
-        <Top>
-          <Object Name="CityLabel">
-            <Property Name="Bottom" />
-          </Object>
-        </Top>
-        <Left>
-          <Object Name="CityLabel">
-            <Property Name="Left" />
-          </Object>
-        </Left>
-        <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="CityTextBox">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Width>
-        <ReadOnly>True</ReadOnly>
-        <Text>
-          <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
-            <Fields>
-              <Field Name="CityTitle" />
-            </Fields>
-          </DataConnection>
-        </Text>
-      </MyObject>
-
-      <MyObject Name="PhoneLabel" Type="Label" Assembly="BaseControls">
-        <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="CityTextBox">
-                  <Property Name="Bottom" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Top>
-        <Left>
-          <Object Name="OrderNumberLabel">
-            <Property Name="Left" />
-          </Object>
-        </Left>
-        <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="PhoneLabel">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Width>
-        <Height>20</Height>
-        <TextAlign>MiddleLeft</TextAlign>
-        <FontStyle>LabelFontStyle</FontStyle>
-        <ForeColor>LabelForeColor</ForeColor>
-        <Text>Телефон</Text>
-      </MyObject>
-
-      <MyObject Name="PhoneTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
-        <Top>
-          <Object Name="PhoneLabel">
-            <Property Name="Bottom" />
-          </Object>
-        </Top>
-        <Left>
-          <Object Name="PhoneLabel">
-            <Property Name="Left" />
-          </Object>
-        </Left>
-        <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="PhoneTextBox">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Width>
-        <Text>
-          <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
-            <Fields>
-              <Field Name="ClientPhone" />
-            </Fields>
-          </DataConnection>
-        </Text>
-        <Mask>Phone</Mask>
-      </MyObject>
-
-      <MyObject Name="DescriptionLabel" Type="Label" Assembly="BaseControls">
-        <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="PhoneTextBox">
-                  <Property Name="Bottom" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Top>
-        <Left>
-          <Object Name="OrderNumberLabel">
-            <Property Name="Left" />
-          </Object>
-        </Left>
-        <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="DescriptionLabel">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Width>
-        <Height>20</Height>
-        <TextAlign>MiddleLeft</TextAlign>
-        <FontStyle>LabelFontStyle</FontStyle>
-        <ForeColor>LabelForeColor</ForeColor>
-        <Text>Комментарий к заказу</Text>
-      </MyObject>
-
-      <MyObject Name="DescriptionTextBox" Type="TextBox" Assembly="BaseControls">
-        <Top>
-          <Object Name="DescriptionLabel">
-            <Property Name="Bottom" />
-          </Object>
-        </Top>
-        <Left>
-          <Object Name="DescriptionLabel">
-            <Property Name="Left" />
-          </Object>
-        </Left>
-        <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="DescriptionTextBox">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Width>
         <Height>
           <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
+            <Expression>{0} - 10</Expression>
             <Items>
               <Item>
                 <Object Name="ContentPanel">
                   <Property Name="Height" />
                 </Object>
               </Item>
+            </Items>
+          </Calculate>
+        </Height>
+        <Width>1</Width>
+        <BackColor>ThemeSeparateBackgroundColor</BackColor>
+      </MyObject>
+
+      <MyObject Name="OrderPositionPanel" Type="Panel" Assembly="BaseControls">
+        <Top>0</Top>
+        <Left>
+          <Object Name="ContentOrderPositionSeparatePanel">
+            <Property Name="Right" />
+          </Object>
+        </Left>
+        <Height>
+          <Object Name="ContentPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1}</Expression>
+            <Items>
               <Item>
-                <Object Name="DescriptionLabel">
-                  <Property Name="Bottom" />
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="CommonPanel">
+                  <Property Name="Width" />
                 </Object>
               </Item>
             </Items>
           </Calculate>
-        </Height>
-        <Multiline>True</Multiline>
-        <Text />
+        </Width>
+
+        <MyObject Name="OrderPositionDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
+          <Top>5</Top>
+          <Left>5</Left>
+          <Height>
+            <Calculate>
+              <Expression>{0} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPositionPanel">
+                    <Property Name="Height" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Height>
+          <Width>
+            <Calculate>
+              <Expression>{0} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPositionAddButton">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <Change Source="False" />
+          <ColumnHeadersHeight Value="50" />
+          <AllowInsert>False</AllowInsert>
+          <AllowUpdate>False</AllowUpdate>
+          <AllowDelete>False</AllowDelete>
+          <AutoSizeColumnsMode Value="Disable" />
+          <RowHeadersVisible Value="False" />
+          <AllowResizeColumns Value="False" />
+          <AllowResizeRows Value="False" />
+          <SourceDataConnection Name="OrderPositionPrimaryGetDataConnection" />
+          <Columns>
+            <Column Name="OrderPositionId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+            </Column>
+            <Column Name="Number" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>№</Title>
+              <Width>30</Width>
+              <Alignment Value="MiddleRight" />
+              <AutoFill Type="RowNumber" />
+            </Column>
+            <Column Name="Title" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Название</Title>
+              <Width>150</Width>
+              <AutoSizeMode Value="Fill" />
+              <Substitution SourceColumn="MaterialId">
+                <DataConnection SourceDataConnection="MaterialPrimaryGetDataConnection">
+                  <Fields>
+                    <Field Name="MaterialId" />
+                    <Field Name="Title" />
+                  </Fields>
+                </DataConnection>
+              </Substitution>
+            </Column>
+            <Column Name="MaterialId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+            </Column>
+            <Column Name="Quantity" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Кол-во</Title>
+              <Width>60</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" />
+              <Alignment Value="MiddleRight" />
+            </Column>
+            <Column Name="UnitPrice" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Цена за единицу</Title>
+              <Width>80</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" Format="N2" />
+              <Alignment Value="MiddleRight" />
+            </Column>
+            <Column Name="TotalPrice" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Стоимость</Title>
+              <Width>100</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" Format="N2" />
+              <Alignment Value="MiddleRight" />
+              <Calculate>
+                <Expression>Quantity * UnitPrice</Expression>
+              </Calculate>
+            </Column>
+          </Columns>
+        </MyObject>
+
+        <MyObject Name="OrderPositionAddButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Object Name="OrderPositionDatabaseTable">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Right>
+            <Formula>
+              <Minus DataType="IntegerDataType">
+                <Item>
+                  <Object Name="OrderPositionPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>5</Item>
+              </Minus>
+            </Formula>
+          </Right>
+          <Width>40</Width>
+          <Height>40</Height>
+          <Hint>Добавить запись</Hint>
+          <BackgroundImage>..\Images\24x24\plus.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Commands>
+            <Command Name="OrderPositionAddFormShowCommand" />
+          </Commands>
+        </MyObject>
+
+        <MyObject Name="OrderPositionEditButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPositionAddButton">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="OrderPositionAddButton">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Object Name="OrderPositionAddButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>
+            <Object Name="OrderPositionAddButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <Hint>Редактировать запись</Hint>
+          <BackgroundImage>..\Images\24x24\pencil.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Enabled>
+            <Condition Name="OrderPositionSelectedCondition" />
+          </Enabled>
+          <Commands>
+            <Command Name="OrderPositionEditFormShowCommand" />
+          </Commands>
+        </MyObject>
+
+        <MyObject Name="OrderPositionDeleteButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPositionEditButton">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="OrderPositionAddButton">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Object Name="OrderPositionAddButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>
+            <Object Name="OrderPositionAddButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <TextAlign>MiddleCenter</TextAlign>
+          <Hint>Удалить запись</Hint>
+          <BackgroundImage>..\Images\24x24\delete.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Enabled>
+            <Condition Name="OrderPositionSelectedCondition" />
+          </Enabled>
+          <Commands>
+            <Command Name="OrderPositionQuestionDeleteMessageBoxCommand" />
+            <If>
+              <When>
+                <Command Name="OrderPositionQuestionDeleteMessageBoxCommand" Parameter="Yes" />
+              </When>
+              <Then>
+                <Command Name="OrderPositionDeleteSaveCommand" />
+              </Then>
+            </If>
+          </Commands>
+        </MyObject>
+
+
       </MyObject>
 
-
     </MyObject>
+
 
     <MyObject Name="FootSeparatePanel" Type="Panel" Assembly="BaseControls">
       <Top>

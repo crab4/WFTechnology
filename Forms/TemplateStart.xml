@@ -109,6 +109,13 @@
         </Fields>
       </SqlQuery>
     </DataConnection>
+
+    <DataConnection Name="EmptyOrderInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="EmptyOrderInsertSqlQuery" Type="Insert" />
+      </SqlQueries>
+    </DataConnection>
   </DataConnections>
 
   <Conditions>
@@ -222,13 +229,7 @@
     <Command Name="TestMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
       <Caption>Test</Caption>
       <Text>
-        <Object Name="OrderDatabaseTable">
-          <Property Name="SelectedRowCellValueByColumnName">
-            <Parameters>
-              <Parameter Name="ColumnName">OrderId</Parameter>
-            </Parameters>
-          </Property>
-        </Object>
+        <Command Name="EmptyOrderInsertSaveCommand" />
       </Text>
       <Icon Type="Information" />
       <Buttons Type="Ok" />
@@ -277,10 +278,16 @@
       <Xml Type="Path">Unit\TemplateUnitList.xml</Xml>
       <Show Type="None" />
     </Command>
-    
+
     <Command Name="MaterialListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
       <Xml Type="Path">Material\TemplateMaterialList.xml</Xml>
       <Show Type="None" />
+    </Command>
+
+    <Command Name="EmptyOrderInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="EmptyOrderInsertSetDataConnection" />
+      </DataConnections>
     </Command>
   </Commands>
 
@@ -368,10 +375,10 @@
           <Title>Ед.измерения</Title>
           <Command Name="UnitListFormShowCommand" />
         </MenuItem>
-        
+
         <MenuItem Name="MaterialMenuItem" Type="MenuItem">
           <Title>ТМЦ</Title>
-          <Command Name="MaterialListFormShowCommand"></Command>
+          <Command Name="MaterialListFormShowCommand" />
         </MenuItem>
       </Items>
     </MenuItem>
@@ -1071,7 +1078,12 @@
           <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
           <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
           <Commands>
-            <Command Name="OrderEditFormShowCommand" />
+            <Command Name="EmptyOrderInsertSaveCommand" />
+            <Command Name="OrderEditFormShowCommand">
+              <Input Name="OrderId">
+                <Command Name="EmptyOrderInsertSaveCommand" />
+              </Input>
+            </Command>
           </Commands>
         </MyObject>
 
