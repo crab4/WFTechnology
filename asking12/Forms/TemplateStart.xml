@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateStartForm" Width="900" Height="400" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateStartForm" Width="1200" Height="500" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Title">Заказы</Parameter>
   </Parameters>
@@ -46,6 +46,9 @@
           <Field Name="CityId" />
           <Field Name="OrderNumber" />
           <Field Name="OrderDate" />
+          <Field Name="TotalOrderCost" />
+          <Field Name="TotalPaymentSumm" />
+          <Field Name="TotalDebt" />
         </Fields>
         <Parameters>
           <Parameter NativeName="Filter" RefreshQuery="False">
@@ -212,11 +215,6 @@
       <Show Type="None" />
     </Command>
 
-    <Command Name="OperationListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">TemplateOperationList.xml</Xml>
-      <Show Type="None" />
-    </Command>
-
     <Command Name="UnitListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
       <Xml Type="Path">TemplateUnitList.xml</Xml>
       <Show Type="None" />
@@ -252,11 +250,6 @@
           </Object>
         </Parameter>
       </Parameters>
-    </Command>
-
-    <Command Name="AccountListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">TemplateAccountList.xml</Xml>
-      <Show Type="None" />
     </Command>
 
     <Command Name="OrderDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
@@ -303,19 +296,29 @@
       </Object>
     </Command>
 
-    <Command Name="DeletedOrderListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">TemplateDeletedOrderList.xml</Xml>
-      <Show Type="None" />
-    </Command>
-
     <Command Name="EmptyOrderInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
       <DataConnections>
         <DataConnection Name="EmptyOrderInsertSetDataConnection" />
       </DataConnections>
     </Command>
 
+    <Command Name="DeletedOrderListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateDeletedOrderList.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
     <Command Name="SettingsFormShowCommand" Type="FormShowCommand" Assembly="Commands">
       <Xml Type="Path">TemplateSettings.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="AccountListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateAccountList.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="OperationListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateOperationList.xml</Xml>
       <Show Type="None" />
     </Command>
   </Commands>
@@ -425,17 +428,17 @@
 
         <MenuItem Name="List1Separator" Type="Separator" />
 
-        <MenuItem Name="OperationListMenuItem" Type="MenuItem">
-          <Title>Назначения платежей</Title>
-          <Command Name="OperationListFormShowCommand" />
-        </MenuItem>
-
         <MenuItem Name="AccountListMenuItem" Type="MenuItem">
-          <Title>Счета</Title>
+          <Title>Счета...</Title>
           <Command Name="AccountListFormShowCommand" />
         </MenuItem>
 
-        <MenuItem Name="OperationUnitSeparator" Type="Separator" />
+        <MenuItem Name="OperationListMenuItem" Type="MenuItem">
+          <Title>Назначения платежей...</Title>
+          <Command Name="OperationListFormShowCommand" />
+        </MenuItem>
+
+        <MenuItem Name="List2Separator" Type="Separator" />
 
         <MenuItem Name="UnitListMenuItem" Type="MenuItem">
           <Title>Единицы измерения...</Title>
@@ -1138,6 +1141,27 @@
                   </Fields>
                 </DataConnection>
               </Substitution>
+            </Column>
+            <Column Name="TotalOrderCost" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Сумма заказа</Title>
+              <Width>100</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" Format="N2" />
+              <Alignment Value="MiddleRight" />
+            </Column>
+            <Column Name="TotalPaymentSumm" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Сумма оплат</Title>
+              <Width>100</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" Format="N2" />
+              <Alignment Value="MiddleRight" />
+            </Column>
+            <Column Name="TotalDebt" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Задолженность</Title>
+              <Width>100</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" Format="N2" />
+              <Alignment Value="MiddleRight" />
             </Column>
           </Columns>
         </MyObject>

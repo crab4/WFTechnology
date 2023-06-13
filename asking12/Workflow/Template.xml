@@ -205,23 +205,56 @@
 	          WHEN {Filter} = 'Period'
 	          THEN {EndDate}::timestamp + interval '1d - 1s'
 	        END AS end_date
-	    )
+	    ), _order AS (
+		  SELECT
+		    O.order_id,
+		    O.client_id,
+		    C.city_id,
+		    O.order_number,
+		    O.order_date
+		  FROM
+		    template.order O
+		    LEFT JOIN template.client C USING(client_id)
+		    LEFT JOIN _filter ON true
+		  WHERE
+            O.added AND
+		    NOT O.deleted AND
+		    O.order_date BETWEEN convert_date_filter(_filter.start_date)
+		                         AND convert_date_filter(_filter.end_date)
+		), _order_position AS (
+		  SELECT
+		    O.order_id,
+		    SUM(OP.quantity * OP.unit_price) AS total_cost
+		  FROM
+		    _order O
+		    JOIN template.order_position OP USING(order_id)
+		    LEFT JOIN template.material M USING(material_id)
+		  GROUP BY O.order_id
+		), _payment AS (
+		  SELECT
+		    O.order_id,
+		    SUM(C.summ) AS total_payment_summ
+		  FROM
+		    _order O
+		    JOIN template.order_payment OP USING(order_id)
+		    JOIN template.cash C USING(cash_id)
+		  WHERE NOT C.deleted
+		  GROUP BY O.order_id
+		)
 		
 		SELECT
 		  O.order_id AS "OrderId",
 		  O.client_id AS "ClientId",
-		  C.city_id AS "CityId",
+		  O.city_id AS "CityId",
 		  O.order_number AS "OrderNumber",
-		  O.order_date AS "OrderDate"
+		  O.order_date AS "OrderDate",
+		  COALESCE(OP.total_cost, 0) AS "TotalOrderCost",
+		  COALESCE(P.total_payment_summ, 0) AS "TotalPaymentSumm",
+		  COALESCE(OP.total_cost, 0) - COALESCE(P.total_payment_summ, 0) AS "TotalDebt"
 		FROM
-		  template.order O
-		  LEFT JOIN template.client C USING(client_id)
-		  LEFT JOIN _filter ON true
-		WHERE
-		  O.added AND
-		  NOT O.deleted AND
-		  O.order_date BETWEEN convert_date_filter(_filter.start_date)
-                           AND convert_date_filter(_filter.end_date)
+		  _order O
+		  LEFT JOIN _order_position OP USING(order_id)
+		  LEFT JOIN _payment P USING(order_id)
 		ORDER BY O.order_number ASC;
       </Text>
     </SqlQuery>
@@ -719,6 +752,99 @@
     </SqlQuery>
 
     <!--============================================================-->
+    <!--===Оплаты===-->
+    <!--============================================================-->
+    <SqlQuery Name="OrderPaymentByOrderIdSelectSqlQuery">
+      <Text>  
+      SELECT
+        OP.order_payment_id AS "OrderPaymentId",
+        C.cash_id AS "CashId",
+        C.cash_date AS "Date",
+        C.account_id AS "AccountId",
+        C.summ AS "Summ"
+      FROM
+        template.order_payment OP
+        JOIN template.cash C USING(cash_id)
+      WHERE
+        NOT C.deleted AND
+        OP.order_id = {OrderId}
+      ORDER BY C.cash_date, OP.order_payment_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderPaymentByIdSelectSqlQuery">
+      <Text>
+	    SELECT
+	      C.cash_date AS "Date",
+	      C.account_id AS "AccountId",
+	      C.summ AS "Summ"
+	    FROM
+	      template.order_payment OP
+	      JOIN template.cash C USING(cash_id)
+	    WHERE
+	      OP.order_payment_id = {OrderPaymentId};
+	  </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderPaymentInsertSqlQuery">
+      <Text>
+	    INSERT INTO template.cash(
+	      cash_date,
+	      account_id,
+	      operation_id,
+	      summ
+	    )
+	    SELECT
+	      {Date},
+	      {AccountId},
+	      O.operation_id,
+	      {Summ}
+	    FROM
+	      template.operation O
+	    WHERE
+	      id_title = 'OrderPaymentOperation';
+	
+	    INSERT INTO template.order_payment(
+	      order_id,
+	      cash_id
+	    )
+	    SELECT
+	      {OrderId},
+	      currval('template.cash_id_seq'::regclass)
+	    RETURNING order_payment_id;
+	  </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderPaymentUpdateSqlQuery">
+      <Text>
+		UPDATE template.cash
+		SET
+		  cash_date = {Date},
+		  account_id = {AccountId},
+		  summ = {Summ}
+		FROM
+		  template.order_payment OP
+		WHERE
+		  cash.cash_id = OP.cash_id AND
+		  OP.order_payment_id = {OrderPaymentId};
+	  </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderPaymentDeleteSqlQuery">
+      <Text>
+      UPDATE template.cash
+      SET
+        deleted = TRUE,
+        date_deleted = NOW()
+      FROM
+        template.order_payment OP
+      WHERE
+        cash.cash_id = OP.cash_id AND
+        OP.order_payment_id = {OrderPaymentId};
+    </Text>
+    </SqlQuery>
+
+    <!--============================================================-->
     <!--===Настройки===-->
     <!--============================================================-->
     <SqlQuery Name="SettingsSelectSqlQuery">
@@ -754,44 +880,113 @@
     </SqlQuery>
 
     <!--============================================================-->
-    <!--===Назначение платежей===-->
+    <!--===Счета===-->
+    <!--============================================================-->
+    <SqlQuery Name="AccountSelectSqlQuery">
+      <Text>  
+        SELECT
+          account.account_id AS "AccountId",
+          account.title AS "Title",
+          account.cash AS "AccountType",
+          account.archive AS "Archive"
+        FROM
+          template.account
+        ORDER BY account.title;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="AccountByIdSelectSqlQuery">
+      <Text>
+        SELECT
+          account.title AS "Title",
+          account.cash AS "AccountType"
+        FROM
+          template.account
+        WHERE
+          account.account_id = {AccountId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="AccountInsertSqlQuery">
+      <Text>
+		INSERT INTO template.account (
+		  title,
+		  cash
+		)
+		VALUES (
+		  {Title},
+		  {AccountType}
+		)
+		RETURNING account_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="AccountUpdateSqlQuery">
+      <Text>
+        UPDATE template.account
+        SET
+          title = {Title},
+          cash = {AccountType}
+        WHERE
+          account_id = {AccountId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="AccountArchiveUpdateSqlQuery">
+      <Text>
+        UPDATE template.account
+        SET
+          archive = NOT archive
+        WHERE
+          account_id = {AccountId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="AccountDeleteSqlQuery">
+      <Text>
+        SELECT template.account_try_delete({AccountId}::smallint);
+      </Text>
+    </SqlQuery>
+
+    <!--============================================================-->
+    <!--===Назначения платежей===-->
     <!--============================================================-->
     <SqlQuery Name="OperationSelectSqlQuery">
       <Text>  
-		  SELECT
-		      true AS "Expand",
-		      -2::bigint AS "OperationId",
-		      NULL::bigint AS "OperationCategoryId",
-		      'ДОХОД' AS "Title",
-		      false AS "System",
-		      false AS "Archive"
-		    
-		    UNION ALL
-		    
-		    SELECT
-		      true AS "Expand",
-		      -1::bigint,
-		      NULL::bigint,
-		      'РАСХОД',
-		      false,
-		      false
-		    
-		    UNION ALL
-		    
-		    SELECT
-		      true AS "Expand",
-		      O.operation_id AS "OperationId",
-		      COALESCE(O.operation_category_id, CASE WHEN income THEN -2 ELSE -1 END) AS "OperationCategoryId",
-		      O.title AS "Title",
-		      O.id_title NOTNULL AS "System",
-		      O.archive AS "Archive"
-		    FROM template.operation O;
+	    SELECT
+	      true AS "Expand",
+	      -2::bigint AS "OperationId",
+	      NULL::bigint AS "OperationCategoryId",
+	      'ДОХОД' AS "Title",
+	      false AS "System",
+	      false AS "Archive"
+	    
+	    UNION ALL
+	    
+	    SELECT
+	      true AS "Expand",
+	      -1::bigint,
+	      NULL::bigint,
+	      'РАСХОД',
+	      false,
+	      false
+	    
+	    UNION ALL
+	    
+	    SELECT
+	      true AS "Expand",
+	      O.operation_id AS "OperationId",
+	      COALESCE(O.operation_category_id, CASE WHEN income THEN -2 ELSE -1 END) AS "OperationCategoryId",
+	      O.title AS "Title",
+	      O.id_title NOTNULL AS "System",
+	      O.archive AS "Archive"
+	    FROM template.operation O;
       </Text>
     </SqlQuery>
 
     <SqlQuery Name="OperationCategorySelectSqlQuery">
       <Text>
-        WITH RECURSIVE tree (operation_id, operation_category_id, title, id_title, income, path, archive) AS (
+	    WITH RECURSIVE tree (operation_id, operation_category_id, title, id_title, income, path, archive) AS (
 	      SELECT -2::bigint, NULL::bigint, 'ДОХОД', NULL, true, ARRAY[-2]::bigint[], false
 	    
 	      UNION
@@ -859,14 +1054,46 @@
       </Text>
     </SqlQuery>
 
+    <SqlQuery Name="OperationCashSelectSqlQuery">
+      <Text>
+	    SELECT
+	      operation_id AS "OperationId",
+	      title AS "Title",
+	      archive AS "Archive"
+	    FROM template.operation O
+	    WHERE
+	      id_title IS NULL AND
+	      NOT EXISTS (SELECT * FROM template.operation O2 WHERE O2.operation_category_id = O.operation_id)
+	    ORDER BY title, operation_id ASC;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OperationIsUsedSelectSqlQuery">
+      <Text>
+        SELECT template.operation_is_used_in_view_of_child({OperationId}::bigint) AS "IsUsed";
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OperationIsLeafSelectSqlQuery">
+      <Text>
+        SELECT
+          operation_id  AS "OperationId",
+          title AS "Title",
+          income AS "IsIncome",
+          NOT EXISTS(SELECT * FROM template.operation WHERE operation_category_id = O.operation_id) AS "IsLeaf",
+          EXISTS(SELECT * FROM template.cash C WHERE C.operation_id = O.operation_id) AS "IsUsed"
+        FROM template.operation O
+        WHERE operation_id = {OperationId};
+      </Text>
+    </SqlQuery>
+
     <SqlQuery Name="OperationByIdSelectSqlQuery">
       <Text>
         SELECT
-          operation.operation_id AS "OperationId",
-          operation.title AS "Title",
-          COALESCE(Operation.operation_category_id, CASE WHEN income THEN -2 ELSE -1 END) AS "OperationCategoryId",
-          income as "IsIncome",
-          id_title is not null as "IsSystem"
+          title AS "Title",
+          COALESCE(operation_category_id, CASE WHEN income THEN -2 ELSE -1 END) AS "OperationCategoryId", 
+          income AS "IsIncome",
+          id_title IS NOT NULL AS "IsSystem"
         FROM
           template.operation
         WHERE
@@ -874,38 +1101,19 @@
       </Text>
     </SqlQuery>
 
-    <SqlQuery Name="OperationIsUsedSelectSqlQuery">
-      <Text>
-       SELECT template.operation_is_used_in_view_of_child({OperationId}::bigint) AS "IsUsed";
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="OperationIsLeafSelectSqlQuery">
-      <Text>
-	    SELECT
-	      operation_id  AS "OperationId",
-	      title AS "Title",
-	      income AS "IsIncome",
-	      NOT EXISTS(SELECT * FROM template.operation WHERE operation_category_id = O.operation_id) AS "IsLeaf",
-	      EXISTS(SELECT * FROM template.cash C WHERE C.operation_id = O.operation_id) AS "IsUsed"
-	    FROM template.operation O
-	    WHERE operation_id = {OperationId};
-      </Text>
-    </SqlQuery>
-
     <SqlQuery Name="OperationInsertSqlQuery">
       <Text>
-	    INSERT INTO template.operation (
-	      title,
-	      operation_category_id,
-	      income
-	    )
-	    VALUES (
-	      {Title},
-	      {OperationCategoryId},
-	      {IsIncome}
-	    )
-	    RETURNING operation_id;
+		INSERT INTO template.operation (
+		  title,
+		  operation_category_id,
+		  income
+		)
+		VALUES (
+		  {Title},
+		  {OperationCategoryId},
+		  {IsIncome}
+		)
+		RETURNING operation_id;
       </Text>
     </SqlQuery>
 
@@ -917,205 +1125,20 @@
 	      operation_category_id = {OperationCategoryId},
 	      income = {IsIncome}
 	      WHERE operation_id = {OperationId};
-	
+	  
 	    SELECT template.operation_update_child({OperationId}::bigint);
       </Text>
     </SqlQuery>
 
     <SqlQuery Name="OperationArchiveUpdateSqlQuery">
       <Text>
-            SELECT template.operation_try_archive({OperationId}::bigint, {Archive}::boolean);
+        SELECT template.operation_try_archive({OperationId}::bigint, {Archive}::boolean);
       </Text>
     </SqlQuery>
 
     <SqlQuery Name="OperationDeleteSqlQuery">
       <Text>
         SELECT template.operation_try_delete({OperationId});
-      </Text>
-    </SqlQuery>
-
-    <!--============================================================-->
-    <!--===Счета===-->
-    <!--============================================================-->
-    <SqlQuery Name="AccountSelectSqlQuery">
-      <Text>  
-        SELECT
-          account.account_id AS "AccountId",
-          account.title AS "Title",
-          account.cash as "Cash",
-          account.archive AS "Archive"
-        FROM
-          template.account
-        ORDER BY account.title;
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="AccountByIdSelectSqlQuery">
-      <Text>
-        SELECT
-          account.account_id AS "AccountId",
-          account.title AS "Title",
-          Account.cash as "Cash"
-        FROM
-          template.account
-        WHERE
-          account.account_id = {AccountId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="AccountInsertSqlQuery">
-      <Text>
-    	INSERT INTO template.account (
-    	  title,
-          cash
-    	)
-    	VALUES (
-    	  {Title}, {Cash}
-    	)
-    	RETURNING account_id;
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="AccountUpdateSqlQuery">
-      <Text>
-        UPDATE template.account
-        SET
-          title = {Title},
-          cash = {Cash}
-        WHERE
-          account_id = {AccountId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="AccountArchiveUpdateSqlQuery">
-      <Text>
-        UPDATE template.account
-        SET
-          archive = NOT archive
-        WHERE
-          account_id = {AccountId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="AccountDeleteSqlQuery">
-      <Text>
-        SELECT template.account_try_delete({AccountId});
-      </Text>
-    </SqlQuery>
-
-    <!--============================================================-->
-    <!--===Оплаты===-->
-    <!--============================================================-->
-    <SqlQuery Name="OrderPaymentSelectSqlQuery">
-      <Text>  
-            SELECT
-		      OP.order_payment_id AS "OrderPaymentId",
-		      C.cash_id AS "CashId",
-		      C.cash_date AS "Date",
-		      C.account_id AS "AccountId",
-		      C.summ AS "Summ"
-		    FROM
-		      template.order_payment OP
-		      JOIN template.cash C USING(cash_id)
-		    WHERE
-		      NOT C.deleted AND
-		      OP.order_id = {OrderId}
-		    ORDER BY C.cash_date, OP.order_payment_id;
-		      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="OrderPaymentByIdSelectSqlQuery">
-      <Text>
-	 SELECT
-	      C.cash_date AS "Date",
-	      C.account_id AS "AccountId",
-	      C.summ AS "Summ"
-	    FROM
-	      template.order_payment OP
-	      JOIN template.cash C USING(cash_id)
-	    WHERE
-	      OP.order_payment_id = {OrderPaymentId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="OrderPaymentInsertSqlQuery">
-      <Text>
-	    INSERT INTO template.cash(
-	      cash_date,
-	      account_id,
-	      operation_id,
-	      summ
-	    )
-	    SELECT
-	      {Date},
-	      {AccountId},
-	      O.operation_id,
-	      {Summ}
-	    FROM
-	      template.operation O
-	    WHERE
-	      id_title = 'OrderPaymentOperation';
-	
-	    INSERT INTO template.order_payment(
-	      order_id,
-	      cash_id
-	    )
-	    SELECT
-	      {OrderId},
-	      currval('template.cash_id_seq'::regclass)
-	    RETURNING order_payment_id;
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="OrderPaymentUpdateSqlQuery">
-      <Text>
-            UPDATE template.cash
-    SET
-      cash_date = {Date},
-      account_id = {AccountId},
-      summ = {Summ}
-    FROM
-      template.order_payment OP
-    WHERE
-      cash.cash_id = OP.cash_id AND
-      OP.order_payment_id = {OrderPaymentId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="OrderPaymentDeleteSqlQuery">
-      <Text>
-        UPDATE template.cash
-    SET
-      deleted = TRUE,
-      date_deleted = NOW()
-    FROM
-      template.order_payment OP
-    WHERE
-      cash.cash_id = OP.cash_id AND
-      OP.order_payment_id = {OrderPaymentId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="AccountShortSelectSqlQuery">
-      <Text>
-        SELECT
-          account.account_id AS "AccountId",
-          account.title AS "Title"
-        FROM
-          template.account
-        where not archive or Account_id = {AccountId}
-        ORDER BY account.title;
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="AccountShortWithArchiveSelectSqlQuery">
-      <Text>
-        SELECT
-          account.account_id AS "AccountId",
-          account.title AS "Title"
-        FROM
-          template.account
-        ORDER BY account.title;
       </Text>
     </SqlQuery>
   </SqlQueries>
@@ -1178,12 +1201,6 @@
     <Permission Name="CityOrderViewSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
         <SqlQuery Name="CitySimpleSelectSqlQuery" />
-      </SqlQueries>
-    </Permission>
-
-    <Permission Name="DeletedOrderViewSqlQueryPermission" Type="SqlQueryPermission">
-      <SqlQueries>
-        <SqlQuery Name="DeletedOrderSelectSqlQuery" />
       </SqlQueries>
     </Permission>
 
@@ -1260,6 +1277,21 @@
       </SqlQueries>
     </Permission>
 
+    <Permission Name="OrderPaymentViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="OrderPaymentByOrderIdSelectSqlQuery" />
+        <SqlQuery Name="OrderPaymentByIdSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="OrderPaymentEditSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="OrderPaymentInsertSqlQuery" />
+        <SqlQuery Name="OrderPaymentUpdateSqlQuery" />
+        <SqlQuery Name="OrderPaymentDeleteSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
     <!-- Администрирование -->
     <Permission Name="SettingsViewPermission" Type="SqlQueryPermission">
       <SqlQueries>
@@ -1273,33 +1305,15 @@
       </SqlQueries>
     </Permission>
 
-    <Permission Name="OperationViewSqlQueryPermission" Type="SqlQueryPermission">
-      <SqlQueries>
-        <SqlQuery Name="OperationSelectSqlQuery" />
-        <SqlQuery Name="OperationByIdSelectSqlQuery" />
-        <SqlQuery Name="OperationCategorySelectSqlQuery" />
-        <SqlQuery Name="OperationIsUsedSelectSqlQuery" />
-        <SqlQuery Name="OperationIsLeafSelectSqlQuery" />
-      </SqlQueries>
-    </Permission>
-
-    <Permission Name="OperationEditSqlQueryPermission" Type="SqlQueryPermission">
-      <SqlQueries>
-        <SqlQuery Name="OperationInsertSqlQuery" />
-        <SqlQuery Name="OperationUpdateSqlQuery" />
-        <SqlQuery Name="OperationArchiveUpdateSqlQuery" />
-        <SqlQuery Name="OperationDeleteSqlQuery" />
-      </SqlQueries>
-    </Permission>
-
-    <Permission Name="AccountViewSqlQueryPermission" Type="SqlQueryPermission">
+    <!-- Счета -->
+    <Permission Name="AccountViewPermission" Type="SqlQueryPermission">
       <SqlQueries>
         <SqlQuery Name="AccountSelectSqlQuery" />
         <SqlQuery Name="AccountByIdSelectSqlQuery" />
       </SqlQueries>
     </Permission>
 
-    <Permission Name="AccountEditSqlQueryPermission" Type="SqlQueryPermission">
+    <Permission Name="AccountEditPermission" Type="SqlQueryPermission">
       <SqlQueries>
         <SqlQuery Name="AccountInsertSqlQuery" />
         <SqlQuery Name="AccountUpdateSqlQuery" />
@@ -1308,20 +1322,31 @@
       </SqlQueries>
     </Permission>
 
-    <Permission Name="OrderPaymentViewSqlQueryPermission" Type="SqlQueryPermission">
+    <!-- Назначения платежей -->
+    <Permission Name="OperationViewPermission" Type="SqlQueryPermission">
       <SqlQueries>
-        <SqlQuery Name="OrderPaymentSelectSqlQuery" />
-        <SqlQuery Name="OrderPaymentByIdSelectSqlQuery" />
-        <SqlQuery Name="AccountShortSelectSqlQuery" />
-        <SqlQuery Name="AccountShortWithArchiveSelectSqlQuery" />
+        <SqlQuery Name="OperationSelectSqlQuery" />
+        <SqlQuery Name="OperationCategorySelectSqlQuery" />
+        <SqlQuery Name="OperationByIdSelectSqlQuery" />
+        <SqlQuery Name="OperationCashSelectSqlQuery" />
       </SqlQueries>
     </Permission>
 
-    <Permission Name="OrderPaymentEditSqlQueryPermission" Type="SqlQueryPermission">
+    <Permission Name="OperationEditPermission" Type="SqlQueryPermission">
       <SqlQueries>
-        <SqlQuery Name="OrderPaymentInsertSqlQuery" />
-        <SqlQuery Name="OrderPaymentUpdateSqlQuery" />
-        <SqlQuery Name="OrderPaymentDeleteSqlQuery" />
+        <SqlQuery Name="OperationInsertSqlQuery" />
+        <SqlQuery Name="OperationUpdateSqlQuery" />
+        <SqlQuery Name="OperationArchiveUpdateSqlQuery" />
+        <SqlQuery Name="OperationDeleteSqlQuery" />
+        <SqlQuery Name="OperationIsUsedSelectSqlQuery" />
+        <SqlQuery Name="OperationIsLeafSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <!-- Отчеты -->
+    <Permission Name="DeletedOrderReportPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="DeletedOrderSelectSqlQuery" />
       </SqlQueries>
     </Permission>
   </Permissions>
@@ -1372,9 +1397,9 @@
       </Permissions>
     </Role>
 
-    <Role Name="DeletedOrderViewRole">
+    <Role Name="DeletedOrderRole">
       <Permissions>
-        <Permission Name="DeletedOrderViewSqlQueryPermission" />
+        <Permission Name="DeletedOrderReportPermission" />
       </Permissions>
     </Role>
 
@@ -1430,6 +1455,19 @@
       </Permissions>
     </Role>
 
+    <Role Name="OrderPaymentViewRole">
+      <Permissions>
+        <Permission Name="OrderPaymentViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
+
+    <Role Name="OrderPaymentEditRole">
+      <Permissions>
+        <Permission Name="OrderPaymentViewSqlQueryPermission" />
+        <Permission Name="OrderPaymentEditSqlQueryPermission" />
+      </Permissions>
+    </Role>
+
     <Role Name="SettingsViewRole">
       <Permissions>
         <Permission Name="SettingsViewPermission" />
@@ -1443,39 +1481,29 @@
       </Permissions>
     </Role>
 
-    <Role Name="OperationViewRole">
+    <Role Name="AccountVieRole">
       <Permissions>
-        <Permission Name="OperationViewSqlQueryPermission" />
-      </Permissions>
-    </Role>
-    <Role Name="OperationEditRole">
-      <Permissions>
-        <Permission Name="OperationViewSqlQueryPermission" />
-        <Permission Name="OperationEditSqlQueryPermission" />
+        <Permission Name="AccountViewPermission" />
       </Permissions>
     </Role>
 
-    <Role Name="AccountViewRole">
-      <Permissions>
-        <Permission Name="AccountViewSqlQueryPermission" />
-      </Permissions>
-    </Role>
     <Role Name="AccountEditRole">
       <Permissions>
-        <Permission Name="AccountViewSqlQueryPermission" />
-        <Permission Name="AccountEditSqlQueryPermission" />
+        <Permission Name="AccountViewPermission" />
+        <Permission Name="AccountEditPermission" />
       </Permissions>
     </Role>
 
-    <Role Name="OrderPaymentViewRole">
+    <Role Name="OperationViewRole">
       <Permissions>
-        <Permission Name="OrderPaymentViewSqlQueryPermission" />
+        <Permission Name="OperationViewPermission" />
       </Permissions>
     </Role>
-    <Role Name="OrderPaymentEditRole">
+
+    <Role Name="OperationEditRole">
       <Permissions>
-        <Permission Name="OrderPaymentViewSqlQueryPermission" />
-        <Permission Name="OrderPaymentEditSqlQueryPermission" />
+        <Permission Name="OperationViewPermission" />
+        <Permission Name="OperationEditPermission" />
       </Permissions>
     </Role>
   </Roles>
@@ -1486,17 +1514,16 @@
         <Role Name="CityEditRole" />
         <Role Name="ClientEditRole" />
         <Role Name="OrderEditRole" />
-        <Role Name="DeletedOrderViewRole" />
+        <Role Name="DeletedOrderRole" />
         <Role Name="UnitEditRole" />
         <Role Name="MaterialEditRole" />
         <Role Name="MaterialCategoryEditRole" />
         <Role Name="OrderPositionEditRole" />
-        <Role Name="SettingsEditRole" />
-        <Role Name="OperationEditRole" />
-        <Role Name="AccountEditRole" />
         <Role Name="OrderPaymentEditRole" />
+        <Role Name="SettingsEditRole" />
+        <Role Name="AccountEditRole" />
+        <Role Name="OperationEditRole" />
       </Roles>
     </Group>
-
   </Groups>
 </Workflow>

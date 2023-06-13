@@ -1,0 +1,848 @@
+<?xml version="1.0"?>
+<Form Name="TemplateAccountListForm" Width="500" Height="300" FormBorderStyle="Sizable" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" BackColor="ThemeBackgroundColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True">
+  <Parameters>
+    <Parameter Name="Title">Счета</Parameter>
+    <Parameter Name="Updated">False</Parameter>
+  </Parameters>
+
+  <Appearance>
+    <Colors>
+      <Color Name="ThemeForeColor" Red="0" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeBackgroundColor" Red="255" Green="255" Blue="255" Alpha="255" />
+      <Color Name="ThemeFlatColor" Red="255" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeSeparateBackgroundColor" Red="225" Green="225" Blue="225" Alpha="255" />
+
+      <Color Name="HeadBackgroundColor" Red="221" Green="232" Blue="246" Alpha="255" />
+      <Color Name="HeadForeColor" Red="70" Green="70" Blue="70" Alpha="255" />
+
+      <Color Name="LabelForeColor" Red="100" Green="100" Blue="100" Alpha="255" />
+      <Color Name="TableBackgroundColor" Red="200" Green="200" Blue="200" Alpha="255" />
+      <Color Name="TableArchiveColor" Red="230" Green="230" Blue="230" Alpha="255" />
+
+      <!-- Стили кнопок -->
+      <Color Name="ButtonFlatBorderColor" Red="225" Green="225" Blue="225" Alpha="255" />
+      <Color Name="ButtonFlatMouseDownBackColor" Red="201" Green="219" Blue="241" Alpha="255" />
+      <Color Name="ButtonFlatMouseOverBackColor" Red="228" Green="237" Blue="248" Alpha="255" />
+    </Colors>
+
+    <FontStyles>
+      <FontStyle Name="ThemeFontStyle" Font="Segoe UI" Size="9" />
+      <FontStyle Name="HeadFontStyle" Font="Segoe UI" Size="15" />
+      <FontStyle Name="LabelFontStyle" Font="Segoe UI" Size="9" Italic="True" />
+      <FontStyle Name="ButtonFontStyle" Font="Segoe UI" Size="10" />
+    </FontStyles>
+  </Appearance>
+
+  <DataConnections>
+    <DataConnection Name="AccountPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="AccountSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="AccountId" />
+          <Field Name="Title" />
+          <Field Name="AccountType" />
+          <Field Name="Archive" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="AccountArchiveSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="AccountArchiveUpdateSqlQuery" Type="Update" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="AccountId">
+          <Value>
+            <Object Name="AccountDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">AccountId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+    </DataConnection>
+
+    <DataConnection Name="AccountDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="AccountDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="AccountId">
+          <Value>
+            <Object Name="AccountDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">AccountId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <Refresh>
+        <DataConnection Name="AccountPrimaryGetDataConnection" />
+      </Refresh>
+    </DataConnection>
+  </DataConnections>
+
+  <Conditions>
+    <Condition Name="FormLoadedCondition" Type="FormLoadedCondition" Assembly="Conditions" />
+
+    <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
+
+    <Condition Name="EscapeKeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
+      <Key Value="Escape" />
+    </Condition>
+
+    <Condition Name="F5KeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
+      <Key Value="F5" />
+    </Condition>
+
+    <Condition Name="AccountSelectedCondition" Type="GreaterCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="AccountDatabaseTable">
+            <Property Name="SelectedRowsCount" />
+          </Object>
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="SelectedAccountIsArchiveCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="AccountDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">Archive</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="AccountCellDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
+      <Table Name="AccountDatabaseTable" />
+    </Condition>
+
+    <Condition Name="AccountAddFormUpdatedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="AccountAddFormShowCommand" Parameter="Updated" />
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="AccountEditFormUpdatedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="AccountEditFormShowCommand" Parameter="Updated" />
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+  </Conditions>
+
+  <Commands>
+    <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
+
+    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Updated">True</Parameter>
+    </Command>
+
+    <Command Name="AccountDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="AccountPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="AccountAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateAccountEdit.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="AccountEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateAccountEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="AccountId">
+          <Object Name="AccountDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">AccountId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="AccountArchiveSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="AccountArchiveSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="AccountDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="AccountDeleteSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="AccountDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Вы действительно хотите удалить выбранную запись?</Text>
+      <Buttons Type="YesNo" />
+      <Icon Type="Question" />
+    </Command>
+
+    <Command Name="AccountTryDeleteUsedMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Невозможно удалить запись, так как она используется в программе.\rЗапись перемещена в архив.</Text>
+      <Icon Type="Information" />
+      <Buttons Type="Ok" />
+    </Command>
+
+    <Command Name="AccountArchiveMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Архив</Caption>
+      <Text>
+        <Switch>
+          <Case>
+            <When>
+              <Condition Name="SelectedAccountIsArchiveCondition" />
+            </When>
+            <Then>Вы действительно хотите восстановить выбранную запись из архива?</Then>
+          </Case>
+          <Case>Вы действительно хотите перенести выбранную запись в архив?</Case>
+        </Switch>
+      </Text>
+      <Buttons Type="YesNo" />
+      <Icon Type="Question" />
+    </Command>
+
+    <Command Name="EditingArchiveAccountMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption />
+      <Text>Для редактирования восстановите запись из архива.</Text>
+      <Icon Type="Warning" />
+      <Buttons Type="Ok" />
+    </Command>
+
+    <Command Name="AccountSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="AccountDatabaseTable">
+        <Property Name="SelectRowByFieldValue">
+          <Parameters>
+            <Parameter Name="ColumnName">AccountId</Parameter>
+            <Parameter Name="Value">
+              <Input />
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+  </Commands>
+
+  <Executions>
+    <Execution>
+      <ConditionExpression>
+        <Or>
+          <Condition Name="FormClosingCondition" />
+          <Condition Name="EscapeKeyDownCondition" />
+        </Or>
+      </ConditionExpression>
+      <Commands>
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="AccountAddFormUpdatedTrueEqualCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="AccountDataConnectionRefreshCommand" />
+        <Command Name="AccountSelectInTableValueSetCommand">
+          <Command Name="AccountAddFormShowCommand" Parameter="AccountId" />
+        </Command>
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="AccountEditFormUpdatedTrueEqualCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="AccountDataConnectionRefreshCommand" />
+        <Command Name="AccountSelectInTableValueSetCommand">
+          <Command Name="AccountEditFormShowCommand" Parameter="AccountId" />
+        </Command>
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="AccountArchiveMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="AccountArchiveSaveCommand" />
+        <Command Name="AccountDataConnectionRefreshCommand" />
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="AccountDeleteMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="AccountDeleteSaveCommand" />
+        <If>
+          <When>
+            <Not>
+              <Command Name="AccountDeleteSaveCommand" />
+            </Not>
+          </When>
+          <Then>
+            <Command Name="AccountTryDeleteUsedMessageBoxCommand" />
+          </Then>
+        </If>
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="AccountCellDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <Condition Name="SelectedAccountIsArchiveCondition" />
+          </When>
+          <Then>
+            <Command Name="EditingArchiveAccountMessageBoxCommand" />
+          </Then>
+          <Else>
+            <Command Name="AccountEditFormShowCommand" />
+          </Else>
+        </If>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="F5KeyDownCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="AccountDataConnectionRefreshCommand" />
+      </Commands>
+    </Execution>
+  </Executions>
+
+  <MyObjects>
+    <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
+      <Top>0</Top>
+      <Left>0</Left>
+      <Height>50</Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>2</TabIndex>
+      <BackColor>HeadBackgroundColor</BackColor>
+
+      <MyObject Name="HeadLabel" Type="Label" Assembly="BaseControls">
+        <Top>0</Top>
+        <Left>10</Left>
+        <Height>
+          <Object Name="HeadPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ArchiveFilterComboBox">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="HeadLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <FontStyle>HeadFontStyle</FontStyle>
+        <ForeColor>HeadForeColor</ForeColor>
+        <TextAlign>MiddleLeft</TextAlign>
+        <Text>
+          <Parameter Name="Title" />
+        </Text>
+      </MyObject>
+
+      <MyObject Name="ArchiveFilterComboBox" Type="ComboBox" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>Ceiling(({0} - {1}) / 2)</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="ArchiveFilterComboBox">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Right>
+          <Calculate>
+            <Expression>{0} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Right>
+        <Width>100</Width>
+        <TabIndex>1</TabIndex>
+        <NullValue Show="True" Title="Все" />
+        <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
+        <ValueList>
+          <Structure Type="Table">
+            <Row>
+              <Item>False</Item>
+              <Item>Актуальные</Item>
+            </Row>
+            <Row>
+              <Item>True</Item>
+              <Item>Архивные</Item>
+            </Row>
+          </Structure>
+        </ValueList>
+        <Value>False</Value>
+      </MyObject>
+    </MyObject>
+
+    <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="HeadPanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>0</Left>
+      <Height>
+        <Calculate>
+          <Expression>{0} - {1}</Expression>
+          <Items>
+            <Item>
+              <Form>
+                <Property Name="Height" />
+              </Form>
+            </Item>
+            <Item>
+              <Object Name="ContentPanel">
+                <Property Name="Top" />
+              </Object>
+            </Item>
+          </Items>
+        </Calculate>
+      </Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>1</TabIndex>
+      <BackColor>ThemeBackgroundColor</BackColor>
+
+      <MyObject Name="AccountDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
+        <Top>5</Top>
+        <Left>10</Left>
+        <Height>
+          <Calculate>
+            <Expression>{0} - {1}*2</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="AccountDatabaseTable">
+                  <Property Name="Top" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1}*2 - {2} - 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="AccountDatabaseTable">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="AccountAddButton">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <AllowResizeColumns Value="False" />
+        <AllowResizeRows Value="False" />
+        <AllowInsert>False</AllowInsert>
+        <AllowUpdate>False</AllowUpdate>
+        <AllowDelete>False</AllowDelete>
+        <AutoSizeColumnsMode Value="Fill" />
+        <TabIndex>2</TabIndex>
+        <SourceDataConnection Name="AccountPrimaryGetDataConnection" />
+        <Columns>
+          <Column Name="AccountId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>№</Title>
+            <Width>30</Width>
+            <AutoFill Type="RowNumber" />
+            <Alignment Value="MiddleCenter" />
+            <AutoSizeMode Value="None" />
+          </Column>
+          <Column Name="Title" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Наименование</Title>
+            <Width>150</Width>
+            <AutoSizeMode Value="Fill" />
+          </Column>
+          <Column Name="AccountType" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="AccountTypeText" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Тип счета</Title>
+            <Width>100</Width>
+            <AutoSizeMode Value="None" />
+            <Substitution SourceColumn="AccountType">
+              <Structure Type="Table">
+                <Row>
+                  <Item>True</Item>
+                  <Item>Наличный</Item>
+                </Row>
+                <Row>
+                  <Item>False</Item>
+                  <Item>Безналичный</Item>
+                </Row>
+              </Structure>
+            </Substitution>
+          </Column>
+          <Column Name="Archive" Type="DatabaseTableColumnCheckBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+            <Filter FilterNullValue="False">
+              <Object Name="ArchiveFilterComboBox" />
+            </Filter>
+          </Column>
+        </Columns>
+        <Formatting>
+          <BackColor Name="TableArchiveColor">
+            <Expression>Archive AND {0}</Expression>
+            <Items>
+              <Item>
+                <Not>
+                  <Object Name="ArchiveFilterComboBox" />
+                </Not>
+              </Item>
+            </Items>
+          </BackColor>
+        </Formatting>
+      </MyObject>
+
+      <MyObject Name="AccountAddButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Object Name="AccountDatabaseTable">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Left>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="AccountDatabaseTable">
+                  <Property Name="Right" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Left>
+        <Width>40</Width>
+        <Height>40</Height>
+        <TabIndex>3</TabIndex>
+        <Hint>Добавить запись...</Hint>
+        <BackgroundImage>Images\24x24\plus.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Commands>
+          <Command Name="AccountAddFormShowCommand" />
+        </Commands>
+      </MyObject>
+
+      <MyObject Name="AccountEditButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="AccountAddButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="AccountAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="AccountAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="AccountAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <TabIndex>4</TabIndex>
+        <Hint>Редактировать запись...</Hint>
+        <BackgroundImage>Images\24x24\pencil.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <And>
+            <Condition Name="AccountSelectedCondition" />
+            <Not>
+              <Condition Name="SelectedAccountIsArchiveCondition" />
+            </Not>
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="AccountEditFormShowCommand" />
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="AccountSelectedCondition" />
+                </Not>
+              </When>
+              <Then>Выберите запись для редактирования.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="SelectedAccountIsArchiveCondition" />
+              </When>
+              <Then>Для редактирования восстановите запись из архива.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+      </MyObject>
+
+      <MyObject Name="AccountDeleteButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="AccountEditButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="AccountAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="AccountAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="AccountAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <TabIndex>5</TabIndex>
+        <Hint>Удалить запись</Hint>
+        <BackgroundImage>Images\24x24\delete.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <And>
+            <Not>
+              <Condition Name="SelectedAccountIsArchiveCondition" />
+            </Not>
+            <Condition Name="AccountSelectedCondition" />
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="AccountDeleteMessageBoxCommand" />
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="AccountSelectedCondition" />
+                </Not>
+              </When>
+              <Then>Выберите запись для удаления.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="SelectedAccountIsArchiveCondition" />
+              </When>
+              <Then>Нельзя удалить архивную запись.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+      </MyObject>
+
+      <MyObject Name="AccountArchiveButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="AccountDeleteButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="AccountAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="AccountAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="AccountAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <TabIndex>6</TabIndex>
+        <Hint>
+          <Switch>
+            <Case>
+              <When>
+                <Condition Name="SelectedAccountIsArchiveCondition" />
+              </When>
+              <Then>Восстановить запись из архива</Then>
+            </Case>
+            <Case>Перенести запись в архив</Case>
+          </Switch>
+        </Hint>
+        <BackgroundImage>
+          <Switch>
+            <Case>
+              <When>
+                <Or>
+                  <Condition Name="SelectedAccountIsArchiveCondition" />
+                  <Object Name="ArchiveFilterComboBox" />
+                </Or>
+              </When>
+              <Then>Images\24x24\unarchive.png</Then>
+            </Case>
+            <Case>Images\24x24\archive.png</Case>
+          </Switch>
+        </BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <Condition Name="AccountSelectedCondition" />
+        </Enabled>
+        <Commands>
+          <Command Name="AccountArchiveMessageBoxCommand" />
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Object Name="ArchiveFilterComboBox" />
+              </When>
+              <Then>Для восстановления из архива выберите запись.</Then>
+            </Case>
+            <Case>Для переноса в архив выберите запись.</Case>
+          </Switch>
+        </DisabledText>
+      </MyObject>
+    </MyObject>
+
+  </MyObjects>
+</Form>

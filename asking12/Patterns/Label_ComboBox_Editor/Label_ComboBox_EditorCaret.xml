@@ -1,0 +1,212 @@
+<MyObject Name="{FieldName}Label" Type="Label" Assembly="BaseControls">
+ <Top>
+    <Calculate>
+      <Expression>\{0} + 5</Expression>
+      <Items>
+        <Item>
+          <Object Name="{AboveObject}">
+            <Property Name="Bottom" />
+          </Object>
+        </Item>
+      </Items>
+    </Calculate>
+  </Top>
+  <Left>
+    <Object Name="{AboveLabel}">
+      <Property Name="Left" />
+    </Object>
+  </Left>
+  <Width>
+    <Calculate>
+      <Expression>\{0} - \{1} - 10</Expression>
+      <Items>
+        <Item>
+          <Object Name="{ParentObject}">
+            <Property Name="Width" />
+          </Object>
+        </Item>
+        <Item>
+          <Object Name="{FieldName}Label">
+            <Property Name="Left" />
+          </Object>
+        </Item>
+      </Items>
+    </Calculate>
+  </Width>
+  <Height>20</Height>
+  <TextAlign>MiddleLeft</TextAlign>
+  <FontStyle>LabelFontStyle</FontStyle>
+  <ForeColor>LabelForeColor</ForeColor>
+  <Text>{FieldTitle}</Text>
+</MyObject>
+
+<MyObject Name="{FieldName}ComboBox" Type="ComboBox" Assembly="BaseControls">
+  <Top>
+    <Object Name="{FieldName}Label">
+      <Property Name="Bottom" />
+    </Object>
+  </Top>
+  <Left>
+    <Object Name="{FieldName}Label">
+      <Property Name="Left" />
+    </Object>
+  </Left>
+  <Width>
+    <Calculate>
+      <Expression>\{0} - \{1}*2 - \{2} - \{3} - 10</Expression>
+      <Items>
+        <Item>
+          <Object Name="{ParentObject}">
+            <Property Name="Width" />
+          </Object>
+        </Item>
+        <Item>
+          <Object Name="{FieldName}ComboBox">
+            <Property Name="Left" />
+          </Object>
+        </Item>
+        <Item>
+          <Object Name="{FieldName}AddEditButton">
+            <Property Name="Width" />
+          </Object>
+        </Item>
+        <Item>
+          <Object Name="{FieldName}ListButton">
+            <Property Name="Width" />
+          </Object>
+        </Item>
+      </Items>
+    </Calculate>
+  </Width>
+  <NullValue Show="True" />
+  <NullValueTitle>[Не выбрано]</NullValueTitle>
+  <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
+  <ValueList>
+    <DataConnection SourceDataConnection="{FieldName}ShortPrimaryGetDataConnection">
+      <Fields>
+        <Field Name="{FieldName}Id" />
+        <Field Name="Title" />
+      </Fields>
+    </DataConnection>
+  </ValueList>
+  <Value>
+    <Switch>
+      <Case>
+        <When>
+          <Parameter Name="Edit" />
+        </When>
+        <Then>
+          <DataConnection SourceDataConnection="{ItemName}PrimaryGetDataConnection">
+            <Fields>
+              <Field Name="{FieldName}Id" />
+            </Fields>
+          </DataConnection>
+        </Then>
+      </Case>
+      <Case />
+    </Switch>
+  </Value>
+</MyObject>
+
+<MyObject Name="{FieldName}AddEditButton" Type="Button" Assembly="BaseControls">
+  <Top>
+    <Object Name="{FieldName}ComboBox">
+      <Property Name="Top" />
+    </Object>
+  </Top>
+  <Left>
+  <Calculate>
+	<Expression>\{0} + 5</Expression>
+	<Items>
+	  <Item>
+		<Object Name="{FieldName}ComboBox">
+		  <Property Name="Right" />
+		</Object>
+	  </Item>
+	</Items>
+  </Calculate>
+  </Left>
+  <Height>22</Height>
+  <Width>22</Width>
+  <BackgroundImage>
+    <Switch>
+      <Case>
+        <When>
+          <Condition Name="{FieldName}ComboBoxIsNullOrEmptyCondition" />
+        </When>
+        <Then>Images\16x16\plus.png</Then>
+      </Case>
+      <Case>Images\16x16\pencil.png</Case>
+    </Switch>
+  </BackgroundImage>
+  <BackgroundImageLayout>Center</BackgroundImageLayout>
+	<Hint>
+	  <Switch>
+		<Case>
+		  <When>
+			<Condition Name="{FieldName}ComboBoxIsNullOrEmptyCondition" />
+		  </When>
+		  <Then>Добавить запись...</Then>
+		</Case>
+		<Case>Редактировать запись...</Case>
+	  </Switch>
+	</Hint>
+  <FlatStyle>Flat</FlatStyle>
+  <FlatBorderSize>1</FlatBorderSize>
+  <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+  <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+  <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+  <Commands>
+    <If>
+      <When>
+        <Condition Name="{FieldName}ComboBoxIsNullOrEmptyCondition" />
+      </When>
+      <Then>
+        <Command Name="{FieldName}AddFormShowCommand" />
+      </Then>
+      <Else>
+        <Command Name="{FieldName}EditFormShowCommand" />
+      </Else>
+    </If>
+  </Commands>
+</MyObject>
+
+<MyObject Name="{FieldName}ListButton" Type="Button" Assembly="BaseControls">
+  <Top>
+    <Object Name="{FieldName}ComboBox">
+      <Property Name="Top" />
+    </Object>
+  </Top>
+  <Left>
+  <Calculate>
+	<Expression>\{0} + 5</Expression>
+	<Items>
+	  <Item>
+		<Object Name="{FieldName}AddEditButton">
+		  <Property Name="Right" />
+		</Object>
+	  </Item>
+	</Items>
+  </Calculate>
+  </Left>
+  <Height>
+    <Object Name="{FieldName}AddEditButton">
+      <Property Name="Height" />
+    </Object>
+  </Height>
+  <Width>
+    <Object Name="{FieldName}AddEditButton">
+      <Property Name="Width" />
+    </Object>
+  </Width>
+  <BackgroundImage>Images\16x16\list.png</BackgroundImage>
+  <BackgroundImageLayout>Center</BackgroundImageLayout>
+  <FlatStyle>Flat</FlatStyle>
+  <FlatBorderSize>1</FlatBorderSize>
+  <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+  <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+  <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+  <Commands>
+    <Command Name="{FieldName}ListFormShowCommand" />
+  </Commands>
+</MyObject>

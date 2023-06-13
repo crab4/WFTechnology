@@ -1,0 +1,15 @@
+<Condition Name="{ItemName}SelectedCondition" Type="NotEqualCondition" Assembly="Conditions">
+  <Items>
+	<Item>
+	  <Object Name="{ItemName}DatabaseTable">
+		<Property Name="SelectedRowsCount" />
+	  </Object>
+	</Item>
+	<Item>0</Item>
+  </Items>
+  <DataType Type="IntegerDataType" />
+</Condition>
+
+<Condition Name="{ItemName}DoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
+  <Table Name="{ItemName}DatabaseTable" />
+</Condition>

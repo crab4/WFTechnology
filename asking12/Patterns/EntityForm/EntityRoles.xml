@@ -1,0 +1,12 @@
+﻿<Role Name="{EntityName}ViewRole">
+  <Permissions>
+    <Permission Name="{EntityName}ViewSqlQueryPermission" />
+  </Permissions>
+</Role>
+
+<Role Name="{EntityName}EditRole">
+  <Permissions>
+    <Permission Name="{EntityName}ViewSqlQueryPermission" />
+    <Permission Name="{EntityName}EditSqlQueryPermission" />
+  </Permissions>
+</Role>

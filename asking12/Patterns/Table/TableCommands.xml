@@ -1,0 +1,53 @@
+<Command Name="{ItemName}DataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+  <DataConnections>
+	<DataConnection Name="{ItemName}PrimaryGetDataConnection" />
+  </DataConnections>
+</Command>
+
+<Command Name="{ItemName}DeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+  <DataConnections>
+	<DataConnection Name="{ItemName}DeleteDataConnection" />
+  </DataConnections>
+</Command>
+
+<Command Name="{ItemName}AddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+  <Xml Type="Path">{WorkflowName}{ItemName}Edit.xml</Xml>
+  <Show Type="None" />
+</Command>
+
+<Command Name="{ItemName}EditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+  <Xml Type="Path">{WorkflowName}{ItemName}Edit.xml</Xml>
+  <Show Type="None" />
+  <Parameters>
+	<Parameter Name="Edit">True</Parameter>
+	<Parameter Name="{ItemName}Id">
+	  <Object Name="{ItemName}DatabaseTable">
+		<Property Name="SelectedRowCellValueByColumnName">
+		  <Parameters>
+			<Parameter Name="ColumnName">{ItemName}Id</Parameter>
+		  </Parameters>
+		</Property>
+	  </Object>
+	</Parameter>
+  </Parameters>
+</Command>
+
+<Command Name="{ItemName}SelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+  <Object Name="{ItemName}DatabaseTable">
+	<Property Name="SelectRowByFieldValue">
+	  <Parameters>
+		<Parameter Name="ColumnName">{ItemName}Id</Parameter>
+		<Parameter Name="Value">
+		  <Input />
+		</Parameter>
+	  </Parameters>
+	</Property>
+  </Object>
+</Command>
+
+<Command Name="{ItemName}DeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+  <Caption>Удаление</Caption>
+  <Text>Вы действительно хотите удалить выбранную запись?</Text>
+  <Buttons Type="YesNo" />
+  <Icon Type="Question" />
+</Command>

@@ -1,0 +1,8 @@
+{
+  "xml.fileAssociations": [
+    {
+      "pattern": "**/Template.xml",
+      "systemId": "file:///d%3A/WorkflowTechnology/Development/wXSD/Workflow/wXSDschema.xsd"
+    }
+  ]
+}

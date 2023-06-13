@@ -1,0 +1,5 @@
+<Permission Name="{ItemName}{FieldName}ViewSqlQueryPermission" Type="SqlQueryPermission">
+  <SqlQueries>
+    <SqlQuery Name="{FieldName}ShortSelectSqlQuery" />
+  </SqlQueries>
+</Permission>

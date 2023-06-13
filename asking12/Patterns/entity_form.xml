@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FilePattern>
+  <Name>Entity Form</Name>
+  <Description>Шаблонная карточка сущности.
+    
+Примечание.
+После применения требуется отдельно создать команду для запуска формы.</Description>
+  <Actions>
+    <VariableCollector Type="EnvironmentNamesCollector" />
+    <VariableCollector Type="WorkflowNameCollector" />
+    <Input Type="Wizard">
+      <Page>
+        <Title>Настройки паттерна Entity Form</Title>
+        <Description>Шаблонная карточка сущности.</Description>
+        <FieldDescription>
+          <Text>Примечание. После применения требуется отдельно создать команду для запуска формы.</Text>
+        </FieldDescription>
+		
+        <Variable Name="EntityName">
+          <Type Value="Text" />
+          <Text>Имя формы (например, "City")</Text>
+          <Description>Если имя процесса "NewWorkflow", а значение параметра "City",
+то файл будет называться "NewWorkflowCityEdit.xml",
+а в тэге Form в атрибуте Name будет "NewWorkflowCityEditForm"</Description>
+        </Variable>
+		
+        <Variable Name="EntityTitle">
+          <Type Value="Text" />
+          <Text>Название сущности (например, "Города")</Text>
+        </Variable>
+        <Variable Name="WorkflowSchemeName">
+          <Type Value="Text" />
+          <Text>Имя схемы БД (например, "template")</Text>
+        </Variable>
+        <Variable Name="EntityTable">
+          <Type Value="Text" />
+          <Text>Имя таблицы БД для сущности списка (например, "city")</Text>
+        </Variable>
+		
+        <Variable Name="AddFormTitle">
+          <Type Value="Text" />
+          <Text>Заголовок формы для создания сущности (например, "Добавление города")</Text>
+          <Default>Добавление |</Default>
+        </Variable>
+        <Variable Name="EditFormTitle">
+          <Type Value="Text" />
+          <Text>Заголовок формы для редактирования сущности (например, "Редактирование города")</Text>
+          <Default>Редактирование |</Default>
+        </Variable>
+		
+        <Variable Name="FooterButtonName">
+          <Type Value="Text" />
+          <Text>Имя кнопки в футере (например, "Save")</Text>
+          <Default>Save</Default>
+        </Variable>
+        <Variable Name="FooterButtonText">
+          <Type Value="Text" />
+          <Text>Текст на кнопке в футере (например, "Сохранить")</Text>
+          <Default>Сохранить</Default>
+        </Variable>
+        <Variable Name="FooterButtonIcon">
+          <Type Value="Text" />
+          <Text>Иконка на кнопке в футере (путь по умолчанию - Images\24x24)</Text>
+          <Default>\content-save.png</Default>
+        </Variable>
+		
+      </Page>
+    </Input>
+    <Insert Place="WorkflowSqlQueries">
+      <Xml Path="EntityForm\EntityQueries.xml" />
+    </Insert>
+    <Insert Place="WorkflowPermissions">
+      <Xml Path="EntityForm\EntityPermissions.xml" />
+    </Insert>
+    <Insert Place="WorkflowRoles">
+      <Xml Path="EntityForm\EntityRoles.xml" />
+    </Insert>
+    <Insert Place="WorkflowGroups">
+      <Xml Path="EntityForm\EntityGroups.xml" />
+    </Insert>
+    <CreateFile>
+      <Template>EntityForm\EntityForm.xml</Template>
+      <FileName>{WorkflowName}{EntityName}Edit.xml</FileName>
+    </CreateFile>
+    <CopyFile>
+      <Source>EntityForm\24x24\content-save.png</Source>
+      <Destination>Images\24x24\content-save.png</Destination>
+    </CopyFile>
+  </Actions>
+</FilePattern>

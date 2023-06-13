@@ -1,0 +1,48 @@
+<Execution>
+  <ConditionExpression>
+	<Or>
+	  <And>
+		<Condition Name="FormClosingCondition" />
+		<Not>
+		  <Condition Name="FormChangedEqualCondition" />
+		</Not>
+	  </And>
+	  <Command Name="SaveOnCloseMessageBoxCommand" Parameter="No" />
+	  <Command Name="CloseOnCloseMessageBoxCommand" Parameter="Yes" />
+	</Or>
+  </ConditionExpression>
+  <Commands>
+	<Command Name="FormCloseCommand" />
+  </Commands>
+</Execution>
+
+<Execution>
+  <ConditionExpression>
+    <And>
+      <Condition Name="FormClosingCondition" />
+      <Condition Name="FormChangedEqualCondition" />
+    </And>
+  </ConditionExpression>
+  <Commands>
+	<If>
+	  <When>
+		<Condition Name="MandatoryFieldsAreFilledEqualCondition" />
+	  </When>
+	  <Then>
+		<Command Name="SaveOnCloseMessageBoxCommand" />
+	  </Then>
+	  <Else>
+		<Command Name="CloseOnCloseMessageBoxCommand" />
+	  </Else>
+	</If>
+  </Commands>
+</Execution>
+
+<Execution>
+  <ConditionExpression>
+    <Command Name="SaveOnCloseMessageBoxCommand" Parameter="Yes" />
+  </ConditionExpression>
+  <Commands>
+    <Command Name="SaveSequentialCommand" />
+  </Commands>
+</Execution>

@@ -1,0 +1,36 @@
+﻿<!--============================================================-->
+<!--==={EntityTitle}===-->
+<!--============================================================-->
+<SqlQuery Name="{EntityName}ByIdSelectSqlQuery">
+  <Text>
+    SELECT
+      {EntityTable}.{EntityTable}_id AS "{EntityName}Id",
+      {EntityTable}.title AS "Title"
+    FROM
+      {WorkflowSchemeName}.{EntityTable}
+    WHERE
+      {EntityTable}.{EntityTable}_id = {{EntityName}Id};
+  </Text>
+</SqlQuery>
+
+<SqlQuery Name="{EntityName}InsertSqlQuery">
+  <Text>
+	INSERT INTO {WorkflowSchemeName}.{EntityTable} (
+	  title
+	)
+	VALUES (
+	  \{Title}
+	)
+	RETURNING {EntityTable}_id;
+  </Text>
+</SqlQuery>
+
+<SqlQuery Name="{EntityName}UpdateSqlQuery">
+  <Text>
+    UPDATE {WorkflowSchemeName}.{EntityTable}
+    SET
+      title = \{Title}
+    WHERE
+      {EntityTable}_id = {{EntityName}Id};
+  </Text>
+</SqlQuery>

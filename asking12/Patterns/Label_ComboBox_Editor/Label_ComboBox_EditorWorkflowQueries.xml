@@ -1,0 +1,12 @@
+<SqlQuery Name="{FieldName}ShortSelectSqlQuery">
+  <Text>
+    SELECT
+      {ItemTable}.{ItemTable}_id AS "{FieldName}Id",
+      {ItemTable}.title AS "Title"
+    FROM
+      {WorkflowSchemeName}.{ItemTable}
+	WHERE
+	  NOT {ItemTable}.archive OR {ItemTable}.material_id = {{FieldName}Id}
+    ORDER BY {ItemTable}.title;
+  </Text>
+</SqlQuery>

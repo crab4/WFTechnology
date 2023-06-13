@@ -1,0 +1,32 @@
+<Execution>
+  <ConditionExpression>
+    <Command Name="{FieldName}AddFormShowCommand" Parameter="Updated" />
+  </ConditionExpression>
+  <Commands>
+    <Command Name="{FieldName}ShortDataConnectionRefreshCommand" />
+    <Command Name="{FieldName}ComboBoxValueSetCommand">
+      <Command Name="{FieldName}AddFormShowCommand" Parameter="{FieldName}Id" />
+    </Command>
+  </Commands>
+</Execution>
+
+<Execution>
+  <ConditionExpression>
+    <Command Name="{FieldName}EditFormShowCommand" Parameter="Updated" />
+  </ConditionExpression>
+  <Commands>
+    <Command Name="{FieldName}ShortDataConnectionRefreshCommand" />
+  </Commands>
+</Execution>
+
+<Execution>
+  <ConditionExpression>
+    <Command Name="{FieldName}ListFormShowCommand" Parameter="Updated" />
+  </ConditionExpression>
+  <Commands>
+    <Command Name="{FieldName}ShortDataConnectionRefreshCommand" />
+    <Command Name="{FieldName}ComboBoxValueSetCommand">
+      <Command Name="{FieldName}ListFormShowCommand" Parameter="Selected{FieldName}Id" />
+    </Command>
+  </Commands>
+</Execution>

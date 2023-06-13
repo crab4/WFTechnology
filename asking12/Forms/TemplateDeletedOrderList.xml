@@ -1,0 +1,450 @@
+<?xml version="1.0"?>
+<Form Name="TemplateDeletedOrderListForm" Width="900" Height="400" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+  <Parameters>
+    <Parameter Name="Title">Список удаленных заказов</Parameter>
+  </Parameters>
+
+  <Appearance>
+    <Colors>
+      <Color Name="ThemeForeColor" Red="0" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeBackgroundColor" Red="255" Green="255" Blue="255" Alpha="255" />
+      <Color Name="ThemeFlatColor" Red="255" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeSeparateBackgroundColor" Red="225" Green="225" Blue="225" Alpha="255" />
+
+      <Color Name="HeadBackgroundColor" Red="221" Green="232" Blue="246" Alpha="255" />
+      <Color Name="HeadForeColor" Red="70" Green="70" Blue="70" Alpha="255" />
+
+      <Color Name="LabelForeColor" Red="100" Green="100" Blue="100" Alpha="255" />
+      <Color Name="TableBackgroundColor" Red="200" Green="200" Blue="200" Alpha="255" />
+      <Color Name="TableArchiveColor" Red="230" Green="230" Blue="230" Alpha="255" />
+
+      <!-- Стили кнопок -->
+      <Color Name="ButtonFlatBorderColor" Red="225" Green="225" Blue="225" Alpha="255" />
+      <Color Name="ButtonFlatMouseDownBackColor" Red="201" Green="219" Blue="241" Alpha="255" />
+      <Color Name="ButtonFlatMouseOverBackColor" Red="228" Green="237" Blue="248" Alpha="255" />
+    </Colors>
+
+    <FontStyles>
+      <FontStyle Name="ThemeFontStyle" Font="Segoe UI" Size="9" />
+      <FontStyle Name="HeadFontStyle" Font="Segoe UI" Size="15" />
+      <FontStyle Name="LabelFontStyle" Font="Segoe UI" Size="9" Italic="True" />
+      <FontStyle Name="ButtonFontStyle" Font="Segoe UI" Size="10" />
+    </FontStyles>
+  </Appearance>
+
+  <DataConnections>
+    <DataConnection Name="DeletedOrderPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="DeletedOrderSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="OrderId" />
+          <Field Name="ClientId" />
+          <Field Name="CityId" />
+          <Field Name="OrderNumber" />
+          <Field Name="OrderDate" />
+          <Field Name="DateDeleted" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="StartDate" RefreshQuery="False">
+            <Value>
+              <Object Name="StartDateVariable" />
+            </Value>
+          </Parameter>
+          <Parameter NativeName="EndDate" RefreshQuery="False">
+            <Value>
+              <Object Name="EndDateDateTimePicker" />
+            </Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="ClientPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="ClientSimpleSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="ClientId" />
+          <Field Name="Title" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="CityPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="CitySimpleSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="CityId" />
+          <Field Name="Title" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+  </DataConnections>
+
+  <Conditions>
+    <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
+
+    <!--сравнение значения поля даты/времени "Дата окончания" со значением поля даты/времени "Дата начала" на "не больше"-->
+    <Condition Name="EndDateDateTimePickerStartDateDateTimePickerNotGreaterCondition" Type="GreaterCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="StartDateDateTimePicker" />
+        </Item>
+        <Item>
+          <Object Name="EndDateDateTimePicker" />
+        </Item>
+      </Items>
+      <DataType Type="DateTimeDataType" />
+    </Condition>
+  </Conditions>
+
+  <Commands>
+    <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
+
+    <Command Name="StartDateValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="StartDateVariable">
+        <Object Name="StartDateDateTimePicker" />
+      </Object>
+    </Command>
+
+    <Command Name="EndDateValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="EndDateVariable">
+        <Object Name="EndDateDateTimePicker" />
+      </Object>
+    </Command>
+
+    <Command Name="DeletedOrderDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="DeletedOrderPrimaryGetDataConnection" Packet="True" />
+      </DataConnections>
+    </Command>
+  </Commands>
+
+  <Executions>
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="FormClosingCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Execution>
+  </Executions>
+
+  <MyObjects>
+
+    <MyObject Name="StartDateVariable" Type="Variable" Assembly="SimpleControls">
+      <Value>
+        <DateTime Variable="FirstDayOfCurrMonth" />
+      </Value>
+    </MyObject>
+
+    <MyObject Name="EndDateVariable" Type="Variable" Assembly="SimpleControls">
+      <Value>
+        <DateTime Variable="LastDayOfCurrMonth" />
+      </Value>
+    </MyObject>
+
+    <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
+      <Top>0</Top>
+      <Left>0</Left>
+      <Height>60</Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <BackColor>HeadBackgroundColor</BackColor>
+
+      <MyObject Name="HeadLabel" Type="Label" Assembly="BaseControls" ChangeForm="False">
+        <Top>0</Top>
+        <Left>10</Left>
+        <Height>
+          <Object Name="HeadPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="StartDateDateTimePicker">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="HeadLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <FontStyle>HeadFontStyle</FontStyle>
+        <ForeColor>HeadForeColor</ForeColor>
+        <TextAlign>MiddleLeft</TextAlign>
+        <Text>
+          <Parameter Name="Title" />
+        </Text>
+      </MyObject>
+
+      <!--поле даты/времени "Дата начала"-->
+      <MyObject Name="StartDateDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
+        <Top>
+          <Object Name="EndDateDateTimePicker">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Right>
+          <Object Name="ToLabel">
+            <Property Name="Left" />
+          </Object>
+        </Right>
+        <Width>145</Width>
+        <TabIndex>2</TabIndex>
+        <Format>d MMMM yyyy</Format>
+        <NullValue Show="False" />
+        <Value>
+          <Object Name="StartDateVariable" />
+        </Value>
+      </MyObject>
+
+      <MyObject Name="ToLabel" Type="Label" Assembly="BaseControls">
+        <Top>
+          <Object Name="EndDateDateTimePicker">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Right>
+          <Object Name="EndDateDateTimePicker">
+            <Property Name="Left" />
+          </Object>
+        </Right>
+        <Height>20</Height>
+        <Width>30</Width>
+        <TextAlign>MiddleCenter</TextAlign>
+        <FontStyle>ThemeFontStyle</FontStyle>
+        <ForeColor>HeadForeColor</ForeColor>
+        <Text>—</Text>
+      </MyObject>
+
+      <!--поле даты/времени "Дата окончания"-->
+      <MyObject Name="EndDateDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
+        <Top>5</Top>
+        <Right>
+          <Calculate>
+            <Expression>{0} - 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Right>
+        <Width>145</Width>
+        <TabIndex>3</TabIndex>
+        <Format>d MMMM yyyy</Format>
+        <NullValue Show="False" />
+        <Value>
+          <Object Name="EndDateVariable" />
+        </Value>
+      </MyObject>
+
+      <MyObject Name="ApplyButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 2</Expression>
+            <Items>
+              <Item>
+                <Object Name="EndDateDateTimePicker">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Right>
+          <Calculate>
+            <Expression>{0} - 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Right>
+        <Width>145</Width>
+        <Height>25</Height>
+        <TextAlign>MiddleCenter</TextAlign>
+        <FontStyle>ThemeFontStyle</FontStyle>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <BackColor>ThemeBackgroundColor</BackColor>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Text>Применить</Text>
+        <Commands>
+          <Command Name="StartDateValueSetCommand" />
+          <Command Name="EndDateValueSetCommand" />
+          <Command Name="DeletedOrderDataConnectionRefreshCommand" />
+        </Commands>
+        <Enabled>
+          <Not>
+            <Condition Name="EndDateDateTimePickerStartDateDateTimePickerNotGreaterCondition" />
+          </Not>
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>Дата окончания периода должна быть больше даты начала.</DisabledText>
+      </MyObject>
+    </MyObject>
+
+    <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="HeadPanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>0</Left>
+      <Height>
+        <Calculate>
+          <Expression>{0} - {1}</Expression>
+          <Items>
+            <Item>
+              <Form>
+                <Property Name="Height" />
+              </Form>
+            </Item>
+            <Item>
+              <Object Name="ContentPanel">
+                <Property Name="Top" />
+              </Object>
+            </Item>
+          </Items>
+        </Calculate>
+      </Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>1</TabIndex>
+      <BackColor>ThemeBackgroundColor</BackColor>
+
+      <MyObject Name="DeletedOrderDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
+        <Top>5</Top>
+        <Left>10</Left>
+        <Height>
+          <Calculate>
+            <Expression>{0} - {1}*2</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="DeletedOrderDatabaseTable">
+                  <Property Name="Top" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1}*2</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="DeletedOrderDatabaseTable">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <AllowResizeColumns Value="False" />
+        <AllowResizeRows Value="False" />
+        <AllowInsert>False</AllowInsert>
+        <AllowUpdate>False</AllowUpdate>
+        <AllowDelete>False</AllowDelete>
+        <AutoSizeColumnsMode Value="Fill" />
+        <SourceDataConnection Name="DeletedOrderPrimaryGetDataConnection" />
+        <Columns>
+          <Column Name="OrderId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="ClientId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="CityId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>№</Title>
+            <Width>40</Width>
+            <AutoFill Type="RowNumber" />
+            <Alignment Value="MiddleCenter" />
+            <AutoSizeMode Value="None" />
+          </Column>
+          <Column Name="OrderNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Номер заказа</Title>
+            <Width>90</Width>
+            <AutoSizeMode Value="None" />
+            <Alignment Value="MiddleCenter" />
+          </Column>
+          <Column Name="OrderDate" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Дата и время заказа</Title>
+            <Width>130</Width>
+            <AutoSizeMode Value="None" />
+            <Alignment Value="MiddleCenter" />
+            <DataType Type="DateTimeDataType" Format="dd.MM.yyyy HH:mm" />
+          </Column>
+          <Column Name="CityTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Город</Title>
+            <Width>150</Width>
+            <AutoSizeMode Value="None" />
+            <Substitution SourceColumn="CityId">
+              <DataConnection SourceDataConnection="CityPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="CityId" />
+                  <Field Name="Title" />
+                </Fields>
+              </DataConnection>
+            </Substitution>
+          </Column>
+          <Column Name="ClientTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Клиент</Title>
+            <Width>300</Width>
+            <AutoSizeMode Value="Fill" />
+            <Substitution SourceColumn="ClientId">
+              <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="ClientId" />
+                  <Field Name="Title" />
+                </Fields>
+              </DataConnection>
+            </Substitution>
+          </Column>
+          <Column Name="DateDeleted" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Дата удаления</Title>
+            <Width>130</Width>
+            <AutoSizeMode Value="None" />
+            <Alignment Value="MiddleCenter" />
+            <DataType Type="DateTimeDataType" Format="dd.MM.yyyy HH:mm" />
+          </Column>
+        </Columns>
+      </MyObject>
+
+    </MyObject>
+  </MyObjects>
+</Form>

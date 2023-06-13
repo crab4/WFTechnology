@@ -1,0 +1,51 @@
+<Command Name="{FieldName}AddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+  <Xml Type="Path">{WorkflowName}{FieldName}Edit.xml</Xml>
+  <Show Type="None" />
+  <Parameters>
+    <Parameter Name="Edit">False</Parameter>
+    <Parameter Name="{FieldName}Title">
+      <Object Name="{FieldName}ComboBox">
+        <Property Name="Text" />
+      </Object>
+    </Parameter>
+  </Parameters>
+</Command>
+
+<Command Name="{FieldName}EditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+  <Xml Type="Path">{WorkflowName}{FieldName}Edit.xml</Xml>
+  <Show Type="None" />
+  <Parameters>
+    <Parameter Name="Edit">True</Parameter>
+    <Parameter Name="{FieldName}Id">
+      <Object Name="{FieldName}ComboBox" />
+    </Parameter>
+  </Parameters>
+</Command>
+
+<Command Name="{FieldName}ListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+  <Xml Type="Path">{WorkflowName}{FieldName}List.xml</Xml>
+  <Show Type="None" />
+  <Parameters>
+    <Parameter Name="SelectionMode">True</Parameter>
+    <Parameter Name="Selected{FieldName}Id">
+      <Object Name="{FieldName}ComboBox" />
+    </Parameter>
+    <Parameter Name="{FieldName}Title">
+      <Object Name="{FieldName}ComboBox">
+        <Property Name="Text" />
+      </Object>
+    </Parameter>
+  </Parameters>
+</Command>
+
+<Command Name="{FieldName}ShortDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+  <DataConnections>
+    <DataConnection Name="{FieldName}ShortPrimaryGetDataConnection" />
+  </DataConnections>
+</Command>
+
+<Command Name="{FieldName}ComboBoxValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+  <Object Name="{FieldName}ComboBox">
+    <Input />
+  </Object>
+</Command>

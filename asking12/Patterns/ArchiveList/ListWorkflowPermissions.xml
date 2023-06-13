@@ -1,0 +1,15 @@
+﻿<Permission Name="{ItemName}ViewSqlQueryPermission" Type="SqlQueryPermission">
+  <SqlQueries>
+    <SqlQuery Name="{ItemName}SelectSqlQuery" />
+    <SqlQuery Name="{ItemName}ByIdSelectSqlQuery" />
+  </SqlQueries>
+</Permission>
+
+<Permission Name="{ItemName}EditSqlQueryPermission" Type="SqlQueryPermission">
+  <SqlQueries>
+    <SqlQuery Name="{ItemName}InsertSqlQuery" />
+    <SqlQuery Name="{ItemName}UpdateSqlQuery" />
+    <SqlQuery Name="{ItemName}ArchiveUpdateSqlQuery" />
+    <SqlQuery Name="{ItemName}DeleteSqlQuery" />
+  </SqlQueries>
+</Permission>

@@ -1,0 +1,32 @@
+<DataConnection Name="{ItemName}PrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+  <SqlQuery Name="{ItemName}SelectSqlQuery" Type="Select">
+	<Workflow Name="{WorkflowName}" />
+	<Fields>
+	  <Field Name="{ItemName}Id" />
+	  <Field Name="Title" />
+	</Fields>
+  </SqlQuery>
+</DataConnection>
+
+<DataConnection Name="{ItemName}DeleteDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+  <Workflow Name="{WorkflowName}" />
+  <SqlQueries>
+	<SqlQuery Name="{ItemName}DeleteSqlQuery" Type="Delete" />
+  </SqlQueries>
+  <Parameters>
+	<Parameter NativeName="{ItemName}Id">
+	  <Value>
+		<Object Name="{ItemName}DatabaseTable">
+		  <Property Name="SelectedRowCellValueByColumnName">
+			<Parameters>
+			  <Parameter Name="ColumnName">{ItemName}Id</Parameter>
+			</Parameters>
+		  </Property>
+		</Object>
+	  </Value>
+	</Parameter>
+  </Parameters>
+  <Refresh>
+	<DataConnection Name="{ItemName}PrimaryGetDataConnection" />
+  </Refresh>
+</DataConnection>

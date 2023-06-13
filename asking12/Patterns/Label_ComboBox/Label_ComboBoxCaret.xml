@@ -1,0 +1,89 @@
+<MyObject Name="{FieldName}Label" Type="Label" Assembly="BaseControls">
+  <Top>
+    <Calculate>
+      <Expression>\{0} + 5</Expression>
+      <Items>
+        <Item>
+          <Object Name="{AboveObject}">
+            <Property Name="Bottom" />
+          </Object>
+        </Item>
+      </Items>
+    </Calculate>
+  </Top>
+  <Left>
+    <Object Name="{AboveLabel}">
+      <Property Name="Left" />
+    </Object>
+  </Left>
+  <Width>
+    <Calculate>
+      <Expression>\{0} - \{1} - 10</Expression>
+      <Items>
+        <Item>
+          <Object Name="{ParentObject}">
+            <Property Name="Width" />
+          </Object>
+        </Item>
+        <Item>
+          <Object Name="{FieldName}Label">
+            <Property Name="Left" />
+          </Object>
+        </Item>
+      </Items>
+    </Calculate>
+  </Width>
+  <Height>20</Height>
+  <TextAlign>MiddleLeft</TextAlign>
+  <FontStyle>LabelFontStyle</FontStyle>
+  <ForeColor>LabelForeColor</ForeColor>
+  <Text>{FieldTitle}</Text>
+</MyObject>
+
+<MyObject Name="{FieldName}ComboBox" Type="ComboBox" Assembly="BaseControls">
+  <Top>
+    <Object Name="{FieldName}Label">
+      <Property Name="Bottom" />
+    </Object>
+  </Top>
+  <Left>
+    <Object Name="{FieldName}Label">
+      <Property Name="Left" />
+    </Object>
+  </Left>
+  <Width>
+    <Calculate>
+      <Expression>\{0} - \{1} - 10</Expression>
+      <Items>
+        <Item>
+          <Object Name="{ParentObject}">
+            <Property Name="Width" />
+          </Object>
+        </Item>
+        <Item>
+          <Object Name="{FieldName}ComboBox">
+            <Property Name="Left" />
+          </Object>
+        </Item>
+      </Items>
+    </Calculate>
+  </Width>
+  <NullValue Show="True" />
+  <NullValueTitle>[Не выбрано]</NullValueTitle>
+  <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
+  <ValueList>
+    <DataConnection SourceDataConnection="{FieldName}ShortPrimaryGetDataConnection">
+      <Fields>
+        <Field Name="{FieldName}Id" />
+        <Field Name="Title" />
+      </Fields>
+    </DataConnection>
+  </ValueList>
+  <Value>
+    <DataConnection SourceDataConnection="{ItemName}PrimaryGetDataConnection">
+      <Fields>
+        <Field Name="{FieldName}Id" />
+      </Fields>
+    </DataConnection>
+  </Value>
+</MyObject>

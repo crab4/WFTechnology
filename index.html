@@ -17,7 +17,8 @@
           href="https://wfsys.gitbook.io/wt-practice/beginning/workflow_xml_editor/editor_installation#vozmozhnye-problemy">Картинка
           не на своём месте, выбор проекта должен быть на 1 блок выше </a>
       </div>
-      <div class="text">В целом проблема решается иначе: необходим необновленный Eclipse. запускающийся на 8ой Яве. А так же необходимо установить обе 8ые явы, и быть уверенным, что не снёс их при обновлении</div>
+      <div class="text">В целом проблема решается иначе: необходим необновленный Eclipse. запускающийся на 8ой Яве. А
+        так же необходимо установить обе 8ые явы, и быть уверенным, что не снёс их при обновлении</div>
     </div>
     <hr class="line-black">
     <div class="row">
@@ -91,12 +92,13 @@
       </div>
       <a target="_blank" href="images/7.png"><img class="images" src="images/7.png" alt="7"></a>
     </div>
-    
-    
+
+
     <hr class="line-black">
     <div class="row">
       <div class="column">
-        <a href="https://wfsys.gitbook.io/wt-practice/main/lesson_pattern_add-edit#kartochka-pozicii-zakaza" class="text-link">
+        <a href="https://wfsys.gitbook.io/wt-practice/main/lesson_pattern_add-edit#kartochka-pozicii-zakaza"
+          class="text-link">
           Разные шаблоны.
         </a>
       </div>
@@ -106,16 +108,38 @@
     <hr class="line-black">
     <div class="row">
       <div class="column">
-        <a href="https://wfsys.gitbook.io/wt-practice/main/lesson_pattern_add-edit#sozdanie-chernovika" class="text-link">
+        <a href="https://wfsys.gitbook.io/wt-practice/main/lesson_pattern_add-edit#sozdanie-chernovika"
+          class="text-link">
           Правильно TemplateStart.xml. на этой же странице есть ещё Tamplate в несокльких местах.
         </a>
       </div>
       <a target="_blank" href="images/9.png"><img class="images" src="images/9.png" alt="9"></a>
     </div>
+
+
+    <hr class="line-black">
+    <div class="row">
+      <div class="column">
+        <a href="https://wfsys.gitbook.io/wt-practice/main/lesson_tree_in_the_table" class="text-link">
+          Ошибка
+        </a>
+      </div>
+      <a target="_blank" href="images/10.png"><img class="images" src="images/10.png" alt="10"></a>
+    </div>
     
+
+    <hr class="line-black">
+    <div class="row">
+      <div class="column">
+        <a href="https://wfsys.gitbook.io/wt-practice/main/lesson_tree_in_the_table#baza-dannykh-1" class="text-link">
+          Таблица должна создаваться раньше, иначе начало укрока не работает
+        </a>
+      </div>
+      <a target="_blank" href="images/11.png"><img class="images" src="images/11.png" alt="11"></a>
+    </div>
+
+
   </div>
-
-
 </body>
 
 </html>
@@ -138,25 +162,3 @@ green
 white
 white
 pink
-
-<Commands>
-  <If>
-    <When>
-      <Condition Name="OrderPositionIsUsedCondition" />
-    </When>
-    <Then>
-      <Command Name="OrderPositionInfoDeleteMessageBoxCommand" />
-    </Then>
-    <Else>
-      <Command Name="OrderPositionQuestionDeleteMessageBoxCommand" />
-      <If>
-        <When>
-          <Command Name="OrderPositionQuestionDeleteMessageBoxCommand" Parameter="Yes" />
-        </When>
-        <Then>
-          <Command Name="OrderPositionDeleteCommand" />
-        </Then>
-      </If>
-    </Else>
-  </If>
-</Commands>

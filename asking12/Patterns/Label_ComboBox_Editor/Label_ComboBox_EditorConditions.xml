@@ -1,0 +1,7 @@
+<Condition Name="{FieldName}ComboBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+  <Items>
+    <Item>
+      <Object Name="{FieldName}ComboBox" />
+    </Item>
+  </Items>
+</Condition>

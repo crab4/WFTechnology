@@ -1,0 +1,20 @@
+<Command Name="SaveOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+  <Caption>Сохранение</Caption>
+  <Text>Форма содержит несохраненные изменения.\rСохранить их перед закрытием?</Text>
+  <Icon Type="Question" />
+  <Buttons Type="YesNoCancel" />
+</Command>
+
+<Command Name="CloseOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+  <Caption>Закрытие</Caption>
+  <Text>При закрытии все несохраненные изменения будут утеряны.\rВы уверены, что хотите закрыть форму?</Text>
+  <Icon Type="Question" />
+  <Buttons Type="YesNo" />
+</Command>
+
+<Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
+  <Commands>
+    <Command Name="{SaveCommandName}" />
+    <Command Name="FormCloseCommand" />
+  </Commands>
+</Command>

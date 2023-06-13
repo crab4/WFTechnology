@@ -1,0 +1,5 @@
+﻿<Group Name="AdministratorGroup">
+  <Roles>
+    <Role Name="{ItemName}EditRole" />
+  </Roles>
+</Group>
