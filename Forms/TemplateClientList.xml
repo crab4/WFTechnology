@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
-<Form Name="TemplateClientListForm" Width="1000" Height="600" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateClientListForm" Width="700" Height="400" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Title">Клиенты</Parameter>
-    <Parameter Name="Updated" />
     <Parameter Name="SelectionMode">False</Parameter>
     <Parameter Name="ClientTitle" />
     <Parameter Name="SelectedClientId" />
+    <Parameter Name="Updated">False</Parameter>
   </Parameters>
 
   <Appearance>
@@ -48,9 +48,9 @@
           <Field Name="Archive" />
         </Fields>
         <Parameters>
-          <Parameter NativeName="SearchKeyword" RefreshQuery="False">
+          <Parameter NativeName="SearchKeywords" RefreshQuery="False">
             <Value>
-              <Object Name="FilterVariable" />
+              <Object Name="SearchKeywordsVariable" />
             </Value>
           </Parameter>
         </Parameters>
@@ -73,14 +73,14 @@
         </Parameter>
       </Parameters>
       <SqlQueries>
-        <SqlQuery Name="ClientDeleteSqlQuery" Type="Delete" />
+        <SqlQuery Name="ClientDeleteSqlQuery" Type="Update" />
       </SqlQueries>
       <Refresh>
         <DataConnection Name="ClientPrimaryGetDataConnection" />
       </Refresh>
     </DataConnection>
 
-    <DataConnection Name="ClientArchiveToggleSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+    <DataConnection Name="ClientArchiveSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
       <Workflow Name="Template" />
       <Parameters>
         <Parameter NativeName="ClientId">
@@ -94,32 +94,33 @@
             </Object>
           </Value>
         </Parameter>
-        <Parameter NativeName="ClientTitle">
+        <Parameter NativeName="Archive">
           <Value>
-            <Object Name="ClientDatabaseTable">
-              <Property Name="SelectedRowCellValueByColumnName">
-                <Parameters>
-                  <Parameter Name="ColumnName">Archive</Parameter>
-                </Parameters>
-              </Property>
-            </Object>
+            <Not>
+              <Object Name="ClientDatabaseTable">
+                <Property Name="SelectedRowCellValueByColumnName">
+                  <Parameters>
+                    <Parameter Name="ColumnName">Archive</Parameter>
+                  </Parameters>
+                </Property>
+              </Object>
+            </Not>
           </Value>
         </Parameter>
       </Parameters>
       <SqlQueries>
         <SqlQuery Name="ClientArchiveSqlQuery" Type="Update" />
       </SqlQueries>
+      <Refresh>
+        <DataConnection Name="ClientPrimaryGetDataConnection" />
+      </Refresh>
     </DataConnection>
-
-
   </DataConnections>
 
   <Conditions>
-    <Condition Name="FormLoadedCondition" Type="FormLoadedCondition" Assembly="Conditions" />
-
     <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
 
-    <Condition Name="ClientSelectedGreaterCondition" Type="GreaterCondition" Assembly="Conditions">
+    <Condition Name="ClientSelectedCondition" Type="GreaterCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="ClientDatabaseTable">
@@ -135,7 +136,7 @@
       <Table Name="ClientDatabaseTable" />
     </Condition>
 
-    <Condition Name="ClientEditUpdateTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+    <Condition Name="ClientEditFormUpdatedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
       <AlwaysChange Value="True" />
       <Items>
         <Item>
@@ -146,7 +147,7 @@
       <DataType Type="BooleanDataType" />
     </Condition>
 
-    <Condition Name="SelectedClientIsArchiveEqualCondition" Type="EqualCondition" Assembly="Conditions">
+    <Condition Name="SelectedClientIsArchiveCondition" Type="EqualCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="ClientDatabaseTable">
@@ -161,12 +162,11 @@
       </Items>
     </Condition>
 
-    <Condition Name="IsArchiveCanEqualCondition" Type="EqualCondition" Assembly="Conditions">
+    <Condition Name="SearchKeywordsTextBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
       <Items>
         <Item>
-          <Command Name="ClientDeleteSaveCommand" />
+          <Object Name="SearchKeywordsTextBox" />
         </Item>
-        <Item>False</Item>
       </Items>
     </Condition>
   </Conditions>
@@ -184,44 +184,33 @@
         <Parameter Name="ClientId">
           <Input Name="ClientId" />
         </Parameter>
-        <Parameter Name="Archive">
-          <Input Name="Archive" />
-        </Parameter>
         <Parameter Name="ClientTitle">
           <Parameter Name="ClientTitle" />
         </Parameter>
       </Parameters>
     </Command>
 
-    <Command Name="ClientViewDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+    <Command Name="ClientEditSequentialCommand" Type="SequentialCommand" Assembly="Commands">
+      <Commands>
+        <Command Name="ClientEditFormShowCommand">
+          <Input Name="Edit">True</Input>
+          <Input Name="ClientId">
+            <Object Name="ClientDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">ClientId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Input>
+        </Command>
+      </Commands>
+    </Command>
+
+    <Command Name="ClientDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
       <DataConnections>
         <DataConnection Name="ClientPrimaryGetDataConnection" Packet="True" />
       </DataConnections>
-    </Command>
-
-    <Command Name="ClientSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Object Name="ClientDatabaseTable">
-        <Property Name="SelectRowByFieldValue">
-          <Parameters>
-            <Parameter Name="ColumnName">ClientId</Parameter>
-            <Parameter Name="Value">
-              <Switch>
-                <Case>
-                  <When>
-                    <Parameter Name="SelectionMode" />
-                  </When>
-                  <Then>
-                    <Parameter Name="SelectedClientId" />
-                  </Then>
-                </Case>
-                <Case>
-                  <Command Name="ClientEditFormShowCommand" Parameter="ClientId" />
-                </Case>
-              </Switch>
-            </Parameter>
-          </Parameters>
-        </Property>
-      </Object>
     </Command>
 
     <Command Name="ClientDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
@@ -230,14 +219,33 @@
       </DataConnections>
     </Command>
 
+    <Command Name="ClientArchiveSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="ClientArchiveSetDataConnection" />
+      </DataConnections>
+    </Command>
+
     <Command Name="ClientDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
       <Caption>Удаление</Caption>
-      <Text>Вы уверены, что хотите удалить этого клиента?</Text>
+      <Text>Вы действительно хотите удалить выбранную запись?</Text>
       <Icon Type="Question" />
       <Buttons Type="YesNo" />
     </Command>
 
-    <Command Name="UpdatedSetTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+    <Command Name="ClientSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="ClientDatabaseTable">
+        <Property Name="SelectRowByFieldValue">
+          <Parameters>
+            <Parameter Name="ColumnName">ClientId</Parameter>
+            <Parameter Name="Value">
+              <Command Name="ClientEditFormShowCommand" Parameter="ClientId" />
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+
+    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <Parameter Name="Updated">True</Parameter>
     </Command>
 
@@ -247,42 +255,30 @@
         <Switch>
           <Case>
             <When>
-              <Condition Name="SelectedClientIsArchiveEqualCondition" />
+              <Condition Name="SelectedClientIsArchiveCondition" />
             </When>
-            <Then>Вы действительно хотите восстаовить выбранную запись из архива?</Then>
+            <Then>Вы действительно хотите восстановить выбранную запись из архива?</Then>
           </Case>
-          <Case>Вы действительно хотите переместить выбранную запись в архив</Case>
+          <Case>Вы действительно хотите переместить выбранную запись в архив?</Case>
         </Switch>
       </Text>
       <Icon Type="Question" />
       <Buttons Type="YesNo" />
     </Command>
 
-    <Command Name="ClientCantDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
-      <Caption>Удадение</Caption>
-      <Text>Текущая запись защищена связями, невозможно удалить</Text>
-      <Icon Type="Asterisk" />
+    <Command Name="ClientTryDeleteUsedMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Невозможно удалить запись, так как она используется в программе.\rЗапись перемещена в архив.</Text>
+      <Icon Type="Information" />
       <Buttons Type="Ok" />
     </Command>
 
-    <Command Name="ClientArchiveToggleSaveCommand" Type="SaveCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="ClientArchiveToggleSetDataConnection" />
-      </DataConnections>
+    <Command Name="EditingArchiveClientMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption />
+      <Text>Для редактирования восстановите запись из архива.</Text>
+      <Icon Type="Warning" />
+      <Buttons Type="Ok" />
     </Command>
-
-    <Command Name="FilterTextBoxValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Object Name="FilterTitleTextBox">
-        <Input />
-      </Object>
-    </Command>
-
-    <Command Name="FilterVarValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Object Name="FilterVariable">
-        <Input />
-      </Object>
-    </Command>
-
 
     <Command Name="SelectedClientIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <Parameter Name="SelectedClientId">
@@ -297,8 +293,8 @@
     </Command>
 
     <Command Name="SelectedArchiveClientMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
-      <Caption>Внимание</Caption>
-      <Text>Нельзя выбрать запись, находящуюся в архиве</Text>
+      <Caption />
+      <Text>Нельзя выбрать запись, находящуюся в архиве.</Text>
       <Icon Type="Warning" />
       <Buttons Type="Ok" />
     </Command>
@@ -307,34 +303,34 @@
       <Commands>
         <If>
           <When>
-            <Condition Name="SelectedClientIsArchiveEqualCondition" />
+            <Condition Name="SelectedClientIsArchiveCondition" />
           </When>
           <Then>
             <Command Name="SelectedArchiveClientMessageBoxCommand" />
           </Then>
           <Else>
             <Command Name="SelectedClientIdValueSetCommand" />
-            <Command Name="UpdatedSetTrueValueSetCommand" />
+            <Command Name="UpdatedTrueValueSetCommand" />
             <Command Name="FormCloseCommand" />
           </Else>
         </If>
       </Commands>
     </Command>
 
+    <Command Name="SearchKeywordsVariableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="SearchKeywordsVariable">
+        <Input />
+      </Object>
+    </Command>
+
+    <Command Name="SearchKeywordsTextBoxValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="SearchKeywordsTextBox">
+        <Input />
+      </Object>
+    </Command>
   </Commands>
 
   <Executions>
-    <Execution>
-      <ConditionExpression>
-        <Condition Name="FormLoadedCondition" />
-      </ConditionExpression>
-      <Commands>
-        <Command Name="ClientSelectInTableValueSetCommand">
-          <Parameter Name="SelectedClientId" />
-        </Command>
-      </Commands>
-    </Execution>
-
     <Execution>
       <ConditionExpression>
         <Condition Name="FormClosingCondition" />
@@ -356,28 +352,16 @@
           <Then>
             <Command Name="SelectClientSequentialCommand" />
           </Then>
+          <ElseIf>
+            <When>
+              <Condition Name="SelectedClientIsArchiveCondition" />
+            </When>
+            <Then>
+              <Command Name="EditingArchiveClientMessageBoxCommand" />
+            </Then>
+          </ElseIf>
           <Else>
-            <Command Name="ClientEditFormShowCommand">
-              <Input Name="Edit">True</Input>
-              <Input Name="ClientId">
-                <Object Name="ClientDatabaseTable">
-                  <Property Name="SelectedRowCellValueByColumnName">
-                    <Parameters>
-                      <Parameter Name="ColumnName">ClientId</Parameter>
-                    </Parameters>
-                  </Property>
-                </Object>
-              </Input>
-              <Input Name="Archive">
-                <Object Name="ClientDatabaseTable">
-                  <Property Name="SelectedRowCellValueByColumnName">
-                    <Parameters>
-                      <Parameter Name="ColumnName">Archive</Parameter>
-                    </Parameters>
-                  </Property>
-                </Object>
-              </Input>
-            </Command>
+            <Command Name="ClientEditSequentialCommand" />
           </Else>
         </If>
       </Commands>
@@ -385,12 +369,12 @@
 
     <Execution>
       <ConditionExpression>
-        <Condition Name="ClientEditUpdateTrueEqualCondition" />
+        <Condition Name="ClientEditFormUpdatedTrueEqualCondition" />
       </ConditionExpression>
       <Commands>
-        <Command Name="ClientViewDataConnectionRefreshCommand" />
+        <Command Name="ClientDataConnectionRefreshCommand" />
         <Command Name="ClientSelectInTableValueSetCommand" />
-        <Command Name="UpdatedSetTrueValueSetCommand" />
+        <Command Name="UpdatedTrueValueSetCommand" />
       </Commands>
     </Execution>
 
@@ -400,6 +384,17 @@
       </ConditionExpression>
       <Commands>
         <Command Name="ClientDeleteSaveCommand" />
+        <If>
+          <When>
+            <Not>
+              <Command Name="ClientDeleteSaveCommand" />
+            </Not>
+          </When>
+          <Then>
+            <Command Name="ClientTryDeleteUsedMessageBoxCommand" />
+          </Then>
+        </If>
+        <Command Name="UpdatedTrueValueSetCommand" />
       </Commands>
     </Execution>
 
@@ -408,21 +403,10 @@
         <Command Name="ClientArchiveMessageBoxCommand" Parameter="Yes" />
       </ConditionExpression>
       <Commands>
-        <Command Name="ClientArchiveToggleSaveCommand"> </Command>
-        <Command Name="ClientViewDataConnectionRefreshCommand" />
+        <Command Name="ClientArchiveSaveCommand" />
+        <Command Name="UpdatedTrueValueSetCommand" />
       </Commands>
     </Execution>
-
-    <Execution>
-      <ConditionExpression>
-        <Condition Name="IsArchiveCanEqualCondition" />
-      </ConditionExpression>
-      <Commands>
-        <Command Name="ClientCantDeleteMessageBoxCommand" />
-      </Commands>
-    </Execution>
-
-
   </Executions>
 
   <MyObjects>
@@ -447,7 +431,7 @@
         </Height>
         <Width>
           <Calculate>
-            <Expression>{0} - {1} - {2} - 20</Expression>
+            <Expression>{0} - {1} - 10</Expression>
             <Items>
               <Item>
                 <Object Name="HeadPanel">
@@ -457,11 +441,6 @@
               <Item>
                 <Object Name="HeadLabel">
                   <Property Name="Left" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="ArchiveComboBox">
-                  <Property Name="Width" />
                 </Object>
               </Item>
             </Items>
@@ -475,10 +454,10 @@
         </Text>
       </MyObject>
 
-      <MyObject Name="ArchiveComboBox" Type="ComboBox" Assembly="BaseControls">
+      <MyObject Name="ArchiveFilterComboBox" Type="ComboBox" Assembly="BaseControls" ChangeForm="False">
         <Top>
           <Calculate>
-            <Expression>Ceiling(({0} - {1})/2)</Expression>
+            <Expression>Ceiling(({0} - {1}) / 2)</Expression>
             <Items>
               <Item>
                 <Object Name="HeadPanel">
@@ -486,7 +465,7 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="ArchiveComboBox">
+                <Object Name="ArchiveFilterComboBox">
                   <Property Name="Height" />
                 </Object>
               </Item>
@@ -507,6 +486,7 @@
         </Right>
         <Width>100</Width>
         <NullValue Show="True" Title="Все" />
+        <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
         <ValueList>
           <Structure Type="Table">
             <Row>
@@ -523,148 +503,9 @@
       </MyObject>
     </MyObject>
 
-    <MyObject Name="FilterPanel" Type="Panel" Assembly="BaseControls">
-      <Top>
-        <Object Name="HeadPanel">
-          <Property Name="Bottom" />
-        </Object>
-      </Top>
-      <Left>0</Left>
-      <Height>30</Height>
-      <Width>
-        <Form>
-          <Property Name="Width" />
-        </Form>
-      </Width>
-
-      <MyObject Name="FilterVariable" Type="Variable" Assembly="SimpleControls">
-        <Value>
-          <Parameter Name="ClientTitle" />
-        </Value>
-      </MyObject>
-
-      <MyObject Name="FilterTitleTextBox" Type="TextBox" Assembly="BaseControls">
-        <Top>5</Top>
-        <Left>10</Left>
-        <Width>
-          <Object Name="ClientDatabaseTable">
-            <Property Name="ColumnWidth">
-              <Parameters>
-                <Parameter Name="ColumnName">Name</Parameter>
-              </Parameters>
-            </Property>
-          </Object>
-        </Width>
-        <Text>
-          <Parameter Name="ClientTitle" />
-        </Text>
-        <TipText>Введите ключевые слова</TipText>
-      </MyObject>
-
-      <MyObject Name="SearchButton" Type="Button" Assembly="BaseControls">
-        <Top>
-          <Object Name="FilterTitleTextBox">
-            <Property Name="Top" />
-          </Object>
-        </Top>
-        <Left>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="FilterTitleTextBox">
-                  <Property Name="Right" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Left>
-        <Height>22</Height>
-        <Width>22</Width>
-        <BackgroundImage>..\Images\16x16\magnify.png</BackgroundImage>
-        <BackgroundImageLayout>Center</BackgroundImageLayout>
-        <Hint>Начать поиск</Hint>
-        <FlatStyle>Flat</FlatStyle>
-        <FlatBorderSize>1</FlatBorderSize>
-        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
-        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Commands>
-          <Command Name="FilterVarValueSetCommand">
-            <Object Name="FilterTitleTextBox" />
-          </Command>
-          <Command Name="ClientViewDataConnectionRefreshCommand" />
-        </Commands>
-      </MyObject>
-
-      <MyObject Name="ResetFilterButton" Type="Button" Assembly="BaseControls">
-        <Top>
-          <Object Name="FilterTitleTextBox">
-            <Property Name="Top" />
-          </Object>
-        </Top>
-        <Left>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="SearchButton">
-                  <Property Name="Right" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Left>
-        <Height>22</Height>
-        <Width>22</Width>
-        <BackgroundImage>..\Images\16x16\close.png</BackgroundImage>
-        <BackgroundImageLayout>Center</BackgroundImageLayout>
-        <Hint>Сбросить фильтр</Hint>
-        <FlatStyle>Flat</FlatStyle>
-        <FlatBorderSize>1</FlatBorderSize>
-        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
-        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Commands>
-          <Command Name="FilterTextBoxValueSetCommand" />
-          <Command Name="FilterVarValueSetCommand" />
-        </Commands>
-      </MyObject>
-
-    </MyObject>
-
-    <MyObject Name="FilterSeparatePanel" Type="Panel" Assembly="BaseControls">
-      <Top>
-        <Object Name="FilterPanel">
-          <Property Name="Bottom" />
-        </Object>
-      </Top>
-      <Left>5</Left>
-      <Height>1</Height>
-      <Width>
-        <Calculate>
-          <Expression>{0} - {1} * 2</Expression>
-          <Items>
-            <Item>
-              <Object Name="FilterPanel">
-                <Property Name="Width" />
-              </Object>
-            </Item>
-            <Item>
-              <Object Name="FilterSeparatePanel">
-                <Property Name="Left" />
-              </Object>
-            </Item>
-          </Items>
-        </Calculate>
-      </Width>
-      <BackColor>ThemeSeparateBackgroundColor</BackColor>
-    </MyObject>
-
-
     <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls">
       <Top>
-        <Object Name="FilterSeparatePanel">
+        <Object Name="HeadPanel">
           <Property Name="Bottom" />
         </Object>
       </Top>
@@ -708,13 +549,166 @@
       <TabIndex>1</TabIndex>
       <BackColor>ThemeBackgroundColor</BackColor>
 
-      <!-- Insert your content-->
+      <MyObject Name="SearchPanel" Type="Panel" Assembly="BaseControls">
+        <Top>0</Top>
+        <Left>0</Left>
+        <Height>32</Height>
+        <Width>
+          <Form>
+            <Property Name="Width" />
+          </Form>
+        </Width>
+        <AutoScroll>False</AutoScroll>
+        <BackColor>ThemeBackgroundColor</BackColor>
+
+        <MyObject Name="SearchKeywordsVariable" Type="Variable" Assembly="SimpleControls">
+          <Value>
+            <Parameter Name="ClientTitle" />
+          </Value>
+        </MyObject>
+
+        <MyObject Name="SearchKeywordsTextBox" Type="TextBox" Assembly="BaseControls">
+          <Top>5</Top>
+          <Left>10</Left>
+          <Width>400</Width>
+          <TipText>Введите ключевые слова...</TipText>
+          <Text>
+            <Parameter Name="ClientTitle" />
+          </Text>
+        </MyObject>
+
+        <MyObject Name="SearchButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Object Name="SearchKeywordsTextBox">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="SearchKeywordsTextBox">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Height>23</Height>
+          <Width>23</Width>
+          <BackgroundImage>Images\16x16\magnify.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <Hint>Поиск</Hint>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Commands>
+            <Command Name="SearchKeywordsVariableValueSetCommand">
+              <Object Name="SearchKeywordsTextBox" />
+            </Command>
+            <Command Name="ClientDataConnectionRefreshCommand" />
+          </Commands>
+          <Enabled>
+            <Not>
+              <Condition Name="SearchKeywordsTextBoxIsNullOrEmptyCondition" />
+            </Not>
+          </Enabled>
+        </MyObject>
+
+        <MyObject Name="SearchResetButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Object Name="SearchButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="SearchButton">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Height>
+            <Object Name="SearchButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <Width>
+            <Object Name="SearchButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <BackgroundImage>Images\16x16\close.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <Hint>Сбросить</Hint>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Commands>
+            <Command Name="SearchKeywordsVariableValueSetCommand" />
+            <Command Name="SearchKeywordsTextBoxValueSetCommand" />
+            <Command Name="ClientDataConnectionRefreshCommand" />
+          </Commands>
+          <Enabled>
+            <Not>
+              <Condition Name="SearchKeywordsTextBoxIsNullOrEmptyCondition" />
+            </Not>
+          </Enabled>
+        </MyObject>
+
+      </MyObject>
+
+      <MyObject Name="SearchSeparatePanel" Type="Panel" Assembly="BaseControls">
+        <Top>
+          <Object Name="SearchPanel">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>5</Left>
+        <Height>1</Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - 10</Expression>
+            <Items>
+              <Item>
+                <Form>
+                  <Property Name="Width" />
+                </Form>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <AutoScroll>False</AutoScroll>
+        <BackColor>ThemeSeparateBackgroundColor</BackColor>
+      </MyObject>
+
       <MyObject Name="ClientDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
-        <Top>5</Top>
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="SearchSeparatePanel">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
         <Left>10</Left>
         <Height>
           <Calculate>
-            <Expression>{0} - {1} * 2</Expression>
+            <Expression>{0} - {1} - 5</Expression>
             <Items>
               <Item>
                 <Object Name="ContentPanel">
@@ -731,7 +725,7 @@
         </Height>
         <Width>
           <Calculate>
-            <Expression>{0} - {1} * 2 - {2} - 5</Expression>
+            <Expression>{0} - {1}*2 - {2} - 5</Expression>
             <Items>
               <Item>
                 <Object Name="ContentPanel">
@@ -757,54 +751,61 @@
         <AllowUpdate>False</AllowUpdate>
         <AllowDelete>False</AllowDelete>
         <AutoSizeColumnsMode Value="Fill" />
+        <SourceDataConnection Name="ClientPrimaryGetDataConnection" />
         <Columns>
-          <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
-            <Title>#</Title>
-            <Width>40</Width>
-            <MinimumWidth>20</MinimumWidth>
-            <AutoSizeMode Value="None" />
-            <AutoFill Type="RowNumber" />
-          </Column>
           <Column Name="ClientId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
             <Visible>False</Visible>
           </Column>
-          <Column Name="Archive" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
-            <Visible>False</Visible>
-            <Filter FilterNullValue="False">
-              <Object Name="ArchiveComboBox" />
-            </Filter>
+          <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>№</Title>
+            <Width>30</Width>
+            <AutoFill Type="RowNumber" />
+            <Alignment Value="MiddleCenter" />
+            <AutoSizeMode Value="None" />
           </Column>
           <Column Name="Name" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
             <Title>ФИО</Title>
-            <MinimumWidth>200</MinimumWidth>
+            <Width>150</Width>
             <AutoSizeMode Value="Fill" />
           </Column>
           <Column Name="CityTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
             <Title>Город</Title>
-            <MinimumWidth>150</MinimumWidth>
+            <Width>130</Width>
+            <AutoSizeMode Value="Fill" />
           </Column>
           <Column Name="Phone" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
             <Title>Телефон</Title>
-            <MinimumWidth>150</MinimumWidth>
+            <Width>150</Width>
+            <Alignment Value="MiddleRight" />
+            <AutoSizeMode Value="None" />
+          </Column>
+          <Column Name="Archive" Type="DatabaseTableColumnCheckBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+            <Filter FilterNullValue="False">
+              <Object Name="ArchiveFilterComboBox" />
+            </Filter>
           </Column>
         </Columns>
         <Formatting>
           <BackColor Name="TableArchiveColor">
-            <Expression>Archive and {0}</Expression>
+            <Expression>Archive AND {0}</Expression>
             <Items>
               <Item>
                 <Not>
-                  <Object Name="ArchiveComboBox" />
+                  <Object Name="ArchiveFilterComboBox" />
                 </Not>
               </Item>
             </Items>
           </BackColor>
         </Formatting>
-        <SourceDataConnection Name="ClientPrimaryGetDataConnection" />
       </MyObject>
 
       <MyObject Name="ClientAddButton" Type="Button" Assembly="BaseControls">
-        <Top>5</Top>
+        <Top>
+          <Object Name="ClientDatabaseTable">
+            <Property Name="Top" />
+          </Object>
+        </Top>
         <Left>
           <Calculate>
             <Expression>{0} + 5</Expression>
@@ -817,10 +818,10 @@
             </Items>
           </Calculate>
         </Left>
-        <Height>40</Height>
         <Width>40</Width>
+        <Height>40</Height>
         <Hint>Добавить запись...</Hint>
-        <BackgroundImage>..\Images\24x24\plus.png</BackgroundImage>
+        <BackgroundImage>Images\24x24\plus.png</BackgroundImage>
         <BackgroundImageLayout>Center</BackgroundImageLayout>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
@@ -850,10 +851,18 @@
             <Property Name="Left" />
           </Object>
         </Left>
-        <Height>40</Height>
-        <Width>40</Width>
+        <Width>
+          <Object Name="ClientAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="ClientAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
         <Hint>Редактировать запись...</Hint>
-        <BackgroundImage>..\Images\24x24\pencil.png</BackgroundImage>
+        <BackgroundImage>Images\24x24\pencil.png</BackgroundImage>
         <BackgroundImageLayout>Center</BackgroundImageLayout>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
@@ -861,32 +870,34 @@
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
-          <Condition Name="ClientSelectedGreaterCondition" />
+          <And>
+            <Condition Name="ClientSelectedCondition" />
+            <Not>
+              <Condition Name="SelectedClientIsArchiveCondition" />
+            </Not>
+          </And>
         </Enabled>
         <DisabledMode>True</DisabledMode>
-        <DisabledText>Требуется выбрать клиента</DisabledText>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="ClientSelectedCondition" />
+                </Not>
+              </When>
+              <Then>Выберите запись для редактирования.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="SelectedClientIsArchiveCondition" />
+              </When>
+              <Then>Для редактирования восстановите запись из архива.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
         <Commands>
-          <Command Name="ClientEditFormShowCommand">
-            <Input Name="Edit">True</Input>
-            <Input Name="ClientId">
-              <Object Name="ClientDatabaseTable">
-                <Property Name="SelectedRowCellValueByColumnName">
-                  <Parameters>
-                    <Parameter Name="ColumnName">ClientId</Parameter>
-                  </Parameters>
-                </Property>
-              </Object>
-            </Input>
-            <Input Name="Archive">
-              <Object Name="ClientDatabaseTable">
-                <Property Name="SelectedRowCellValueByColumnName">
-                  <Parameters>
-                    <Parameter Name="ColumnName">Archive</Parameter>
-                  </Parameters>
-                </Property>
-              </Object>
-            </Input>
-          </Command>
+          <Command Name="ClientEditSequentialCommand" />
         </Commands>
       </MyObject>
 
@@ -908,21 +919,51 @@
             <Property Name="Left" />
           </Object>
         </Left>
-        <Height>40</Height>
-        <Width>40</Width>
-        <Hint>Удалить запись...</Hint>
-        <BackgroundImage>..\Images\24x24\delete.png</BackgroundImage>
+        <Width>
+          <Object Name="ClientAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="ClientAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Hint>Удалить запись</Hint>
+        <BackgroundImage>Images\24x24\delete.png</BackgroundImage>
         <BackgroundImageLayout>Center</BackgroundImageLayout>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <DisabledMode>True</DisabledMode>
-        <DisabledText>Требуется выбрать клиента</DisabledText>
         <Enabled>
-          <Condition Name="ClientSelectedGreaterCondition" />
+          <And>
+            <Condition Name="ClientSelectedCondition" />
+            <Not>
+              <Condition Name="SelectedClientIsArchiveCondition" />
+            </Not>
+          </And>
         </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="ClientSelectedCondition" />
+                </Not>
+              </When>
+              <Then>Выберите запись для удаления.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="SelectedClientIsArchiveCondition" />
+              </When>
+              <Then>Нельзя удалить архивную запись.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
         <Commands>
           <Command Name="ClientDeleteMessageBoxCommand" />
         </Commands>
@@ -946,28 +987,42 @@
             <Property Name="Left" />
           </Object>
         </Left>
-        <Height>40</Height>
-        <Width>40</Width>
+        <Width>
+          <Object Name="ClientAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="ClientAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
         <Hint>
           <Switch>
             <Case>
               <When>
-                <Condition Name="SelectedClientIsArchiveEqualCondition" />
+                <Or>
+                  <Condition Name="SelectedClientIsArchiveCondition" />
+                  <Object Name="ArchiveFilterComboBox" />
+                </Or>
               </When>
-              <Then>Разархивировать]</Then>
+              <Then>Восстановить из архива</Then>
             </Case>
-            <Case>Архивировать</Case>
+            <Case>Перенести в архив</Case>
           </Switch>
         </Hint>
         <BackgroundImage>
           <Switch>
             <Case>
               <When>
-                <Condition Name="SelectedClientIsArchiveEqualCondition" />
+                <Or>
+                  <Condition Name="SelectedClientIsArchiveCondition" />
+                  <Object Name="ArchiveFilterComboBox" />
+                </Or>
               </When>
-              <Then>..\images\24x24\unarchive.png</Then>
+              <Then>Images\24x24\unarchive.png</Then>
             </Case>
-            <Case>..\images\24x24\archive.png</Case>
+            <Case>Images\24x24\archive.png</Case>
           </Switch>
         </BackgroundImage>
         <BackgroundImageLayout>Center</BackgroundImageLayout>
@@ -976,21 +1031,21 @@
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <Condition Name="ClientSelectedCondition" />
+        </Enabled>
         <DisabledMode>True</DisabledMode>
         <DisabledText>
           <Switch>
             <Case>
               <When>
-                <Condition Name="SelectedClientIsArchiveEqualCondition" />
+                <Object Name="ArchiveFilterComboBox" />
               </When>
-              <Then>Для восстановления выберите запись</Then>
+              <Then>Для восстановления из архива выберите запись.</Then>
             </Case>
-            <Case>Для переноса в архив выберите запись</Case>
+            <Case>Для переноса в архив выберите запись.</Case>
           </Switch>
         </DisabledText>
-        <Enabled>
-          <Condition Name="ClientSelectedGreaterCondition" />
-        </Enabled>
         <Commands>
           <Command Name="ClientArchiveMessageBoxCommand" />
         </Commands>
@@ -1062,7 +1117,7 @@
         <TextAlign>MiddleCenter</TextAlign>
         <FontStyle>ButtonFontStyle</FontStyle>
         <ImageAlign>MiddleLeft</ImageAlign>
-        <Image>..\Images\24x24\check.png</Image>
+        <Image>Images\24x24\check.png</Image>
         <Text>Выбрать</Text>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
@@ -1070,7 +1125,7 @@
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
-          <Condition Name="ClientSelectedGreaterCondition" />
+          <Condition Name="ClientSelectedCondition" />
         </Enabled>
         <Commands>
           <Command Name="SelectClientSequentialCommand" />

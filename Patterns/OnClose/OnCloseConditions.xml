@@ -1,0 +1,23 @@
+<Condition Name="FormChangedEqualCondition" Type="EqualCondition" Assembly="Conditions">
+  <Items>
+    <Item>
+      <Form>
+        <Property Name="FormChanged" />
+      </Form>
+    </Item>
+    <Item>True</Item>
+  </Items>
+  <DataType Type="BooleanDataType" />
+</Condition>
+
+<Condition Name="MandatoryFieldsAreFilledEqualCondition" Type="EqualCondition" Assembly="Conditions">
+  <Items>
+	<Item>
+	  <Form>
+		<Property Name="CheckingFired" />
+	  </Form>
+	</Item>
+	<Item>False</Item>
+  </Items>
+  <DataType Type="BooleanDataType" />
+</Condition>

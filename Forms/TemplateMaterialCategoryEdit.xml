@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateUnitForm" Width="450" Height="250" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateMaterialCategoryForm" Width="400" Height="195" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
@@ -8,12 +8,13 @@
           <When>
             <Parameter Name="Edit" />
           </When>
-          <Then>Редактирование единицы измерения</Then>
+          <Then>Редактирование категории ТМЦ</Then>
         </Case>
-        <Case>Добавление единицы измерения</Case>
+        <Case>Добавление категории ТМЦ</Case>
       </Switch>
     </Parameter>
-    <Parameter Name="UnitId" />
+    <Parameter Name="MaterialCategoryId" />
+    <Parameter Name="ParentMaterialCategoryId" />
     <Parameter Name="Updated">False</Parameter>
   </Parameters>
 
@@ -46,34 +47,60 @@
   </Appearance>
 
   <DataConnections>
-    <DataConnection Name="UnitPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+
+    <DataConnection Name="ParentMaterialCategoryPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="ParentMaterialCategorySelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="MaterialCategoryId" />
+          <Field Name="Title" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="MaterialCategoryId" RefreshQuery="False">
+            <Value>
+              <Parameter Name="MaterialCategoryId" />
+            </Value>
+          </Parameter>
+          <Parameter NativeName="WithChild" RefreshQuery="False">
+            <Value>False</Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+    
+    <DataConnection Name="MaterialCategoryPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <ManualLoad>
         <Not>
           <Parameter Name="Edit" />
         </Not>
       </ManualLoad>
-      <SqlQuery Name="UnitByIdSelectSqlQuery" Type="Select">
+      <SqlQuery Name="MaterialCategoryByIdSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
-          <Field Name="UnitId" />
           <Field Name="Title" />
+          <Field Name="ParentMaterialCategoryId" />
         </Fields>
         <Parameters>
-          <Parameter NativeName="UnitId">
+          <Parameter NativeName="MaterialCategoryId">
             <Value>
-              <Parameter Name="UnitId" />
+              <Parameter Name="MaterialCategoryId" />
             </Value>
           </Parameter>
         </Parameters>
       </SqlQuery>
     </DataConnection>
 
-    <DataConnection Name="UnitInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+    <DataConnection Name="MaterialCategoryInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
       <Workflow Name="Template" />
       <SqlQueries>
-        <SqlQuery Name="UnitInsertSqlQuery" Type="Insert" />
+        <SqlQuery Name="MaterialCategoryInsertSqlQuery" Type="Insert" />
       </SqlQueries>
       <Parameters>
+        <Parameter NativeName="ParentMaterialCategoryId">
+          <Value>
+            <Object Name="ParentMaterialCategoryComboBox" />
+          </Value>
+        </Parameter>
         <Parameter NativeName="Title">
           <Value>
             <Object Name="TitleTextBox" />
@@ -82,15 +109,20 @@
       </Parameters>
     </DataConnection>
 
-    <DataConnection Name="UnitUpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+    <DataConnection Name="MaterialCategoryUpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
       <Workflow Name="Template" />
       <SqlQueries>
-        <SqlQuery Name="UnitUpdateSqlQuery" Type="Update" />
+        <SqlQuery Name="MaterialCategoryUpdateSqlQuery" Type="Update" />
       </SqlQueries>
       <Parameters>
-        <Parameter NativeName="UnitId">
+        <Parameter NativeName="MaterialCategoryId">
           <Value>
-            <Parameter Name="UnitId" />
+            <Parameter Name="MaterialCategoryId" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="ParentMaterialCategoryId">
+          <Value>
+            <Object Name="ParentMaterialCategoryComboBox" />
           </Value>
         </Parameter>
         <Parameter NativeName="Title">
@@ -163,21 +195,21 @@
       <Buttons Type="YesNo" />
     </Command>
 
-    <Command Name="UnitInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
+    <Command Name="MaterialCategoryInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
       <DataConnections>
-        <DataConnection Name="UnitInsertSetDataConnection" />
+        <DataConnection Name="MaterialCategoryInsertSetDataConnection" />
       </DataConnections>
     </Command>
 
-    <Command Name="UnitUpdateSaveCommand" Type="SaveCommand" Assembly="Commands">
+    <Command Name="MaterialCategoryUpdateSaveCommand" Type="SaveCommand" Assembly="Commands">
       <DataConnections>
-        <DataConnection Name="UnitUpdateSetDataConnection" />
+        <DataConnection Name="MaterialCategoryUpdateSetDataConnection" />
       </DataConnections>
     </Command>
 
-    <Command Name="UnitIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Parameter Name="UnitId">
-        <Command Name="UnitInsertSaveCommand" />
+    <Command Name="MaterialCategoryIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="MaterialCategoryId">
+        <Command Name="MaterialCategoryInsertSaveCommand" />
       </Parameter>
     </Command>
 
@@ -188,11 +220,11 @@
             <Parameter Name="Edit" />
           </When>
           <Then>
-            <Command Name="UnitUpdateSaveCommand" />
+            <Command Name="MaterialCategoryUpdateSaveCommand" />
           </Then>
           <Else>
-            <Command Name="UnitInsertSaveCommand" />
-            <Command Name="UnitIdValueSetCommand" />
+            <Command Name="MaterialCategoryInsertSaveCommand" />
+            <Command Name="MaterialCategoryIdValueSetCommand" />
           </Else>
         </If>
         <Command Name="UpdatedTrueValueSetCommand" />
@@ -280,7 +312,7 @@
       </Width>
       <BackColor>HeadBackgroundColor</BackColor>
 
-      <MyObject Name="HeadLabel" Type="Label" Assembly="BaseControls">
+      <MyObject Name="HeadLabel" Type="Label" Assembly="BaseControls" ChangeForm="False">
         <Top>0</Top>
         <Left>10</Left>
         <Height>
@@ -356,7 +388,7 @@
       <TabIndex>1</TabIndex>
       <BackColor>ThemeBackgroundColor</BackColor>
 
-      <MyObject Name="TitleLabel" Type="Label" Assembly="BaseControls">
+      <MyObject Name="ParentMaterialCategoryLabel" Type="Label" Assembly="BaseControls">
         <Top>5</Top>
         <Left>10</Left>
         <Width>
@@ -369,7 +401,7 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="TitleLabel">
+                <Object Name="ParentMaterialCategoryLabel">
                   <Property Name="Left" />
                 </Object>
               </Item>
@@ -380,7 +412,85 @@
         <TextAlign>MiddleLeft</TextAlign>
         <FontStyle>LabelFontStyle</FontStyle>
         <ForeColor>LabelForeColor</ForeColor>
-        <Text>Название</Text>
+        <Text>Родительская категория</Text>
+      </MyObject>
+
+      <MyObject Name="ParentMaterialCategoryComboBox" Type="ComboBox" Assembly="BaseControls">
+        <Top>
+          <Object Name="ParentMaterialCategoryLabel">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Object Name="ParentMaterialCategoryLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="ParentMaterialCategoryLabel">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <TabIndex>1</TabIndex>
+        <NullValue Show="True" Title="[Не выбрано]" />
+        <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
+        <ValueList>
+          <DataConnection SourceDataConnection="ParentMaterialCategoryPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="MaterialCategoryId" />
+              <Field Name="Title" />
+            </Fields>
+          </DataConnection>
+        </ValueList>
+        <Value>
+          <Switch>
+            <Case>
+              <When>
+                <Parameter Name="Edit" />
+              </When>
+              <Then>
+                <DataConnection SourceDataConnection="MaterialCategoryPrimaryGetDataConnection">
+                  <Fields>
+                    <Field Name="ParentMaterialCategoryId" />
+                  </Fields>
+                </DataConnection>
+              </Then>
+            </Case>
+            <Case>
+              <Parameter Name="ParentMaterialCategoryId" />
+            </Case>
+          </Switch>
+        </Value>
+      </MyObject>
+
+      <MyObject Name="TitleLabel" Type="Label" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="ParentMaterialCategoryComboBox">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="ParentMaterialCategoryLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="ParentMaterialCategoryLabel">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>20</Height>
+        <TextAlign>MiddleLeft</TextAlign>
+        <FontStyle>LabelFontStyle</FontStyle>
+        <ForeColor>LabelForeColor</ForeColor>
+        <Text>Наименование</Text>
       </MyObject>
 
       <MyObject Name="TitleTextBox" Type="TextBox" Assembly="BaseControls">
@@ -390,36 +500,25 @@
           </Object>
         </Top>
         <Left>
-          <Object Name="TitleLabel">
+          <Object Name="ParentMaterialCategoryComboBox">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="TitleTextBox">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="ParentMaterialCategoryComboBox">
+            <Property Name="Width" />
+          </Object>
         </Width>
+        <TabIndex>2</TabIndex>
         <Text>
-          <DataConnection SourceDataConnection="UnitPrimaryGetDataConnection">
+          <DataConnection SourceDataConnection="MaterialCategoryPrimaryGetDataConnection">
             <Fields>
               <Field Name="Title" />
             </Fields>
           </DataConnection>
         </Text>
-        <TabIndex>1</TabIndex>
       </MyObject>
+
     </MyObject>
 
     <MyObject Name="FootSeparatePanel" Type="Panel" Assembly="BaseControls">
@@ -480,7 +579,7 @@
         <TextAlign>MiddleCenter</TextAlign>
         <FontStyle>ButtonFontStyle</FontStyle>
         <ImageAlign>MiddleLeft</ImageAlign>
-        <Image>..\Images\24x24\content-save.png</Image>
+        <Image>Images\24x24\content-save.png</Image>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
@@ -498,8 +597,8 @@
           <Command Name="SaveSequentialCommand" />
         </Commands>
         <DisabledMode>
-		  <Condition Name="FormChangedEqualCondition" />
-		</DisabledMode>
+          <Condition Name="FormChangedEqualCondition" />
+        </DisabledMode>
         <DisabledText>Одно или несколько полей заполнены некорректно.</DisabledText>
       </MyObject>
     </MyObject>

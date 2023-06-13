@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateMaterialEditForm" Width="450" Height="300" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateMaterialEditForm" Width="450" Height="292" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
@@ -13,8 +13,9 @@
         <Case>Добавление ТМЦ</Case>
       </Switch>
     </Parameter>
-    <Parameter Name="MaterialId" />
     <Parameter Name="MaterialCategoryId" />
+    <Parameter Name="MaterialId" />
+    <Parameter Name="MaterialTitle" />
     <Parameter Name="Updated">False</Parameter>
   </Parameters>
 
@@ -47,6 +48,61 @@
   </Appearance>
 
   <DataConnections>
+    <DataConnection Name="UnitPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="UnitSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="UnitId" />
+          <Field Name="ShortTitle" />
+          <Field Name="Archive" />
+        </Fields>
+        <Filter Type="Nested">
+          <Or>
+            <Filter>
+              <Field NativeName="Archive" />
+              <Value>False</Value>
+              <DataType Type="BooleanDataType" />
+            </Filter>
+            <Filter>
+              <Field NativeName="UnitId" />
+              <Value>
+                <DataConnection SourceDataConnection="MaterialPrimaryGetDataConnection">
+                  <Fields>
+                    <Field Name="UnitId" />
+                  </Fields>
+                </DataConnection>
+              </Value>
+              <DataType Type="IntegerDataType" />
+            </Filter>
+          </Or>
+        </Filter>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="MaterialCategoryPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="ParentMaterialCategorySelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="MaterialCategoryId" />
+          <Field Name="Title" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="MaterialCategoryId" RefreshQuery="False">
+            <Value>
+              <DataConnection SourceDataConnection="MaterialPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="MaterialCategoryId" />
+                </Fields>
+              </DataConnection>
+            </Value>
+          </Parameter>
+          <Parameter NativeName="WithChild" RefreshQuery="False">
+            <Value>True</Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+
     <DataConnection Name="MaterialPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <ManualLoad>
         <Not>
@@ -56,13 +112,13 @@
       <SqlQuery Name="MaterialByIdSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
-          <Field Name="Title" />
           <Field Name="MaterialCategoryId" />
-          <Field Name="UnitPrice" />
+          <Field Name="Title" />
           <Field Name="UnitId" />
+          <Field Name="UnitPrice" />
         </Fields>
         <Parameters>
-          <Parameter NativeName="MaterialId">
+          <Parameter NativeName="MaterialId" RefreshQuery="False">
             <Value>
               <Parameter Name="MaterialId" />
             </Value>
@@ -94,7 +150,7 @@
         </Parameter>
         <Parameter NativeName="UnitPrice">
           <Value>
-            <Object Name="UnitPriceNumericBox" />
+            <Object Name="PriceNumericBox" />
           </Value>
         </Parameter>
       </Parameters>
@@ -128,65 +184,10 @@
         </Parameter>
         <Parameter NativeName="UnitPrice">
           <Value>
-            <Object Name="UnitPriceNumericBox" />
+            <Object Name="PriceNumericBox" />
           </Value>
         </Parameter>
       </Parameters>
-    </DataConnection>
-
-    <DataConnection Name="MaterialCategoryPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
-      <SqlQuery Name="ParentMaterialCategorySelectSqlQuery" Type="Select">
-        <Workflow Name="Template" />
-        <Fields>
-          <Field Name="MaterialCategoryId" />
-          <Field Name="Title" />
-        </Fields>
-        <Parameters>
-          <Parameter NativeName="MaterialCategoryId" RefreshQuery="False">
-            <Value>
-              <DataConnection SourceDataConnection="MaterialPrimaryGetDataConnection">
-                <Fields>
-                  <Field Name="MaterialCategoryId" />
-                </Fields>
-              </DataConnection>
-            </Value>
-          </Parameter>
-          <Parameter NativeName="WithChild" RefreshQuery="False">
-            <Value>True</Value>
-          </Parameter>
-        </Parameters>
-      </SqlQuery>
-    </DataConnection>
-
-    <DataConnection Name="UnitShortPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
-      <SqlQuery Name="UnitShortSelectSqlQuery" Type="Select">
-        <Workflow Name="Template" />
-        <Fields>
-          <Field Name="UnitId" />
-          <Field Name="Title" />
-          <Field Name="Archive" />
-        </Fields>
-        <Filter Type="Nested">
-          <Or>
-            <Filter>
-              <Field NativeName="Archive" />
-              <Value>False</Value>
-              <DataType Type="BooleanDataType" />
-            </Filter>
-            <Filter>
-              <Field NativeName="UnitId" />
-              <Value>
-                <DataConnection SourceDataConnection="MaterialPrimaryGetDataConnection">
-                  <Fields>
-                    <Field Name="UnitId" />
-                  </Fields>
-                </DataConnection>
-              </Value>
-              <DataType Type="IntegerDataType" />
-            </Filter>
-          </Or>
-        </Filter>
-      </SqlQuery>
     </DataConnection>
   </DataConnections>
 
@@ -229,7 +230,7 @@
       </Items>
     </Condition>
 
-    <Condition Name="CategoryIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
+    <Condition Name="MaterialCategoryComboBoxIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="MaterialCategoryComboBox" />
@@ -237,7 +238,7 @@
       </Items>
     </Condition>
 
-    <Condition Name="UnitTitleIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
+    <Condition Name="UnitComboBoxIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="UnitComboBox" />
@@ -245,28 +246,14 @@
       </Items>
     </Condition>
 
-    <Condition Name="UnitPrice0GreaterCondition" Type="GreaterCondition" Assembly="Conditions">
+    <Condition Name="PriceNumericBoxIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
       <Items>
         <Item>
-          0
-        </Item>
-        <Item>
-          <Object Name="UnitPriceNumericBox" />
-        </Item>
-      </Items>
-      <DataType Type="IntegerDataType" />
-    </Condition>
-
-    <Condition Name="UnitComboBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Object Name="UnitComboBox" />
+          <Object Name="PriceNumericBox" />
         </Item>
       </Items>
     </Condition>
   </Conditions>
-
-
 
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
@@ -327,7 +314,7 @@
     </Command>
 
     <Command Name="UnitAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">../Unit/TemplateUnitEdit.xml</Xml>
+      <Xml Type="Path">TemplateUnitEdit.xml</Xml>
       <Show Type="None" />
       <Parameters>
         <Parameter Name="UnitTitle">
@@ -339,7 +326,7 @@
     </Command>
 
     <Command Name="UnitEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">../Unit/TemplateUnitEdit.xml</Xml>
+      <Xml Type="Path">TemplateUnitEdit.xml</Xml>
       <Show Type="None" />
       <Parameters>
         <Parameter Name="Edit">True</Parameter>
@@ -349,40 +336,32 @@
       </Parameters>
     </Command>
 
-    <Command Name="UnitListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">../Unit/TemplateUnitList.xml</Xml>
+    <Command Name="UnitSelectFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateUnitList.xml</Xml>
       <Show Type="None" />
       <Parameters>
         <Parameter Name="SelectionMode">True</Parameter>
         <Parameter Name="UnitId">
+          <Object Name="UnitComboBox" />
+        </Parameter>
+        <Parameter Name="UnitTitle">
           <Object Name="UnitComboBox">
-            <Property Name="Value" />
+            <Property Name="Text" />
           </Object>
         </Parameter>
       </Parameters>
     </Command>
 
-    <Command Name="UnitComboBoxValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Object Name="UnitComboBox">
-        <Property Name="Value">
-          <Command Name="UnitListFormShowCommand" Parameter="UnitId" />
-        </Property>
-      </Object>
-    </Command>
-
-    <Command Name="TestMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
-      <Caption />
-      <Text>
-        <Command Name="UnitListFormShowCommand" Parameter="UnitId" />
-      </Text>
-      <Icon Type="Information" />
-      <Buttons Type="Ok" />
-    </Command>
-
     <Command Name="UnitDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
       <DataConnections>
-        <DataConnection Name="UnitShortPrimaryGetDataConnection" Packet="True" />
+        <DataConnection Name="UnitPrimaryGetDataConnection" />
       </DataConnections>
+    </Command>
+
+    <Command Name="UnitValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="UnitComboBox">
+        <Input />
+      </Object>
     </Command>
   </Commands>
 
@@ -444,11 +423,14 @@
 
     <Execution>
       <ConditionExpression>
-        <Command Name="UnitListFormShowCommand" Parameter="Updated" />
+        <Command Name="UnitAddFormShowCommand" Parameter="Updated" />
       </ConditionExpression>
       <Commands>
         <Command Name="UnitDataConnectionRefreshCommand" />
-        <Command Name="UnitComboBoxValueSetCommand" />
+        <Command Name="UnitValueSetCommand">
+          <Command Name="UnitAddFormShowCommand" Parameter="UnitId" />
+        </Command>
+        <!--<Command Name="UnitUpdatedTrueValueSetCommand" />-->
       </Commands>
     </Execution>
 
@@ -458,13 +440,33 @@
       </ConditionExpression>
       <Commands>
         <Command Name="UnitDataConnectionRefreshCommand" />
-        <Command Name="UnitComboBoxValueSetCommand" />
+        <!--<Command Name="UnitUpdatedTrueValueSetCommand" />-->
       </Commands>
     </Execution>
 
+    <Execution>
+      <ConditionExpression>
+        <Command Name="UnitSelectFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="UnitDataConnectionRefreshCommand" />
+        <Command Name="UnitValueSetCommand">
+          <Command Name="UnitSelectFormShowCommand" Parameter="SelectedUnitId" />
+        </Command>
+        <!--<Command Name="UnitUpdatedTrueValueSetCommand" />-->
+      </Commands>
+    </Execution>
   </Executions>
 
   <Checkings>
+    <Checking>
+      <Object Name="MaterialCategoryComboBox" />
+      <ConditionExpression>
+        <Condition Name="MaterialCategoryComboBoxIsNullCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Поле "Категория" должно быть заполнено.</AsteriskHint>
+    </Checking>
+
     <Checking>
       <Object Name="TitleTextBox" />
       <ConditionExpression>
@@ -474,27 +476,19 @@
     </Checking>
 
     <Checking>
-      <Object Name="MaterialCategoryComboBox" />
-      <ConditionExpression>
-        <Condition Name="CategoryIsNullCondition" />
-      </ConditionExpression>
-      <AsteriskHint>Выберите категорию</AsteriskHint>
-    </Checking>
-
-    <Checking>
       <Object Name="UnitComboBox" />
       <ConditionExpression>
-        <Condition Name="UnitTitleIsNullCondition" />
+        <Condition Name="UnitComboBoxIsNullCondition" />
       </ConditionExpression>
-      <AsteriskHint>Выберите единицу измерения</AsteriskHint>
+      <AsteriskHint>Поле "Единица измерения" должно быть заполнено.</AsteriskHint>
     </Checking>
 
     <Checking>
-      <Object Name="UnitPriceNumericBox" />
+      <Object Name="PriceNumericBox" />
       <ConditionExpression>
-        <Condition Name="UnitPrice0GreaterCondition" />
+        <Condition Name="PriceNumericBoxIsNullCondition" />
       </ConditionExpression>
-      <AsteriskHint>Цена должна быть больше 0</AsteriskHint>
+      <AsteriskHint>Поле "Цена продажи за единицу" должно быть заполнено.</AsteriskHint>
     </Checking>
   </Checkings>
 
@@ -610,7 +604,7 @@
         <TextAlign>MiddleLeft</TextAlign>
         <FontStyle>LabelFontStyle</FontStyle>
         <ForeColor>LabelForeColor</ForeColor>
-        <Text>Наименование</Text>
+        <Text>Категория</Text>
       </MyObject>
 
       <MyObject Name="MaterialCategoryComboBox" Type="ComboBox" Assembly="BaseControls">
@@ -629,7 +623,9 @@
             <Property Name="Width" />
           </Object>
         </Width>
+        <TabIndex>1</TabIndex>
         <NullValue Show="True" Title="[Не выбрано]" />
+        <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
         <ValueList>
           <DataConnection SourceDataConnection="MaterialCategoryPrimaryGetDataConnection">
             <Fields>
@@ -678,21 +674,9 @@
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="TitleLabel">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="MaterialCategoryLabel">
+            <Property Name="Width" />
+          </Object>
         </Width>
         <Height>20</Height>
         <TextAlign>MiddleLeft</TextAlign>
@@ -730,48 +714,49 @@
           </Calculate>
         </Width>
         <Text>
-          <DataConnection SourceDataConnection="MaterialPrimaryGetDataConnection">
-            <Fields>
-              <Field Name="Title" />
-            </Fields>
-          </DataConnection>
+          <Switch>
+            <Case>
+              <When>
+                <Parameter Name="Edit" />
+              </When>
+              <Then>
+                <DataConnection SourceDataConnection="MaterialPrimaryGetDataConnection">
+                  <Fields>
+                    <Field Name="Title" />
+                  </Fields>
+                </DataConnection>
+              </Then>
+            </Case>
+            <Case>
+              <Parameter Name="MaterialTitle" />
+            </Case>
+          </Switch>
         </Text>
+        <TabIndex>2</TabIndex>
       </MyObject>
 
       <MyObject Name="UnitLabel" Type="Label" Assembly="BaseControls">
         <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
+          <Formula>
+            <Plus DataType="IntegerDataType">
               <Item>
                 <Object Name="TitleTextBox">
                   <Property Name="Bottom" />
                 </Object>
               </Item>
-            </Items>
-          </Calculate>
+              <Item>5</Item>
+            </Plus>
+          </Formula>
         </Top>
         <Left>
-          <Object Name="TitleLabel">
+          <Object Name="MaterialCategoryLabel">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="UnitLabel">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="MaterialCategoryLabel">
+            <Property Name="Width" />
+          </Object>
         </Width>
         <Height>20</Height>
         <TextAlign>MiddleLeft</TextAlign>
@@ -781,51 +766,49 @@
       </MyObject>
 
       <MyObject Name="UnitComboBox" Type="ComboBox" Assembly="BaseControls">
+        <Change User="True" Source="False" ValueSet="True" />
         <Top>
           <Object Name="UnitLabel">
             <Property Name="Bottom" />
           </Object>
         </Top>
         <Left>
-          <Object Name="UnitLabel">
+          <Object Name="MaterialCategoryComboBox">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 20 - {2} - {3}</Expression>
-            <Items>
+          <Formula>
+            <Minus DataType="IntegerDataType">
               <Item>
-                <Object Name="ContentPanel">
+                <Object Name="MaterialCategoryComboBox">
                   <Property Name="Width" />
                 </Object>
               </Item>
               <Item>
-                <Object Name="UnitComboBox">
-                  <Property Name="Left" />
-                </Object>
+                <Formula>
+                  <Multiply DataType="IntegerDataType">
+                    <Item>
+                      <Object Name="UnitAddEditButton">
+                        <Property Name="Width" />
+                      </Object>
+                    </Item>
+                    <Item>2</Item>
+                  </Multiply>
+                </Formula>
               </Item>
-              <Item>
-                <Object Name="UnitAddEditButton">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="UnitListButton">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+              <Item>10</Item>
+            </Minus>
+          </Formula>
         </Width>
-        <NullValue Show="True" />
-        <NullValueTitle>[Не выбрано]</NullValueTitle>
+        <TabIndex>3</TabIndex>
+        <NullValue Show="True" Title="[Не выбрано]" />
         <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
         <ValueList>
-          <DataConnection SourceDataConnection="UnitShortPrimaryGetDataConnection">
+          <DataConnection SourceDataConnection="UnitPrimaryGetDataConnection">
             <Fields>
               <Field Name="UnitId" />
-              <Field Name="Title" />
+              <Field Name="ShortTitle" />
             </Fields>
           </DataConnection>
         </ValueList>
@@ -845,51 +828,41 @@
           </Object>
         </Top>
         <Left>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
+          <Formula>
+            <Plus DataType="IntegerDataType">
               <Item>
                 <Object Name="UnitComboBox">
                   <Property Name="Right" />
                 </Object>
               </Item>
-            </Items>
-          </Calculate>
+              <Item>5</Item>
+            </Plus>
+          </Formula>
         </Left>
         <Height>22</Height>
         <Width>22</Width>
-        <BackgroundImage>
-          <Switch>
-            <Case>
-              <When>
-                <Condition Name="UnitComboBoxIsNullOrEmptyCondition" />
-              </When>
-              <Then>..\Images\16x16\plus.png</Then>
-            </Case>
-            <Case>..\Images\16x16\pencil.png</Case>
-          </Switch>
-        </BackgroundImage>
-        <BackgroundImageLayout>Center</BackgroundImageLayout>
-        <Hint>
-          <Switch>
-            <Case>
-              <When>
-                <Condition Name="UnitComboBoxIsNullOrEmptyCondition" />
-              </When>
-              <Then>Добавить запись...</Then>
-            </Case>
-            <Case>Редактировать запись...</Case>
-          </Switch>
-        </Hint>
+        <TabIndex>4</TabIndex>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <BackgroundImage>
+          <Switch>
+            <Case>
+              <When>
+                <Condition Name="UnitComboBoxIsNullCondition" />
+              </When>
+              <Then>Images\16x16\plus.png</Then>
+            </Case>
+            <Case>Images\16x16\pencil.png</Case>
+          </Switch>
+        </BackgroundImage>
         <Commands>
           <If>
             <When>
-              <Condition Name="UnitComboBoxIsNullOrEmptyCondition" />
+              <Condition Name="UnitComboBoxIsNullCondition" />
             </When>
             <Then>
               <Command Name="UnitAddFormShowCommand" />
@@ -901,74 +874,69 @@
         </Commands>
       </MyObject>
 
-      <MyObject Name="UnitListButton" Type="Button" Assembly="BaseControls">
+      <MyObject Name="UnitSelectButton" Type="Button" Assembly="BaseControls">
         <Top>
           <Object Name="UnitComboBox">
             <Property Name="Top" />
           </Object>
         </Top>
         <Left>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
+          <Formula>
+            <Plus DataType="IntegerDataType">
               <Item>
                 <Object Name="UnitAddEditButton">
                   <Property Name="Right" />
                 </Object>
               </Item>
-            </Items>
-          </Calculate>
+              <Item>5</Item>
+            </Plus>
+          </Formula>
         </Left>
-        <Height>22</Height>
-        <Width>22</Width>
-        <Hint>Список единиц измерения...</Hint>
-        <BackgroundImage>..\Images\16x16\list.png</BackgroundImage>
-        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <Height>
+          <Object Name="UnitAddEditButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Object Name="UnitAddEditButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <TabIndex>5</TabIndex>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <BackgroundImage>Images\16x16\list.png</BackgroundImage>
         <Commands>
-          <Command Name="UnitListFormShowCommand"> </Command>
+          <Command Name="UnitSelectFormShowCommand" />
         </Commands>
       </MyObject>
 
-
-      <MyObject Name="UnitPriceLabel" Type="Label" Assembly="BaseControls">
+      <MyObject Name="PriceLabel" Type="Label" Assembly="BaseControls">
         <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
+          <Formula>
+            <Plus DataType="IntegerDataType">
               <Item>
                 <Object Name="UnitComboBox">
                   <Property Name="Bottom" />
                 </Object>
               </Item>
-            </Items>
-          </Calculate>
+              <Item>5</Item>
+            </Plus>
+          </Formula>
         </Top>
         <Left>
-          <Object Name="UnitLabel">
+          <Object Name="MaterialCategoryLabel">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="UnitPriceLabel">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="MaterialCategoryLabel">
+            <Property Name="Width" />
+          </Object>
         </Width>
         <Height>20</Height>
         <TextAlign>MiddleLeft</TextAlign>
@@ -977,34 +945,27 @@
         <Text>Цена продажи за единицу</Text>
       </MyObject>
 
-      <MyObject Name="UnitPriceNumericBox" Type="NumericBox" Assembly="BaseControls">
+      <MyObject Name="PriceNumericBox" Type="NumericBox" Assembly="BaseControls">
         <Top>
-          <Object Name="UnitPriceLabel">
+          <Object Name="PriceLabel">
             <Property Name="Bottom" />
           </Object>
         </Top>
         <Left>
-          <Object Name="UnitPriceLabel">
+          <Object Name="MaterialCategoryComboBox">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="UnitPriceNumericBox">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="MaterialCategoryComboBox">
+            <Property Name="Width" />
+          </Object>
         </Width>
+        <TabIndex>6</TabIndex>
+        <Minimum>0</Minimum>
+        <Increment>100</Increment>
+        <DecimalPlaces>2</DecimalPlaces>
+        <ThousandsSeparator>True</ThousandsSeparator>
         <Value>
           <DataConnection SourceDataConnection="MaterialPrimaryGetDataConnection">
             <Fields>
@@ -1013,6 +974,8 @@
           </DataConnection>
         </Value>
       </MyObject>
+
+
 
     </MyObject>
 
@@ -1074,7 +1037,7 @@
         <TextAlign>MiddleCenter</TextAlign>
         <FontStyle>ButtonFontStyle</FontStyle>
         <ImageAlign>MiddleLeft</ImageAlign>
-        <Image>..\Images\24x24\content-save.png</Image>
+        <Image>Images\24x24\content-save.png</Image>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>

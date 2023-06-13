@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Snippet>
+  <Name>OnClose</Name>
+  <ShortName>onclose</ShortName>
+  <Description>Добавление вопросов при закрытии формы и обработка ответов на них.
+
+Начальные условия.
+Положение курсора роли не играет.</Description>
+  <FileTypes>
+    <FileType Value="Form" />
+  </FileTypes>
+  <ContextCheckings>
+    <Or>
+      <Checking Type="ParametersContextChecker" />
+      <Checking Type="CommandsContextChecker" />
+      <Checking Type="ObjectsContextChecker" />
+      <Checking Type="CommandSequenceContextChecker" />
+    </Or>
+  </ContextCheckings>
+  <Actions>
+    <Input Type="Wizard">
+      <Page>
+        <Title>Настройки паттерна Table</Title>
+        <Description>Добавление вопросов при закрытии формы и обработка ответов на них.</Description>
+        <FieldDescription>
+          <Text>Начальные условия. Положение курсора роли не играет.</Text>
+        </FieldDescription>
+        <Variable Name="SaveCommandName">
+          <Type Value="Text" />
+          <Text>Имя команды сохранения (например, "SaveCommand")</Text>
+          <Default>[SaveCommand]</Default>
+        </Variable>
+      </Page>
+    </Input>
+    <Insert Place="Conditions">
+      <Xml Path="OnClose\OnCloseConditions.xml" />
+    </Insert>
+    <Insert Place="Commands">
+      <Xml Path="OnClose\OnCloseCommands.xml" />
+    </Insert>
+    <Insert Place="Executions">
+      <Xml Path="OnClose\OnCloseExecutions.xml" />
+    </Insert>
+    <ToDo>
+      <Text>Доработка после применения паттерна OnClose.
+1. Добавить тэги Change для объектов, если этого еще не сделано
+2. Удалить основной Execution с FormClosingCondition и FormCloseCommand, если такой имеется</Text>
+    </ToDo>
+  </Actions>
+</Snippet>

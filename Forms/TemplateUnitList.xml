@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
-<Form Name="TemplateUnitListForm" Width="700" Height="600" FormBorderStyle="Sizable" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" BackColor="ThemeBackgroundColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True">
+<Form Name="TemplateUnitListForm" Width="600" Height="400" FormBorderStyle="Sizable" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" BackColor="ThemeBackgroundColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True">
   <Parameters>
     <Parameter Name="Title">Единицы измерения</Parameter>
-    <Parameter Name="Updated">False</Parameter>
     <Parameter Name="SelectionMode">False</Parameter>
-    <Parameter Name="UnitId" />
+    <Parameter Name="UnitTitle" />
+    <Parameter Name="SelectedUnitId" />
+    <Parameter Name="Updated">False</Parameter>
   </Parameters>
 
   <Appearance>
@@ -42,6 +43,7 @@
         <Fields>
           <Field Name="UnitId" />
           <Field Name="Title" />
+          <Field Name="ShortTitle" />
           <Field Name="Archive" />
         </Fields>
       </SqlQuery>
@@ -157,7 +159,6 @@
       </Items>
       <DataType Type="BooleanDataType" />
     </Condition>
-
   </Conditions>
 
   <Commands>
@@ -174,12 +175,17 @@
     </Command>
 
     <Command Name="UnitAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">..\Unit\TemplateUnitEdit.xml</Xml>
+      <Xml Type="Path">TemplateUnitEdit.xml</Xml>
       <Show Type="None" />
+      <Parameters>
+        <Parameter Name="UnitTitle">
+          <Parameter Name="UnitTitle" />
+        </Parameter>
+      </Parameters>
     </Command>
 
     <Command Name="UnitEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">..\Unit\TemplateUnitEdit.xml</Xml>
+      <Xml Type="Path">TemplateUnitEdit.xml</Xml>
       <Show Type="None" />
       <Parameters>
         <Parameter Name="Edit">True</Parameter>
@@ -195,7 +201,7 @@
       </Parameters>
     </Command>
 
-    <Command Name="UnitArchiveSaveCommand" Type="SaveCommand" Assembly="Commands">
+    <Command Name="UnitArchiveCommand" Type="SaveCommand" Assembly="Commands">
       <DataConnections>
         <DataConnection Name="UnitArchiveSetDataConnection" />
       </DataConnections>
@@ -238,13 +244,6 @@
       <Icon Type="Question" />
     </Command>
 
-    <Command Name="EditingArchiveUnitMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
-      <Caption />
-      <Text>Для редактирования восстановите запись из архива.</Text>
-      <Icon Type="Warning" />
-      <Buttons Type="Ok" />
-    </Command>
-
     <Command Name="UnitSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <Object Name="UnitDatabaseTable">
         <Property Name="SelectRowByFieldValue">
@@ -258,8 +257,8 @@
       </Object>
     </Command>
 
-    <Command Name="UnitIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Parameter Name="UnitId">
+    <Command Name="SelectedUnitIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="SelectedUnitId">
         <Object Name="UnitDatabaseTable">
           <Property Name="SelectedRowCellValueByColumnName">
             <Parameters>
@@ -270,12 +269,36 @@
       </Parameter>
     </Command>
 
+    <Command Name="SelectedArchiveUnitMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption />
+      <Text>Нельзя выбрать запись, находящуюся в архиве.</Text>
+      <Icon Type="Warning" />
+      <Buttons Type="Ok" />
+    </Command>
+
     <Command Name="SelectUnitSequentialCommand" Type="SequentialCommand" Assembly="Commands">
       <Commands>
-        <Command Name="UnitIdValueSetCommand" />
-        <Command Name="UpdatedTrueValueSetCommand" />
-        <Command Name="FormCloseCommand" />
+        <If>
+          <When>
+            <Condition Name="SelectedUnitIsArchiveCondition" />
+          </When>
+          <Then>
+            <Command Name="SelectedArchiveUnitMessageBoxCommand" />
+          </Then>
+          <Else>
+            <Command Name="SelectedUnitIdValueSetCommand" />
+            <Command Name="UpdatedTrueValueSetCommand" />
+            <Command Name="FormCloseCommand" />
+          </Else>
+        </If>
       </Commands>
+    </Command>
+
+    <Command Name="EditingArchiveUnitMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption />
+      <Text>Для редактирования восстановите запись из архива.</Text>
+      <Icon Type="Warning" />
+      <Buttons Type="Ok" />
     </Command>
   </Commands>
 
@@ -323,9 +346,9 @@
         <Command Name="UnitArchiveMessageBoxCommand" Parameter="Yes" />
       </ConditionExpression>
       <Commands>
-        <Command Name="UnitArchiveSaveCommand" />
-        <Command Name="UnitDataConnectionRefreshCommand" />
+        <Command Name="UnitArchiveCommand" />
         <Command Name="UpdatedTrueValueSetCommand" />
+        <Command Name="UnitDataConnectionRefreshCommand" />
       </Commands>
     </Execution>
 
@@ -356,24 +379,21 @@
       <Commands>
         <If>
           <When>
-            <Condition Name="SelectedUnitIsArchiveCondition" />
+            <Parameter Name="SelectionMode" />
           </When>
           <Then>
-            <Command Name="EditingArchiveUnitMessageBoxCommand" />
+            <Command Name="SelectUnitSequentialCommand" />
           </Then>
+          <ElseIf>
+            <When>
+              <Condition Name="SelectedUnitIsArchiveCondition" />
+            </When>
+            <Then>
+              <Command Name="EditingArchiveUnitMessageBoxCommand" />
+            </Then>
+          </ElseIf>
           <Else>
-            <If>
-              <When>
-                <Parameter Name="SelectionMode" />
-              </When>
-              <Then>
-                <Command Name="SelectUnitSequentialCommand" />
-              </Then>
-              <Else>
-                <Command Name="UnitEditFormShowCommand" />
-              </Else>
-            </If>
-
+            <Command Name="UnitEditFormShowCommand" />
           </Else>
         </If>
       </Commands>
@@ -481,19 +501,7 @@
             </Row>
           </Structure>
         </ValueList>
-        <Value>
-          <Switch>
-            <Case>
-              <When>
-                <Parameter Name="SelectionMode" />
-              </When>
-              <Then>
-                <Parameter Name="UnitId" />
-              </Then>
-            </Case>
-            <Case>False</Case>
-          </Switch>
-        </Value>
+        <Value>False</Value>
       </MyObject>
     </MyObject>
 
@@ -605,9 +613,16 @@
             <AutoSizeMode Value="None" />
           </Column>
           <Column Name="Title" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
-            <Title>Название</Title>
-            <Width>150</Width>
-            <AutoSizeMode Value="None" />
+            <Title>Наименование</Title>
+            <Width>300</Width>
+            <MinimumWidth>100</MinimumWidth>
+            <AutoSizeMode Value="Fill" />
+          </Column>
+          <Column Name="ShortTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Сокращенное обозначение</Title>
+            <Width>200</Width>
+            <MinimumWidth>100</MinimumWidth>
+            <AutoSizeMode Value="Fill" />
           </Column>
           <Column Name="Archive" Type="DatabaseTableColumnCheckBox" Assembly="DatabaseTableColumnControls">
             <Visible>False</Visible>
@@ -652,7 +667,7 @@
         <Height>40</Height>
         <TabIndex>3</TabIndex>
         <Hint>Добавить запись...</Hint>
-        <BackgroundImage>..\Images\24x24\plus.png</BackgroundImage>
+        <BackgroundImage>Images\24x24\plus.png</BackgroundImage>
         <BackgroundImageLayout>Center</BackgroundImageLayout>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
@@ -694,7 +709,7 @@
         </Height>
         <TabIndex>4</TabIndex>
         <Hint>Редактировать запись...</Hint>
-        <BackgroundImage>..\Images\24x24\pencil.png</BackgroundImage>
+        <BackgroundImage>Images\24x24\pencil.png</BackgroundImage>
         <BackgroundImageLayout>Center</BackgroundImageLayout>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
@@ -763,7 +778,7 @@
         </Height>
         <TabIndex>5</TabIndex>
         <Hint>Удалить запись</Hint>
-        <BackgroundImage>..\Images\24x24\delete.png</BackgroundImage>
+        <BackgroundImage>Images\24x24\delete.png</BackgroundImage>
         <BackgroundImageLayout>Center</BackgroundImageLayout>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
@@ -851,9 +866,9 @@
                   <Object Name="ArchiveFilterComboBox" />
                 </Or>
               </When>
-              <Then>..\Images\24x24\unarchive.png</Then>
+              <Then>Images\24x24\unarchive.png</Then>
             </Case>
-            <Case>..\Images\24x24\archive.png</Case>
+            <Case>Images\24x24\archive.png</Case>
           </Switch>
         </BackgroundImage>
         <BackgroundImageLayout>Center</BackgroundImageLayout>
@@ -947,7 +962,7 @@
         <TextAlign>MiddleCenter</TextAlign>
         <FontStyle>ButtonFontStyle</FontStyle>
         <ImageAlign>MiddleLeft</ImageAlign>
-        <Image>..\Images\24x24\check.png</Image>
+        <Image>Images\24x24\check.png</Image>
         <Text>Выбрать</Text>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
@@ -955,12 +970,7 @@
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
-          <And>
-            <Condition Name="UnitSelectedCondition" />
-            <Not>
-              <Condition Name="SelectedUnitIsArchiveCondition" />
-            </Not>
-          </And>
+          <Condition Name="UnitSelectedCondition" />
         </Enabled>
         <Commands>
           <Command Name="SelectUnitSequentialCommand" />
@@ -969,5 +979,6 @@
         <DisabledText>Чтобы продолжить, необходимо выбрать запись в таблице.</DisabledText>
       </MyObject>
     </MyObject>
+
   </MyObjects>
 </Form>

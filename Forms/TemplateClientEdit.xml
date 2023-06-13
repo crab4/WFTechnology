@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateClientEditForm" Width="400" Height="350" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateClientEditForm" Width="400" Height="340" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
@@ -14,9 +14,8 @@
       </Switch>
     </Parameter>
     <Parameter Name="ClientId" />
-    <Parameter Name="Updated">False</Parameter>
-    <Parameter Name="Archive" />
     <Parameter Name="ClientTitle" />
+    <Parameter Name="Updated">False</Parameter>
   </Parameters>
 
   <Appearance>
@@ -92,13 +91,6 @@
     <DataConnection Name="ClientInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
       <Workflow Name="Template" />
       <Parameters>
-        <Parameter NativeName="CityId">
-          <Value>
-            <Object Name="CityComboBox">
-              <Property Name="Value" />
-            </Object>
-          </Value>
-        </Parameter>
         <Parameter NativeName="Name">
           <Value>
             <Object Name="NameTextBox" />
@@ -109,9 +101,9 @@
             <Object Name="DateOfBirthDateTimePicker" />
           </Value>
         </Parameter>
-        <Parameter NativeName="Email">
+        <Parameter NativeName="CityId">
           <Value>
-            <Object Name="EmailTextBox" />
+            <Object Name="CityComboBox" />
           </Value>
         </Parameter>
         <Parameter NativeName="Phone">
@@ -120,7 +112,7 @@
               <Case>
                 <When>
                   <Not>
-                    <Condition Name="PhoneIsEmptyEqualCondition" />
+                    <Condition Name="PhoneIsEmptyCondition" />
                   </Not>
                 </When>
                 <Then>
@@ -128,6 +120,11 @@
                 </Then>
               </Case>
             </Switch>
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Email">
+          <Value>
+            <Object Name="EmailTextBox" />
           </Value>
         </Parameter>
       </Parameters>
@@ -149,16 +146,30 @@
             <Object Name="NameTextBox" />
           </Value>
         </Parameter>
-        <Parameter NativeName="CityId">
-          <Value>
-            <Object Name="CityComboBox">
-              <Property Name="Value" />
-            </Object>
-          </Value>
-        </Parameter>
         <Parameter NativeName="DateOfBirth">
           <Value>
             <Object Name="DateOfBirthDateTimePicker" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="CityId">
+          <Value>
+            <Object Name="CityComboBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Phone">
+          <Value>
+            <Switch>
+              <Case>
+                <When>
+                  <Not>
+                    <Condition Name="PhoneIsEmptyCondition" />
+                  </Not>
+                </When>
+                <Then>
+                  <Object Name="PhoneTextBox" />
+                </Then>
+              </Case>
+            </Switch>
           </Value>
         </Parameter>
         <Parameter NativeName="Email">
@@ -166,17 +177,11 @@
             <Object Name="EmailTextBox" />
           </Value>
         </Parameter>
-        <Parameter NativeName="Phone">
-          <Value>
-            <Object Name="PhoneTextBox" />
-          </Value>
-        </Parameter>
       </Parameters>
       <SqlQueries>
         <SqlQuery Name="ClientUpdateSqlQuery" Type="Update" />
       </SqlQueries>
     </DataConnection>
-
   </DataConnections>
 
   <Conditions>
@@ -184,16 +189,6 @@
 
     <Condition Name="EscapeKeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
       <Key Value="Escape" />
-    </Condition>
-
-    <Condition Name="TemplateCityListUpdatedEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <AlwaysChange Value="True" />
-      <Items>
-        <Item>
-          <Command Name="CityListFormShowCommand" Parameter="Updated" />
-        </Item>
-        <Item>True</Item>
-      </Items>
     </Condition>
 
     <Condition Name="FormChangedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
@@ -208,7 +203,20 @@
       <DataType Type="BooleanDataType" />
     </Condition>
 
+    <Condition Name="MandatoryFieldsAreFilledEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Form>
+            <Property Name="CheckingFired" />
+          </Form>
+        </Item>
+        <Item>False</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
     <Condition Name="SaveOnCloseMessageBoxCommandYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
       <Items>
         <Item>
           <Command Name="SaveOnCloseMessageBoxCommand" />
@@ -218,6 +226,7 @@
     </Condition>
 
     <Condition Name="SaveOnCloseMessageBoxCommandNoEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
       <Items>
         <Item>
           <Command Name="SaveOnCloseMessageBoxCommand" />
@@ -226,13 +235,35 @@
       </Items>
     </Condition>
 
-    <Condition Name="CloseOnCloseMessageBoxYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
+    <Condition Name="CloseOnCloseMessageBoxCommandYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
       <Items>
         <Item>
           <Command Name="CloseOnCloseMessageBoxCommand" />
         </Item>
         <Item>Yes</Item>
       </Items>
+    </Condition>
+
+    <Condition Name="PhoneIsEmptyCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="PhoneTextBox" />
+        </Item>
+        <Item>+</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PhoneMaskNotCompletedCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="PhoneTextBox">
+            <Property Name="MaskCompleted" />
+          </Object>
+        </Item>
+        <Item>False</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
     </Condition>
 
     <Condition Name="NameTextBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
@@ -250,38 +281,6 @@
         </Item>
       </Items>
     </Condition>
-
-    <Condition Name="CheckingFiredFalseEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Form>
-            <Property Name="CheckingFired" />
-          </Form>
-        </Item>
-        <Item>False</Item>
-      </Items>
-      <DataType Type="BooleanDataType" />
-    </Condition>
-
-    <Condition Name="PhoneMaskNotCompletedEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Object Name="PhoneTextBox">
-            <Property Name="MaskCompleted" />
-          </Object>
-        </Item>
-        <Item>False</Item>
-      </Items>
-    </Condition>
-
-    <Condition Name="PhoneIsEmptyEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Object Name="PhoneTextBox" />
-        </Item>
-        <Item>+</Item>
-      </Items>
-    </Condition>
   </Conditions>
 
   <Commands>
@@ -289,6 +288,24 @@
 
     <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <Parameter Name="Updated">True</Parameter>
+    </Command>
+
+    <Command Name="ClientInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="ClientInsertSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="ClientUpdateSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="ClientUpdateSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="ClientIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="ClientId">
+        <Command Name="ClientInsertSaveCommand" />
+      </Parameter>
     </Command>
 
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
@@ -310,54 +327,37 @@
       </Commands>
     </Command>
 
-    <Command Name="CityListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">City/TemplateCityList.xml</Xml>
-      <Show Type="None" />
-    </Command>
-
-    <Command Name="CityShortDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="CityShortPrimaryGetDataConnection" Packet="True" />
-      </DataConnections>
-    </Command>
-
-    <Command Name="ClientInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="ClientInsertSetDataConnection" />
-      </DataConnections>
-    </Command>
-    <Command Name="ClientUpdateSaveCommand" Type="SaveCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="ClientUpdateSetDataConnection" />
-      </DataConnections>
-    </Command>
-
-    <Command Name="ClientIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Parameter Name="ClientId">
-        <Command Name="ClientInsertSaveCommand" />
-      </Parameter>
-    </Command>
-
     <Command Name="SaveOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
       <Caption>Сохранение</Caption>
-      <Text>Форма содержит несохранённые изменения.\rСохранить их перед закрытием?</Text>
+      <Text>Форма содержит несохраненные изменения.\rСохранить их перед закрытием?</Text>
       <Icon Type="Question" />
       <Buttons Type="YesNoCancel" />
     </Command>
 
     <Command Name="CloseOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
       <Caption>Закрытие</Caption>
-      <Text>При закрытии все несохраненные изменения будет утеряны.\rВсё равно закрыть форму?</Text>
+      <Text>При закрытии все несохраненные изменения будут утеряны.\rВы уверены, что хотите закрыть форму?</Text>
       <Icon Type="Question" />
       <Buttons Type="YesNo" />
     </Command>
-    
-
   </Commands>
 
   <Checkings>
     <Checking>
-      <Object Name="NameTextBox"/>
+      <Object Name="PhoneTextBox" />
+      <ConditionExpression>
+        <And>
+          <Not>
+            <Condition Name="PhoneIsEmptyCondition" />
+          </Not>
+          <Condition Name="PhoneMaskNotCompletedCondition" />
+        </And>
+      </ConditionExpression>
+      <AsteriskHint>Некорректный номер телефона</AsteriskHint>
+    </Checking>
+
+    <Checking>
+      <Object Name="NameTextBox" />
       <ConditionExpression>
         <Condition Name="NameTextBoxIsNullOrEmptyCondition" />
       </ConditionExpression>
@@ -369,40 +369,25 @@
       <ConditionExpression>
         <Condition Name="CityComboBoxIsNullCondition" />
       </ConditionExpression>
-      <AsteriskHint>Пожалуйста, выберите город</AsteriskHint>
-    </Checking>
-
-    <Checking>
-      <Object Name="PhoneTextBox" />
-      <ConditionExpression>
-        <And>
-          <Condition Name="PhoneMaskNotCompletedEqualCondition" />
-          <Not>
-            <Condition Name="PhoneIsEmptyEqualCondition" />
-          </Not>
-        </And>
-      </ConditionExpression>
-      <AsteriskHint>Некорректный номер телефоны</AsteriskHint>
+      <AsteriskHint>Пожалуйста, выберите элемент в этом списке</AsteriskHint>
     </Checking>
   </Checkings>
 
   <Executions>
-    
-    
     <Execution>
       <ConditionExpression>
         <And>
-          <Condition Name="FormChangedTrueEqualCondition" />
           <Or>
             <Condition Name="FormClosingCondition" />
             <Condition Name="EscapeKeyDownCondition" />
           </Or>
+          <Condition Name="FormChangedTrueEqualCondition" />
         </And>
       </ConditionExpression>
       <Commands>
         <If>
           <When>
-            <Condition Name="CheckingFiredFalseEqualCondition" />
+            <Condition Name="MandatoryFieldsAreFilledEqualCondition" />
           </When>
           <Then>
             <Command Name="SaveOnCloseMessageBoxCommand" />
@@ -411,7 +396,6 @@
             <Command Name="CloseOnCloseMessageBoxCommand" />
           </Else>
         </If>
-
       </Commands>
     </Execution>
 
@@ -427,8 +411,6 @@
     <Execution>
       <ConditionExpression>
         <Or>
-          <Condition Name="SaveOnCloseMessageBoxCommandNoEqualCondition" />
-          <Condition Name="CloseOnCloseMessageBoxYesEqualCondition" />
           <And>
             <Or>
               <Condition Name="FormClosingCondition" />
@@ -438,22 +420,14 @@
               <Condition Name="FormChangedTrueEqualCondition" />
             </Not>
           </And>
+          <Condition Name="SaveOnCloseMessageBoxCommandNoEqualCondition" />
+          <Condition Name="CloseOnCloseMessageBoxCommandYesEqualCondition" />
         </Or>
       </ConditionExpression>
       <Commands>
         <Command Name="FormCloseCommand" />
       </Commands>
     </Execution>
-
-    <Execution>
-      <ConditionExpression>
-        <Condition Name="TemplateCityListUpdatedEqualCondition" />
-      </ConditionExpression>
-      <Commands>
-        <Command Name="CityShortDataConnectionRefreshCommand" />
-      </Commands>
-    </Execution>
-
   </Executions>
 
   <MyObjects>
@@ -503,17 +477,6 @@
     </MyObject>
 
     <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls">
-      <Enabled>
-        <Switch>
-          <Case>
-            <When>
-              <Parameter Name="Archive" />
-            </When>
-            <Then>False</Then>
-          </Case>
-          <Case>True</Case>
-        </Switch>
-      </Enabled>
       <Top>
         <Object Name="HeadPanel">
           <Property Name="Bottom" />
@@ -555,8 +518,6 @@
       <TabIndex>1</TabIndex>
       <BackColor>ThemeBackgroundColor</BackColor>
 
-      <!-- Insert your content-->
-
       <MyObject Name="NameLabel" Type="Label" Assembly="BaseControls">
         <Top>5</Top>
         <Left>10</Left>
@@ -581,7 +542,7 @@
         <TextAlign>MiddleLeft</TextAlign>
         <FontStyle>LabelFontStyle</FontStyle>
         <ForeColor>LabelForeColor</ForeColor>
-        <Text>Имя(ФИО)</Text>
+        <Text>Имя (ФИО)</Text>
       </MyObject>
 
       <MyObject Name="NameTextBox" Type="TextBox" Assembly="BaseControls">
@@ -612,17 +573,6 @@
             </Items>
           </Calculate>
         </Width>
-        <ReadOnly>
-          <Switch>
-            <Case>
-              <When>
-                <Parameter Name="Archive" />
-              </When>
-              <Then>True</Then>
-            </Case>
-            <Case>False</Case>
-          </Switch>
-        </ReadOnly>
         <Text>
           <Switch>
             <Case>
@@ -687,7 +637,6 @@
       </MyObject>
 
       <MyObject Name="DateOfBirthDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
-
         <Top>
           <Object Name="DateOfBirthLabel">
             <Property Name="Bottom" />
@@ -725,7 +674,7 @@
           </Calculate>
         </Top>
         <Left>
-          <Object Name="NameLabel">
+          <Object Name="DateOfBirthLabel">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -766,7 +715,7 @@
         </Left>
         <Width>
           <Calculate>
-            <Expression>{0} - {1} - {2} - 15</Expression>
+            <Expression>{0} - {1}*2</Expression>
             <Items>
               <Item>
                 <Object Name="ContentPanel">
@@ -776,11 +725,6 @@
               <Item>
                 <Object Name="CityComboBox">
                   <Property Name="Left" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="CityListButton">
-                  <Property Name="Width" />
                 </Object>
               </Item>
             </Items>
@@ -806,36 +750,6 @@
         </Value>
       </MyObject>
 
-      <MyObject Name="CityListButton" Type="Button" Assembly="BaseControls">
-        <Top>
-          <Object Name="CityComboBox">
-            <Property Name="Top" />
-          </Object>
-        </Top>
-        <Left>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="CityComboBox">
-                  <Property Name="Right" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Left>
-        <Height>22</Height>
-        <Width>22</Width>
-        <Hint>Список городов...</Hint>
-        <BackgroundImage>..\Images\16x16\list.png</BackgroundImage>
-        <BackgroundImageLayout>Center</BackgroundImageLayout>
-        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Commands>
-          <Command Name="CityListFormShowCommand" />
-        </Commands>
-      </MyObject>
-
       <MyObject Name="PhoneLabel" Type="Label" Assembly="BaseControls">
         <Top>
           <Calculate>
@@ -850,7 +764,7 @@
           </Calculate>
         </Top>
         <Left>
-          <Object Name="NameLabel">
+          <Object Name="CityLabel">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -875,7 +789,7 @@
         <TextAlign>MiddleLeft</TextAlign>
         <FontStyle>LabelFontStyle</FontStyle>
         <ForeColor>LabelForeColor</ForeColor>
-        <Text>Телефон</Text>
+        <Text>Контактный телефон</Text>
       </MyObject>
 
       <MyObject Name="PhoneTextBox" Type="TextBox" Assembly="BaseControls">
@@ -913,18 +827,7 @@
             </Fields>
           </DataConnection>
         </Text>
-        <Mask>Phone</Mask>
-        <ReadOnly>
-          <Switch>
-            <Case>
-              <When>
-                <Parameter Name="Archive" />
-              </When>
-              <Then>True</Then>
-            </Case>
-            <Case>False</Case>
-          </Switch>
-        </ReadOnly>
+        <Mask>PHONE</Mask>
       </MyObject>
 
       <MyObject Name="EmailLabel" Type="Label" Assembly="BaseControls">
@@ -941,7 +844,7 @@
           </Calculate>
         </Top>
         <Left>
-          <Object Name="NameLabel">
+          <Object Name="PhoneLabel">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -1004,23 +907,7 @@
             </Fields>
           </DataConnection>
         </Text>
-        <ReadOnly>
-          <Switch>
-            <Case>
-              <When>
-                <Parameter Name="Archive" />
-              </When>
-              <Then>True</Then>
-            </Case>
-            <Case>False</Case>
-          </Switch>
-        </ReadOnly>
       </MyObject>
-
-
-
-
-
 
     </MyObject>
 
@@ -1082,7 +969,7 @@
         <TextAlign>MiddleCenter</TextAlign>
         <FontStyle>ButtonFontStyle</FontStyle>
         <ImageAlign>MiddleLeft</ImageAlign>
-        <Image>..\Images\24x24\content-save.png</Image>
+        <Image>Images\24x24\content-save.png</Image>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
@@ -1091,7 +978,7 @@
         <Text>Сохранить</Text>
         <TabIndex>1</TabIndex>
         <Enabled>
-          <Condition Name="CheckingFiredFalseEqualCondition" />
+          <Condition Name="MandatoryFieldsAreFilledEqualCondition" />
         </Enabled>
         <DisabledMode>True</DisabledMode>
         <DisabledText>Одно или несколько полей заполнены некорректно.</DisabledText>

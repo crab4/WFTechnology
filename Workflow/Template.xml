@@ -3,274 +3,310 @@
   <SqlQueries>
     <SqlQuery Name="CitySelectSqlQuery">
       <Text>
-        select 
-          city_id as "CityId",
-          title as "Title",
-          archive as "Archive"
-         from 
-          template.city
-         order by title;
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="CityInsertSqlQuery">
-      <Text>
-        insert into template.city(
-          title,
-          archive
-        )
-        values
-          (
-          {Title},
-          {Archive}
-          );
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="CityUpdateSqlQuery">
-      <Text>
-        update template.city
-        set
-          title = {Title},
-          archive = {Archive}
-        where
-          city_id = {CityId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="CityDeleteSqlQuery">
-      <Text>
-        select template.city_try_delete({CityId}::smallint);
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="ClientSelectSqlQuery">
-      <Text>
-        select
-          cl.client_id as "ClientId",
-          cl.title as "Name",
-          ct.title as "CityTitle",
-          cl.phone as "Phone",
-          cl.archive as "Archive"
-        from
-          template.client cl
-          left join template.city ct using(city_id)
-        where {SearchKeyword} ISNULL or cl.title ilike '%' || {SearchKeyword} || '%'
-        order by cl.title
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="ClientByIdSelectSqlQuery">
-      <Text>
-        Select
-          client.title as "Name",
-          client.city_id as "CityId",
-          client.date_of_birth as "DateOfBirth",
-          client.email as "Email",
-          client.phone as "Phone" 
-        from
-          template.client
-        where client.client_id = {ClientId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="ClientInsertSqlQuery">
-      <Text>
-        insert into template.client(
-          city_id,
-          date_of_birth,
-          title,
-          email,
-          phone
-        )
-        values(
-          {CityId},
-          {DateOfBirth},
-          {Name},
-          {Email},
-          {Phone}
-        )
-        returning client_id;
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="ClientUpdateSqlQuery">
-      <Text>
-        update template.client
-        set
-          city_id = {CityId},
-          date_of_birth = {DateOfBirth},
-          title = {Name},
-          email = {Email},
-          phone = {Phone}
-        where
-          client_id = {ClientId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="ClientDeleteSqlQuery">
-      <Text>
-        select template.client_try_delete({ClientId}::bigint);
+		SELECT
+		  city.city_id AS "CityId",
+		  city.title AS "Title",
+		  city.archive AS "Archive"
+		FROM
+		  template.city
+		ORDER BY city.title;
       </Text>
     </SqlQuery>
 
     <SqlQuery Name="CityShortSelectSqlQuery">
       <Text>
-        SELECT
-          city.city_id AS "CityId",
-          city.title AS "Title"
-        FROM
-          template.city
-        where
-          not city.archive or
-          city.city_id = {CityId}
-        ORDER BY city.title;
+		SELECT
+		  city.city_id AS "CityId",
+		  city.title AS "Title"
+		FROM
+		  template.city
+		WHERE
+		  NOT city.archive OR
+		  city.city_id = {CityId}
+		ORDER BY city.title;
       </Text>
     </SqlQuery>
 
-    <SqlQuery Name="OrderDeleteSelectSqlQuery">
+    <SqlQuery Name="CitySimpleSelectSqlQuery">
       <Text>
-     select 
-      ord.order_id as "OrderId",
-      ord.client_id as "ClientId",
-      ord.order_number as "OrderNumber",
-      ord.order_date as "OrderDate",
-      ord.description as "OrderDescription",
-      client.city_id as "CityId",
-      ord.date_deleted as "DateDeleted"
-  
-    from template.order ord
-    left join template.client on client.client_id = ord.client_id
-        where ord.deleted and
-        ord.order_date between convert_date_filter({StartDate}::timestamp) and convert_date_filter({EndDate}::timestamp);
-
-</Text>
-    </SqlQuery>
-
-    <SqlQuery Name="OrderSelectSqlQuery">
-      <Text>
-    WITH _filter AS (
-      SELECT
-        CASE
-          WHEN {Filter} = 'Today'
-          THEN CURRENT_DATE::timestamp
-          WHEN {Filter} = 'CurrentWeek'
-          THEN date_trunc('week', CURRENT_DATE::timestamp)
-          WHEN {Filter} = 'Fortnight'
-          THEN date_trunc('week', CURRENT_DATE::timestamp) - interval '7d'
-          WHEN {Filter} = 'Period'
-          THEN {StartDate}::timestamp
-        END AS start_date,
-    
-        CASE
-          WHEN {Filter} = 'Today'
-          THEN CURRENT_DATE + interval '1d - 1s'
-          WHEN {Filter} = 'CurrentWeek'
-          THEN date_trunc('week', CURRENT_DATE::timestamp) + interval '7d - 1s'
-          WHEN {Filter} = 'Fortnight'
-          THEN date_trunc('week', CURRENT_DATE::timestamp) + interval '7d - 1s'
-          WHEN {Filter} = 'Period'
-          THEN {EndDate}::timestamp + interval '1d - 1s'
-        END AS end_date
-    )  select 
-		  ord.order_id as "OrderId",
-		  ord.client_id as "ClientId",
-		  ord.order_number as "OrderNumber",
-		  ord.order_date as "OrderDate",
-		  ord.description as "OrderDescription",
-		  client.city_id as "CityId"
-  
-		from template.order ord
-		left join template.client on client.client_id = ord.client_id
-        left join _filter on true
-        where not ord.deleted and
-        ord.order_date between convert_date_filter(_filter.start_date) and convert_date_filter(_filter.end_date) and
-        ord.added;
+	    SELECT
+	      city.city_id AS "CityId",
+	      city.title AS "Title"
+	    FROM
+	      template.city;
       </Text>
     </SqlQuery>
 
-    <SqlQuery Name="EmptyOrderInsertSqlQuery">
+    <SqlQuery Name="CityInsertSqlQuery">
       <Text>
-        insert into template.order (added)
-        values(false) 
-        returning order_id;
+		INSERT INTO template.city (
+		  title,
+		  archive
+		)
+		VALUES (
+		  {Title},
+		  {Archive}
+		);
       </Text>
     </SqlQuery>
 
-    <SqlQuery Name="OrderUpdateSqlQuery">
+    <SqlQuery Name="CityUpdateSqlQuery">
       <Text>
-				update  template.order set
-				  client_id = {ClientId},
-				  order_number = {OrderNumber},
-				  order_date = {OrderDate}, 
-				  description = {OrderDescription},
-                  added = True
-				where order_id = {OrderId};
+		UPDATE template.city
+		SET
+		  title = {Title},
+		  archive = {Archive}
+		WHERE
+		  city_id = {CityId};
+	  </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="CityDeleteSqlQuery">
+      <Text>
+		SELECT template.city_try_delete({CityId}::smallint);
       </Text>
     </SqlQuery>
 
-    <SqlQuery Name="OrderDeleteSqlQuery">
+    <SqlQuery Name="ClientSelectSqlQuery">
       <Text>
-        update template.order set
-          deleted = True,
-          date_deleted = now()
-        where order_id = {OrderId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="OrderSelectByIdSqlQuery">
-      <Text>
-        SELECT 
-          client_id as "ClientId",
-          order_number as "OrderNumber", 
-          order_date as "OrderDate", 
-          description as "OrderDescription"
-        FROM
-         template."order"
-        where
-          order_id = {OrderId};
+		SELECT
+		  client.client_id AS "ClientId",
+		  client.title AS "Name",
+		  city.title AS "CityTitle",
+		  client.phone AS "Phone",
+		  client.archive AS "Archive"
+		FROM
+		  template.client
+		  LEFT JOIN template.city USING(city_id)
+		WHERE
+		  {SearchKeywords} ISNULL OR client.title ilike '%' || {SearchKeywords} ||'%'
+		ORDER BY client.title;
       </Text>
     </SqlQuery>
 
     <SqlQuery Name="ClientShortSelectSqlQuery">
       <Text>
-        SELECT
-          client.client_id AS "ClientId",
-          client.title AS "ClientTitle",
-          client.phone as "ClientPhone",
-          city.title as "CityTitle"
-        FROM
-          template.client
-          join template.city using (city_id)
-        where
-          not client.archive or
-          client.client_id = {ClientId}
+	    SELECT
+	      client.client_id AS "ClientId",
+	      client.title AS "ClientTitle",
+	      city.title AS "CityTitle",
+	      client.phone AS "Phone",
+	      client.email AS "Email"
+	    FROM
+	      template.client
+	      LEFT JOIN template.city USING(city_id)
+        WHERE
+	      NOT client.archive OR
+	      client.client_id = {ClientId}
         ORDER BY client.title;
       </Text>
     </SqlQuery>
 
-    <SqlQuery Name="ClientSimpleSqlQuery">
+    <SqlQuery Name="ClientSimpleSelectSqlQuery">
       <Text>
-        select
-          client.client_id as "ClientId",
-          client.title as "ClientTitle"
-        from template.client
+	    SELECT
+	      client.client_id AS "ClientId",
+	      client.title AS "Title"
+	    FROM
+	      template.client;
       </Text>
     </SqlQuery>
 
-    <SqlQuery Name="CitySimpleSqlQuery">
+    <SqlQuery Name="ClientByIdSelectSqlQuery">
       <Text>
-        select
-	        city.city_id as "CityId",
-	        city.title as "CityTitle"
-        from template.city
+		SELECT
+		  client.title AS "Name",
+		  client.city_id AS "CityId",
+		  client.date_of_birth AS "DateOfBirth",
+		  client.email AS "Email",
+		  client.phone AS "Phone"
+		FROM
+		  template.client
+		WHERE
+		  client.client_id = {ClientId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="ClientInsertSqlQuery">
+      <Text>
+		INSERT INTO template.client(
+		  city_id,
+		  date_of_birth,
+		  title,
+		  email,
+		  phone
+		)
+		VALUES (
+		  {CityId},
+		  {DateOfBirth},
+		  {Name},
+		  {Email},
+		  {Phone}
+		)
+        RETURNING client_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="ClientUpdateSqlQuery">
+      <Text>
+		UPDATE template.client
+		SET
+		  city_id = {CityId},
+		  date_of_birth = {DateOfBirth},
+		  title = {Name},
+		  email = {Email},
+		  phone = {Phone}
+		WHERE
+		  client_id = {ClientId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="ClientDeleteSqlQuery">
+      <Text>
+	    SELECT template.client_try_delete({ClientId}::bigint);
       </Text>
     </SqlQuery>
 
     <SqlQuery Name="ClientArchiveSqlQuery">
       <Text>
-        update template.client
-          set archive = not archive where client_id = {ClientId};
+	    UPDATE template.client
+	    SET
+	      archive = {Archive}
+	    WHERE
+	      client_id = {ClientId};
+      </Text>
+    </SqlQuery>
+
+    <!--============================================================-->
+    <!--===Заказы===-->
+    <!--============================================================-->
+    <SqlQuery Name="OrderSelectSqlQuery">
+      <Text>  
+	    WITH _filter AS (
+	      SELECT
+	        CASE
+	          WHEN {Filter} = 'Today'
+	          THEN CURRENT_DATE::timestamp
+	          WHEN {Filter} = 'CurrentWeek'
+	          THEN date_trunc('week', CURRENT_DATE::timestamp)
+	          WHEN {Filter} = 'Fortnight'
+	          THEN date_trunc('week', CURRENT_DATE::timestamp) - interval '7d'
+	          WHEN {Filter} = 'Period'
+	          THEN {StartDate}::timestamp
+	        END AS start_date,
+	    
+	        CASE
+	          WHEN {Filter} = 'Today'
+	          THEN CURRENT_DATE + interval '1d - 1s'
+	          WHEN {Filter} = 'CurrentWeek'
+	          THEN date_trunc('week', CURRENT_DATE::timestamp) + interval '7d - 1s'
+	          WHEN {Filter} = 'Fortnight'
+	          THEN date_trunc('week', CURRENT_DATE::timestamp) + interval '7d - 1s'
+	          WHEN {Filter} = 'Period'
+	          THEN {EndDate}::timestamp + interval '1d - 1s'
+	        END AS end_date
+	    )
+		
+		SELECT
+		  O.order_id AS "OrderId",
+		  O.client_id AS "ClientId",
+		  C.city_id AS "CityId",
+		  O.order_number AS "OrderNumber",
+		  O.order_date AS "OrderDate"
+		FROM
+		  template.order O
+		  LEFT JOIN template.client C USING(client_id)
+		  LEFT JOIN _filter ON true
+		WHERE
+		  O.added AND
+		  NOT O.deleted AND
+		  O.order_date BETWEEN convert_date_filter(_filter.start_date)
+                           AND convert_date_filter(_filter.end_date)
+		ORDER BY O.order_number ASC;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderByIdSelectSqlQuery">
+      <Text>
+        SELECT
+		  O.order_id AS "OrderId",
+		  O.client_id AS "ClientId",
+		  O.order_number AS "OrderNumber",
+		  O.order_date AS "OrderDate",
+		  O.description AS "Description"
+        FROM
+          template.order O
+        WHERE
+          O.order_id = {OrderId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="EmptyOrderInsertSqlQuery">
+      <Text>
+	    INSERT INTO template.order (added)
+	    VALUES (false)
+	    RETURNING order_id;
+	  </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="EmptyOrderDeleteSqlQuery">
+      <Text>
+		DELETE FROM template.order_position OP
+		  USING template.order O
+		WHERE
+		  OP.order_id = O.order_id AND
+		  NOT O.added AND
+		  OP.order_id = {OrderId};
+		
+		DELETE FROM template.order
+		WHERE
+		  NOT added AND
+		  order_id = {OrderId};
+	  </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderUpdateSqlQuery">
+      <Text>
+		UPDATE template.order
+		SET
+		  order_number = {OrderNumber},
+		  order_date = {OrderDate},
+		  client_id = {ClientId},
+		  description = {Description},
+		  added = true
+		WHERE
+		  order_id = {OrderId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderDeleteSqlQuery">
+      <Text>
+		UPDATE template.order
+		SET
+		  deleted = true,
+		  date_deleted = now()
+		WHERE
+		  order_id = {OrderId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="DeletedOrderSelectSqlQuery">
+      <Text>
+		SELECT
+		  O.order_id AS "OrderId",
+		  O.client_id AS "ClientId",
+		  C.city_id AS "CityId",
+		  O.order_number AS "OrderNumber",
+		  O.order_date AS "OrderDate",
+		  O.date_deleted AS "DateDeleted"
+		FROM
+		  template.order O
+		  LEFT JOIN template.client C USING(client_id)
+		WHERE
+		  O.deleted AND
+		  O.date_deleted BETWEEN convert_date_filter({StartDate}::timestamp)
+		                     AND convert_date_filter({EndDate}::timestamp + interval '1d - 1s')
+		ORDER BY O.order_number ASC;
       </Text>
     </SqlQuery>
 
@@ -279,14 +315,14 @@
     <!--============================================================-->
     <SqlQuery Name="UnitSelectSqlQuery">
       <Text>  
-        SELECT
-          unit.unit_id AS "UnitId",
-          unit.title AS "Title",
-          unit.short_title as "ShortTitle",
-          unit.archive AS "Archive"
-        FROM
-          template.unit
-        ORDER BY unit.title;
+		SELECT
+		  unit.unit_id AS "UnitId",
+		  unit.title AS "Title",
+		  short_title AS "ShortTitle",
+		  unit.archive AS "Archive"
+		FROM
+		  template.unit
+		ORDER BY unit.title;
       </Text>
     </SqlQuery>
 
@@ -294,7 +330,8 @@
       <Text>
         SELECT
           unit.unit_id AS "UnitId",
-          unit.title AS "Title"
+          unit.title AS "Title",
+          short_title AS "ShortTitle"
         FROM
           template.unit
         WHERE
@@ -305,10 +342,12 @@
     <SqlQuery Name="UnitInsertSqlQuery">
       <Text>
     	INSERT INTO template.unit (
-    	  title
+    	  title,
+          short_title
     	)
     	VALUES (
-    	  {Title}
+    	  {Title},
+    	  {ShortTitle}
     	)
     	RETURNING unit_id;
       </Text>
@@ -318,7 +357,8 @@
       <Text>
         UPDATE template.unit
         SET
-          title = {Title}
+          title = {Title},
+          short_title = {ShortTitle}
         WHERE
           unit_id = {UnitId};
       </Text>
@@ -336,130 +376,7 @@
 
     <SqlQuery Name="UnitDeleteSqlQuery">
       <Text>
-        SELECT template.unit_try_delete({UnitId});
-      </Text>
-    </SqlQuery>
-
-    <!--============================================================-->
-    <!--===Категория ТМЦ===-->
-    <!--============================================================-->
-    <SqlQuery Name="MaterialCategoryByIdSelectSqlQuery">
-      <Text>
-        SELECT
-          material_category.title AS "Title",
-          material_category.parent_material_category_id as "ParentMaterialCategoryId"
-        FROM
-          template.material_category
-        WHERE
-          material_category.material_category_id = {MaterialCategoryId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="MaterialCategoryInsertSqlQuery">
-      <Text>
-    	INSERT INTO template.material_category (
-    	  title,
-          parent_material_category_id
-    	)
-    	VALUES (
-    	  {Title},
-          {ParentMaterialCategoryId}
-    	)
-    	RETURNING material_category_id;
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="MaterialCategoryUpdateSqlQuery">
-      <Text>
-        UPDATE template.material_category
-        SET
-          title = {Title}, parent_material_category_id = {ParentMaterialCategoryId}
-        WHERE
-          material_category_id = {MaterialCategoryId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="ParentMaterialCategorySelectSqlQuery">
-      <Text>
-         WITH RECURSIVE tree_tmp (material_category_id, parent_material_category_id, title, path) AS (
-      SELECT material_category_id, parent_material_category_id, title, ARRAY[material_category_id]::bigint[]
-      FROM parent_mc
-    
-      UNION ALL
-    
-      SELECT MC.material_category_id, MC.parent_material_category_id, MC.title, T.path || ARRAY[MC.material_category_id]::bigint[]
-      FROM
-        mc_tmp MC
-      JOIN tree_tmp T ON T.material_category_id = MC.parent_material_category_id
-    ), mc_tmp AS (
-      SELECT *
-      FROM template.material_category
-      WHERE material_category_id IS DISTINCT FROM {MaterialCategoryId} OR {WithChild}
-    ), parent_mc AS (
-      SELECT *
-      FROM mc_tmp
-      WHERE parent_material_category_id IS NULL
-    )
-    
-    SELECT
-      T.material_category_id AS "MaterialCategoryId",
-      CASE WHEN array_length(T.path, 1) > 1 THEN COALESCE(repeat('—', (array_length(T.path, 1) - 1)), '') || ' ' ELSE '' END || T.title  AS "Title"
-    FROM
-      tree_tmp T
-      ORDER BY T.path, T.material_category_id;
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="MaterialCategoryListSqlQuery">
-      <Text>
-        <!--         Select
-          mc.material_category_id as "MaterialCategoryId",
-          case when mc.archive then mc.title || '[арх.]' else mc.title end,
-          mc.archive as "Archive"
-          from
-          template.material_category mc
-          order by mc.title, mc.material_category_id;-->
-
-        SELECT MC.material_category_id AS "MaterialCategoryId", MC.title || CASE WHEN archive THEN ' (арх.)' ELSE '' END AS "Title", MC.title AS "OriginalTitle", MC.archive AS "Archive", MC2.material_category_id NOTNULL AS "ArchiveForFilter" FROM template.material_category MC LEFT JOIN ( WITH RECURSIVE archive_tree (material_category_id, parent_material_category_id) AS( SELECT material_category_id, parent_material_category_id FROM template.material_category MC WHERE MC.archive AND NOT EXISTS (SELECT * FROM template.material_category MC2 WHERE MC2.parent_material_category_id = MC.material_category_id) OR EXISTS (SELECT * FROM template.material M WHERE M.archive AND M.material_category_id = MC.material_category_id)
-
-        UNION
-
-        SELECT MC.material_category_id, MC.parent_material_category_id FROM template.material_category MC JOIN archive_tree T ON (T.parent_material_category_id = MC.material_category_id) ) SELECT DISTINCT material_category_id FROM archive_tree ) MC2 ON (MC2.material_category_id = MC.material_category_id) ORDER BY MC.title, MC.material_category_id;
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="MaterialCategoryRelationSqlQuery">
-      <Text>
-        select material_category_id as "MaterialCategoryId",
-          parent_material_category_id as "ParentMaterialCategoryId"
-         from 
-          template.material_category;         
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="MaterialCategoryDeleteSqlQuery">
-      <Text>
-        Select template.material_category_try_delete({MaterialCategoryId}::bigint);
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="MaterialCategoryDeleteCascadeSqlQuery">
-      <Text>
-        select template.material_category_delete_cascade({MaterialCategoryId}::bigint);
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="MaterialCategoryArchiveSqlQuery">
-      <Text>
-	    UPDATE template.material_category
-	    SET archive = {Archive}
-	    WHERE material_category_id = {MaterialCategoryId};
-	
-	    SELECT template.material_category_archive_child({MaterialCategoryId})
-	    WHERE {Archive};
-	    
-	    SELECT template.material_category_unarchive_parent({MaterialCategoryId})
-	    WHERE not  {Archive};
+        SELECT template.unit_try_delete({UnitId}::smallint);
       </Text>
     </SqlQuery>
 
@@ -469,106 +386,256 @@
     <SqlQuery Name="MaterialSelectSqlQuery">
       <Text>  
         SELECT
-		  m.material_id AS "MaterialId",
-		  m.title AS "Title",
-		  m.material_category_id as "MaterialCategoryId",
-		  m.unit_id as "UnitId",
-		  m.unit_price as "UnitPrice",
-		  m.archive as "Archive"
-		FROM
-		  template.material m
-		ORDER BY m.title;
+          M.material_id AS "MaterialId",
+          M.material_category_id AS "MaterialCategoryId",
+          M.title AS "Title",
+          M.unit_id AS "UnitId",
+          M.unit_price AS "UnitPrice",
+          M.archive AS "Archive"
+        FROM
+          template.material M
+        ORDER BY M.title;
       </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialSimpleSelectSqlQuery">
+      <Text>
+	    SELECT
+	      M.material_id AS "MaterialId",
+	      M.title AS "Title",
+	      MC.title AS "MaterialCategoryTitle",
+	      U.short_title AS "UnitShortTitle"
+	    FROM
+	      template.material M
+	      LEFT JOIN template.material_category MC USING(material_category_id)
+	      LEFT JOIN template.unit U USING(unit_id)
+	    ORDER BY M.title;
+	  </Text>
     </SqlQuery>
 
     <SqlQuery Name="MaterialByIdSelectSqlQuery">
       <Text>
-        SELECT
-	      M.material_category_id AS "MaterialCategoryId",
-	      M.title AS "Title",
-	      M.unit_id AS "UnitId",
-	      M.unit_price AS "UnitPrice"
-	    FROM
-	      template.material M
-	    WHERE
-	      M.material_id = {MaterialId};
+		SELECT
+		  M.material_category_id AS "MaterialCategoryId",
+		  M.title AS "Title",
+		  M.unit_id AS "UnitId",
+		  M.unit_price AS "UnitPrice"
+		FROM
+		  template.material M
+		WHERE
+		  M.material_id = {MaterialId};
       </Text>
     </SqlQuery>
 
     <SqlQuery Name="MaterialInsertSqlQuery">
       <Text>
-	    INSERT INTO template.material (
-	      title,
-	      material_category_id,
-	      unit_id,
-	      unit_price
-	    )
-	    VALUES (
-	      {Title},
-	      {MaterialCategoryId},
-	      {UnitId},
-	      {UnitPrice}
-	    )
-	    RETURNING material_id;
+		INSERT INTO template.material (
+		  title,
+		  material_category_id,
+		  unit_id,
+		  unit_price
+		)
+		VALUES (
+		  {Title},
+		  {MaterialCategoryId},
+		  {UnitId},
+		  {UnitPrice}
+		)
+		RETURNING material_id;
       </Text>
     </SqlQuery>
 
     <SqlQuery Name="MaterialUpdateSqlQuery">
       <Text>
-	    UPDATE template.material
-	    SET
-	      title = {Title},
-	      material_category_id = {MaterialCategoryId},
-	      unit_id = {UnitId},
-	      unit_price = {UnitPrice}
-	    WHERE
-	      material_id = {MaterialId};
+		UPDATE template.material
+		SET
+		  title = {Title},
+		  material_category_id = {MaterialCategoryId},
+		  unit_id = {UnitId},
+		  unit_price = {UnitPrice}
+		WHERE
+		  material_id = {MaterialId};
       </Text>
     </SqlQuery>
 
     <SqlQuery Name="MaterialDeleteSqlQuery">
       <Text>
-        SELECT template.material_try_delete({MaterialId});
+        SELECT template.material_try_delete({MaterialId}::bigint);
       </Text>
     </SqlQuery>
 
     <SqlQuery Name="MaterialArchiveSqlQuery">
       <Text>
-	    UPDATE template.material
-	    SET archive = {Archive}
-	    WHERE material_id = {MaterialId};
-	
-	    UPDATE template.material_category MC
-	    SET archive = False
-	    FROM template.material M
-	    WHERE
-	      MC.material_category_id = M.material_category_id AND
-	      material_id = {MaterialId} AND
-	      NOT M.archive;
-	
-	    SELECT template.material_category_unarchive_parent(M.material_category_id)
-	    FROM template.material M
-	    WHERE
-	      M.material_id = {MaterialId} AND
-	      NOT M.archive;
+        UPDATE template.material
+        SET archive = {Archive}
+        WHERE material_id = {MaterialId};
+
+        UPDATE template.material_category MC
+        SET archive = False
+        FROM template.material M
+        WHERE
+          MC.material_category_id = M.material_category_id AND
+          material_id = {MaterialId} AND
+          NOT M.archive;
+
+        SELECT template.material_category_unarchive_parent(M.material_category_id)
+        FROM template.material M
+        WHERE
+          M.material_id = {MaterialId} AND
+          NOT M.archive;
       </Text>
     </SqlQuery>
 
-    <SqlQuery Name="UnitShortSelectSqlQuery">
+    <!--============================================================-->
+    <!--===Категории ТМЦ===-->
+    <!--============================================================-->
+    <SqlQuery Name="MaterialCategoryListSelectSqlQuery">
+      <Text>
+		SELECT
+		  MC.material_category_id AS "MaterialCategoryId",
+		  MC.title || CASE WHEN archive THEN ' (арх.)' ELSE '' END AS "Title",
+		  MC.title AS "OriginalTitle",
+		  MC.archive AS "Archive",
+		  MC2.material_category_id NOTNULL AS "ArchiveForFilter"
+		FROM
+		  template.material_category MC
+		  LEFT JOIN
+		  (
+		    WITH RECURSIVE archive_tree (material_category_id, parent_material_category_id) AS(
+		      SELECT
+		        material_category_id,
+		        parent_material_category_id
+		      FROM
+		        template.material_category MC
+		      WHERE
+		        MC.archive AND NOT EXISTS (SELECT * FROM template.material_category MC2 WHERE MC2.parent_material_category_id = MC.material_category_id) OR
+		        EXISTS (SELECT * FROM template.material M WHERE M.archive AND M.material_category_id = MC.material_category_id)
+		
+		      UNION
+		
+		      SELECT
+		        MC.material_category_id,
+		        MC.parent_material_category_id
+		      FROM
+		        template.material_category MC
+		        JOIN archive_tree T ON (T.parent_material_category_id = MC.material_category_id)
+		    )
+		    SELECT DISTINCT material_category_id FROM archive_tree
+		  ) MC2 ON (MC2.material_category_id = MC.material_category_id)
+		ORDER BY MC.title, MC.material_category_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialCategoryRelationSelectSqlQuery">
+      <Text>
+	    SELECT
+	      material_category_id AS "MaterialCategoryId",
+	      parent_material_category_id AS "ParentMaterialCategoryId"
+	    FROM
+	      template.material_category;
+	  </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialCategoryByIdSelectSqlQuery">
       <Text>
         SELECT
-          unit.unit_id AS "UnitId",
-          unit.title AS "Title",
-          unit.archive as "Archive"
+          MC.title AS "Title",
+          MC.parent_material_category_id AS "ParentMaterialCategoryId"
         FROM
-          template.unit
-        ORDER BY unit.title;
+          template.material_category MC
+        WHERE
+          MC.material_category_id = {MaterialCategoryId};
       </Text>
     </SqlQuery>
 
-    <SqlQuery Name="OrderPositionByOrderSqlQuery">
+    <SqlQuery Name="ParentMaterialCategorySelectSqlQuery">
       <Text>
-         SELECT
+		WITH RECURSIVE tree_tmp (material_category_id, parent_material_category_id, title, path) AS (
+		  SELECT material_category_id, parent_material_category_id, title, ARRAY[material_category_id]::bigint[]
+		  FROM parent_mc
+		
+		  UNION ALL
+		
+		  SELECT MC.material_category_id, MC.parent_material_category_id, MC.title, T.path || ARRAY[MC.material_category_id]::bigint[]
+		  FROM
+		    mc_tmp MC
+		  JOIN tree_tmp T ON T.material_category_id = MC.parent_material_category_id
+		), mc_tmp AS (
+		  SELECT *
+		  FROM template.material_category
+		  WHERE material_category_id IS DISTINCT FROM {MaterialCategoryId} OR {WithChild}
+		), parent_mc AS (
+		  SELECT *
+		  FROM mc_tmp
+		  WHERE parent_material_category_id IS NULL
+		)
+		
+		SELECT
+		  T.material_category_id AS "MaterialCategoryId",
+		  CASE WHEN array_length(T.path, 1) > 1 THEN COALESCE(repeat('—', (array_length(T.path, 1) - 1)), '') || ' ' ELSE '' END || T.title  AS "Title"
+		FROM
+		  tree_tmp T
+		  ORDER BY T.path, T.material_category_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialCategoryInsertSqlQuery">
+      <Text>
+		INSERT INTO template.material_category (
+		  title,
+		  parent_material_category_id
+		)
+		VALUES (
+		  {Title},
+		  {ParentMaterialCategoryId}
+		)
+		RETURNING material_category_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialCategoryUpdateSqlQuery">
+      <Text>
+		UPDATE template.material_category
+		SET
+		  title = {Title},
+		  parent_material_category_id = {ParentMaterialCategoryId}
+		WHERE
+		  material_category_id = {MaterialCategoryId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialCategoryDeleteSqlQuery">
+      <Text>
+        SELECT template.material_category_try_delete({MaterialCategoryId}::bigint);
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialCategoryDeleteCascadeSqlQuery">
+      <Text>
+        SELECT template.material_category_delete_cascade({MaterialCategoryId}::bigint);
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="MaterialCategoryArchiveSqlQuery">
+      <Text>
+        UPDATE template.material_category
+        SET archive = {Archive}
+        WHERE material_category_id = {MaterialCategoryId};
+
+        SELECT template.material_category_archive_child({MaterialCategoryId})
+        WHERE {Archive};
+        
+        SELECT template.material_category_unarchive_parent({MaterialCategoryId})
+        WHERE NOT {Archive};
+      </Text>
+    </SqlQuery>
+
+    <!--============================================================-->
+    <!--===Позиции заказа===-->
+    <!--============================================================-->
+    <SqlQuery Name="OrderPositionByOrderIdSelectSqlQuery">
+      <Text>
+	    SELECT
 	      OP.order_position_id AS "OrderPositionId",
 	      OP.material_id AS "MaterialId",
 	      OP.quantity AS "Quantity",
@@ -578,70 +645,63 @@
 	    WHERE
 	      OP.order_id = {OrderId}
 	    ORDER BY OP.order_position_id;
-      </Text>
+	  </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OrderPositionByIdSelectSqlQuery">
+      <Text>
+	    SELECT
+	      OP.material_id AS "MaterialId",
+	      OP.quantity AS "Quantity",
+	      OP.unit_price AS "UnitPrice"
+	    FROM
+	      template.order_position OP
+	    WHERE
+	      OP.order_position_id = {OrderPositionId};
+	  </Text>
     </SqlQuery>
 
     <SqlQuery Name="OrderPositionInsertSqlQuery">
       <Text>
-        insert into template.order_position
-        (
-          order_id, material_id, quantity, unit_price
-        )
-        values
-        (
-          {OrderId}, {MaterialId}, {Quantity}, {UnitPrice}
-        )
-        returning order_position_id
-        ;
+    	INSERT INTO template.order_position (
+    	  material_id,
+		  quantity,
+		  unit_price,
+		  order_id
+    	)
+    	VALUES (
+    	  {MaterialId},
+		  {Quantity},
+		  {UnitPrice},
+		  {OrderId}
+    	)
+    	RETURNING order_position_id;
       </Text>
     </SqlQuery>
 
     <SqlQuery Name="OrderPositionUpdateSqlQuery">
       <Text>
-        update template.order_position
-        set
+        UPDATE template.order_position
+        SET
           material_id = {MaterialId},
-          quantit = {Quantity},
-          unit_price = {UnitPrice},
-        where order_position_id = {OrderPositionId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="OrderPositionByIdSqlQuery">
-      <Text>
-        select
-          op.material_id as "MaterialId",
-          op.quantity as "Quantity",
-          op.unit_price as "UnitPrice"
-        from
-          template.order_position op
-        where
-          op.order_position_id = {OrderPositionId};
-      </Text>
-    </SqlQuery>
-
-    <SqlQuery Name="MaterialSimpleSelectSqlQuery">
-      <Text>
-        select 
-		  m.material_id as "MaterialId",
-		  m.title as "Title",
-		  mc.title as "MaterialCategoryTitle",
-		  u.short_title as "UnitShortTitle"
-		from 
-		  template.material m
-		  left join template.material_category mc using(material_category_id)
-		  left join template.unit u using (unit_id)
-		order by m.title
+	      quantity = {Quantity},
+	      unit_price = {UnitPrice}
+        WHERE
+          order_position_id = {OrderPositionId};
       </Text>
     </SqlQuery>
 
     <SqlQuery Name="OrderPositionDeleteSqlQuery">
-      <Text>delete from template.order_position where {OrderPositionId} = order_position_id</Text>
+      <Text>
+        DELETE FROM template.order_position
+        WHERE
+          order_position_id = {OrderPositionId};
+      </Text>
     </SqlQuery>
 
     <SqlQuery Name="MaterialShortSelectSqlQuery">
       <Text>
-        SELECT
+	    SELECT
 	      M.material_id AS "MaterialId",
 	      M.title AS "Title",
 	      M.material_category_id AS "MaterialCategoryId",
@@ -655,24 +715,43 @@
 	    WHERE
 	      NOT M.archive OR M.material_id = {MaterialId}
 	    ORDER BY M.title;
-      </Text>
+	  </Text>
     </SqlQuery>
 
-    <SqlQuery Name="EmptyOrderDeleteSqlQuery">
+    <!--============================================================-->
+    <!--===Настройки===-->
+    <!--============================================================-->
+    <SqlQuery Name="SettingsSelectSqlQuery">
       <Text>
-        delete from template.order_position op
-        using template.order o
-        where op.order_id = o.order_id and
-        not o.added and
-        op.order_id = {OrderId};
-        
-        delete from template.order
-        where not added and order_id = {OrderId};
-      </Text>
+	    SELECT
+	      smtp_server AS "SmtpServerAddress",
+	      smtp_port AS "SmtpServerPort",
+	      ssl AS "SSL",
+	      email_address AS "Email",
+	      email_password AS "EmailPassword",
+	      (
+            smtp_server NOTNULL AND
+            smtp_port NOTNULL AND
+            ssl NOTNULL AND
+            email_address NOTNULL AND
+            email_password NOTNULL
+          ) AS "SmtpSettingsAreCorrect"
+	    FROM template.settings
+	    LIMIT 1;
+	  </Text>
     </SqlQuery>
 
-
-
+    <SqlQuery Name="SettingsUpdateSqlQuery">
+      <Text>
+	    UPDATE template.settings
+	    SET
+	      smtp_server = {SmtpServerAddress},
+	      smtp_port = {SmtpServerPort},
+	      ssl = {SSL},
+	      email_address = {Email},
+	      email_password = {EmailPassword};
+	  </Text>
+    </SqlQuery>
   </SqlQueries>
 
   <Permissions>
@@ -682,6 +761,7 @@
         <SqlQuery Name="CityShortSelectSqlQuery" />
       </SqlQueries>
     </Permission>
+
     <Permission Name="CityEditSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
         <SqlQuery Name="CityInsertSqlQuery" />
@@ -696,6 +776,7 @@
         <SqlQuery Name="ClientByIdSelectSqlQuery" />
       </SqlQueries>
     </Permission>
+
     <Permission Name="ClientEditSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
         <SqlQuery Name="ClientInsertSqlQuery" />
@@ -708,20 +789,35 @@
     <Permission Name="OrderViewSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
         <SqlQuery Name="OrderSelectSqlQuery" />
-        <SqlQuery Name="OrderSelectByIdSqlQuery" />
-        <SqlQuery Name="CitySimpleSqlQuery" />
-        <SqlQuery Name="ClientShortSelectSqlQuery" />
-        <SqlQuery Name="ClientSimpleSqlQuery" />
-        <SqlQuery Name="OrderDeleteSelectSqlQuery" />
+        <SqlQuery Name="OrderByIdSelectSqlQuery" />
       </SqlQueries>
     </Permission>
 
     <Permission Name="OrderEditSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
         <SqlQuery Name="EmptyOrderInsertSqlQuery" />
+        <SqlQuery Name="EmptyOrderDeleteSqlQuery" />
         <SqlQuery Name="OrderUpdateSqlQuery" />
         <SqlQuery Name="OrderDeleteSqlQuery" />
-        <SqlQuery Name="EmptyOrderDeleteSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="ClientOrderViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="ClientShortSelectSqlQuery" />
+        <SqlQuery Name="ClientSimpleSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="CityOrderViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="CitySimpleSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="DeletedOrderViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="DeletedOrderSelectSqlQuery" />
       </SqlQueries>
     </Permission>
 
@@ -741,25 +837,6 @@
       </SqlQueries>
     </Permission>
 
-    <Permission Name="MaterialCategoryViewSqlQueryPermission" Type="SqlQueryPermission">
-      <SqlQueries>
-        <SqlQuery Name="MaterialCategoryByIdSelectSqlQuery" />
-        <SqlQuery Name="ParentMaterialCategorySelectSqlQuery" />
-        <SqlQuery Name="MaterialCategoryListSqlQuery" />
-        <SqlQuery Name="MaterialCategoryRelationSqlQuery" />
-      </SqlQueries>
-    </Permission>
-
-    <Permission Name="MaterialCategoryEditSqlQueryPermission" Type="SqlQueryPermission">
-      <SqlQueries>
-        <SqlQuery Name="MaterialCategoryInsertSqlQuery" />
-        <SqlQuery Name="MaterialCategoryUpdateSqlQuery" />
-        <SqlQuery Name="MaterialCategoryDeleteCascadeSqlQuery" />
-        <SqlQuery Name="MaterialCategoryDeleteSqlQuery" />
-        <SqlQuery Name="MaterialCategoryArchiveSqlQuery" />
-      </SqlQueries>
-    </Permission>
-
     <Permission Name="MaterialViewSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
         <SqlQuery Name="MaterialSelectSqlQuery" />
@@ -771,34 +848,64 @@
       <SqlQueries>
         <SqlQuery Name="MaterialInsertSqlQuery" />
         <SqlQuery Name="MaterialUpdateSqlQuery" />
-        <SqlQuery Name="MaterialDeleteSqlQuery" />
-        <SqlQuery Name="UnitShortSelectSqlQuery" />
         <SqlQuery Name="MaterialArchiveSqlQuery" />
+        <SqlQuery Name="MaterialDeleteSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="MaterialCategoryViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="MaterialCategoryListSelectSqlQuery" />
+        <SqlQuery Name="MaterialCategoryRelationSelectSqlQuery" />
+        <SqlQuery Name="MaterialCategoryByIdSelectSqlQuery" />
+        <SqlQuery Name="ParentMaterialCategorySelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="MaterialCategoryEditSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="MaterialCategoryInsertSqlQuery" />
+        <SqlQuery Name="MaterialCategoryUpdateSqlQuery" />
+        <SqlQuery Name="MaterialCategoryDeleteSqlQuery" />
+        <SqlQuery Name="MaterialCategoryDeleteCascadeSqlQuery" />
+        <SqlQuery Name="MaterialCategoryArchiveSqlQuery" />
       </SqlQueries>
     </Permission>
 
     <Permission Name="OrderPositionViewSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
-        <SqlQuery Name="OrderPositionByOrderSqlQuery" />
-        <SqlQuery Name="OrderPositionByIdSqlQuery" />
-        <SqlQuery Name="MaterialSimpleSelectSqlQuery" />
+        <SqlQuery Name="OrderPositionByOrderIdSelectSqlQuery" />
+        <SqlQuery Name="OrderPositionByIdSelectSqlQuery" />
       </SqlQueries>
     </Permission>
 
     <Permission Name="OrderPositionEditSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
-        <SqlQuery Name="OrderPositionDeleteSqlQuery" />
         <SqlQuery Name="OrderPositionInsertSqlQuery" />
         <SqlQuery Name="OrderPositionUpdateSqlQuery" />
+        <SqlQuery Name="OrderPositionDeleteSqlQuery" />
       </SqlQueries>
     </Permission>
 
-    <Permission Name="ViewMaterialSqlQueryPermission" Type="SqlQueryPermission">
+    <Permission Name="OrderPositionMaterialViewSqlQueryPermission" Type="SqlQueryPermission">
       <SqlQueries>
         <SqlQuery Name="MaterialShortSelectSqlQuery" />
+        <SqlQuery Name="MaterialSimpleSelectSqlQuery" />
       </SqlQueries>
     </Permission>
 
+    <!-- Администрирование -->
+    <Permission Name="SettingsViewPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="SettingsSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="SettingsEditPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="SettingsUpdateSqlQuery" />
+      </SqlQueries>
+    </Permission>
   </Permissions>
 
   <Roles>
@@ -807,6 +914,7 @@
         <Permission Name="CityViewSqlQueryPermission" />
       </Permissions>
     </Role>
+
     <Role Name="CityEditRole">
       <Permissions>
         <Permission Name="CityViewSqlQueryPermission" />
@@ -819,22 +927,36 @@
         <Permission Name="ClientViewSqlQueryPermission" />
       </Permissions>
     </Role>
+
     <Role Name="ClientEditRole">
       <Permissions>
-        <Permission Name="ClientEditSqlQueryPermission" />
         <Permission Name="ClientViewSqlQueryPermission" />
+        <Permission Name="ClientEditSqlQueryPermission" />
       </Permissions>
     </Role>
 
     <Role Name="OrderViewRole">
       <Permissions>
         <Permission Name="OrderViewSqlQueryPermission" />
+        <Permission Name="ClientOrderViewSqlQueryPermission" />
+        <Permission Name="CityOrderViewSqlQueryPermission" />
+        <Permission Name="OrderPositionMaterialViewSqlQueryPermission" />
       </Permissions>
     </Role>
+
     <Role Name="OrderEditRole">
       <Permissions>
-        <Permission Name="OrderEditSqlQueryPermission" />
+        <Permission Name="ClientOrderViewSqlQueryPermission" />
+        <Permission Name="CityOrderViewSqlQueryPermission" />
         <Permission Name="OrderViewSqlQueryPermission" />
+        <Permission Name="OrderEditSqlQueryPermission" />
+        <Permission Name="OrderPositionMaterialViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
+
+    <Role Name="DeletedOrderViewRole">
+      <Permissions>
+        <Permission Name="DeletedOrderViewSqlQueryPermission" />
       </Permissions>
     </Role>
 
@@ -843,22 +965,11 @@
         <Permission Name="UnitViewSqlQueryPermission" />
       </Permissions>
     </Role>
+
     <Role Name="UnitEditRole">
       <Permissions>
         <Permission Name="UnitViewSqlQueryPermission" />
         <Permission Name="UnitEditSqlQueryPermission" />
-      </Permissions>
-    </Role>
-
-    <Role Name="MaterialCategoryViewRole">
-      <Permissions>
-        <Permission Name="MaterialCategoryViewSqlQueryPermission" />
-      </Permissions>
-    </Role>
-    <Role Name="MaterialCategoryEditRole">
-      <Permissions>
-        <Permission Name="MaterialCategoryViewSqlQueryPermission" />
-        <Permission Name="MaterialCategoryEditSqlQueryPermission" />
       </Permissions>
     </Role>
 
@@ -867,6 +978,7 @@
         <Permission Name="MaterialViewSqlQueryPermission" />
       </Permissions>
     </Role>
+
     <Role Name="MaterialEditRole">
       <Permissions>
         <Permission Name="MaterialViewSqlQueryPermission" />
@@ -874,10 +986,22 @@
       </Permissions>
     </Role>
 
+    <Role Name="MaterialCategoryViewRole">
+      <Permissions>
+        <Permission Name="MaterialCategoryViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
+
+    <Role Name="MaterialCategoryEditRole">
+      <Permissions>
+        <Permission Name="MaterialCategoryViewSqlQueryPermission" />
+        <Permission Name="MaterialCategoryEditSqlQueryPermission" />
+      </Permissions>
+    </Role>
+
     <Role Name="OrderPositionViewRole">
       <Permissions>
         <Permission Name="OrderPositionViewSqlQueryPermission" />
-        <Permission Name="ViewMaterialSqlQueryPermission" />
       </Permissions>
     </Role>
 
@@ -885,8 +1009,19 @@
       <Permissions>
         <Permission Name="OrderPositionViewSqlQueryPermission" />
         <Permission Name="OrderPositionEditSqlQueryPermission" />
-        <Permission Name="ViewMaterialSqlQueryPermission" />
+      </Permissions>
+    </Role>
 
+    <Role Name="SettingsViewRole">
+      <Permissions>
+        <Permission Name="SettingsViewPermission" />
+      </Permissions>
+    </Role>
+
+    <Role Name="SettingsEditRole">
+      <Permissions>
+        <Permission Name="SettingsViewPermission" />
+        <Permission Name="SettingsEditPermission" />
       </Permissions>
     </Role>
   </Roles>
@@ -897,13 +1032,13 @@
         <Role Name="CityEditRole" />
         <Role Name="ClientEditRole" />
         <Role Name="OrderEditRole" />
+        <Role Name="DeletedOrderViewRole" />
         <Role Name="UnitEditRole" />
-        <Role Name="MaterialCategoryEditRole" />
         <Role Name="MaterialEditRole" />
+        <Role Name="MaterialCategoryEditRole" />
         <Role Name="OrderPositionEditRole" />
+        <Role Name="SettingsEditRole" />
       </Roles>
     </Group>
-
-
   </Groups>
 </Workflow>

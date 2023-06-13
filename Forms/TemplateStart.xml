@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateOrderForm" Width="1200" Height="600" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateStartForm" Width="900" Height="400" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Title">Заказы</Parameter>
   </Parameters>
@@ -23,13 +23,10 @@
       <Color Name="ButtonFlatMouseDownBackColor" Red="201" Green="219" Blue="241" Alpha="255" />
       <Color Name="ButtonFlatMouseOverBackColor" Red="228" Green="237" Blue="248" Alpha="255" />
 
-      <!-- Filter Styles -->
-      <Color Name="ActiveFilterColor" Red="228" Green="237" Blue="255" Alpha="255" />
+      <!-- Стили фильтров -->
+      <Color Name="ActiveFilterColor" Red="228" Green="237" Blue="248" Alpha="255" />
       <Color Name="InactiveFilterColor" Red="255" Green="255" Blue="255" Alpha="255" />
     </Colors>
-
-
-
 
     <FontStyles>
       <FontStyle Name="ThemeFontStyle" Font="Segoe UI" Size="9" />
@@ -40,15 +37,15 @@
   </Appearance>
 
   <DataConnections>
-    <DataConnection Name="OrderSelectPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+    <DataConnection Name="OrderPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <SqlQuery Name="OrderSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
           <Field Name="OrderId" />
           <Field Name="ClientId" />
+          <Field Name="CityId" />
           <Field Name="OrderNumber" />
           <Field Name="OrderDate" />
-          <Field Name="CityId" />
         </Fields>
         <Parameters>
           <Parameter NativeName="Filter" RefreshQuery="False">
@@ -70,8 +67,31 @@
       </SqlQuery>
     </DataConnection>
 
+    <DataConnection Name="ClientPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="ClientSimpleSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="ClientId" />
+          <Field Name="Title" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="CityPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="CitySimpleSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="CityId" />
+          <Field Name="Title" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
     <DataConnection Name="OrderDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
       <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="OrderDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
       <Parameters>
         <Parameter NativeName="OrderId">
           <Value>
@@ -85,29 +105,6 @@
           </Value>
         </Parameter>
       </Parameters>
-      <SqlQueries>
-        <SqlQuery Name="OrderDeleteSqlQuery" Type="Delete" />
-      </SqlQueries>
-    </DataConnection>
-
-    <DataConnection Name="ClientPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
-      <SqlQuery Name="ClientSimpleSqlQuery" Type="Select">
-        <Workflow Name="Template" />
-        <Fields>
-          <Field Name="ClientId" />
-          <Field Name="ClientTitle" />
-        </Fields>
-      </SqlQuery>
-    </DataConnection>
-
-    <DataConnection Name="CityPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
-      <SqlQuery Name="CitySimpleSqlQuery" Type="Select">
-        <Workflow Name="Template" />
-        <Fields>
-          <Field Name="CityId" />
-          <Field Name="CityTitle" />
-        </Fields>
-      </SqlQuery>
     </DataConnection>
 
     <DataConnection Name="EmptyOrderInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
@@ -121,7 +118,7 @@
   <Conditions>
     <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
 
-    <Condition Name="OrderSelectedGreaterCondition" Type="GreaterCondition" Assembly="Conditions">
+    <Condition Name="OrderSelectedCondition" Type="GreaterCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="OrderDatabaseTable">
@@ -133,11 +130,33 @@
       <DataType Type="IntegerDataType" />
     </Condition>
 
-    <Condition Name="OrderDatabaseTableCellDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
+    <Condition Name="OrderCellDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
       <Table Name="OrderDatabaseTable" />
     </Condition>
 
-    <Condition Name="IsActiveFilterTodayEqualCondition" Type="EqualCondition" Assembly="Conditions">
+    <Condition Name="OrderAddFormUpdatedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="OrderAddFormShowCommand" Parameter="Updated" />
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="OrderEditFormUpdatedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="OrderEditFormShowCommand" Parameter="Updated" />
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="FilterTodayIsActiveEqualCondition" Type="EqualCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="ActiveFilterVariable" />
@@ -146,7 +165,7 @@
       </Items>
     </Condition>
 
-    <Condition Name="IsActiveFilterCurrentWeekEqualCondition" Type="EqualCondition" Assembly="Conditions">
+    <Condition Name="FilterCurrentWeekIsActiveEqualCondition" Type="EqualCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="ActiveFilterVariable" />
@@ -155,7 +174,7 @@
       </Items>
     </Condition>
 
-    <Condition Name="IsActiveFilterFortnightEqualCondition" Type="EqualCondition" Assembly="Conditions">
+    <Condition Name="FilterFortnightIsActiveEqualCondition" Type="EqualCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="ActiveFilterVariable" />
@@ -164,7 +183,7 @@
       </Items>
     </Condition>
 
-    <Condition Name="IsActiveFilterPeriodEqualCondition" Type="EqualCondition" Assembly="Conditions">
+    <Condition Name="FilterPeriodIsActiveEqualCondition" Type="EqualCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="ActiveFilterVariable" />
@@ -177,68 +196,83 @@
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
 
+    <Command Name="OrderDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OrderPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="CityListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateCityList.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="ClientListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateClientList.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="UnitListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateUnitList.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="MaterialListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateMaterialList.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="OrderAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateOrderEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="OrderId">
+          <Command Name="EmptyOrderInsertSaveCommand" />
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="OrderEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateOrderEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="OrderId">
+          <Object Name="OrderDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">OrderId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
     <Command Name="OrderDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
       <DataConnections>
         <DataConnection Name="OrderDeleteSetDataConnection" />
       </DataConnections>
     </Command>
 
-    <Command Name="OrderEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">Order\TemplateOrderEdit.xml</Xml>
-      <Show Type="None" />
-      <Parameters>
-        <Parameter Name="Edit">
-          <Input Name="Edit">False</Input>
-        </Parameter>
-        <Parameter Name="OrderId">
-          <Input Name="OrderId" />
-        </Parameter>
-      </Parameters>
+    <Command Name="OrderDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Вы действительно хотите удалить выбранную запись?</Text>
+      <Buttons Type="YesNo" />
+      <Icon Type="Question" />
     </Command>
 
-    <Command Name="OrderDatabaseTableSelectRowValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+    <Command Name="OrderSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <Object Name="OrderDatabaseTable">
         <Property Name="SelectRowByFieldValue">
           <Parameters>
             <Parameter Name="ColumnName">OrderId</Parameter>
             <Parameter Name="Value">
-              <Command Name="OrderEditFormShowCommand" Parameter="OrderId" />
+              <Input />
             </Parameter>
           </Parameters>
         </Property>
       </Object>
-    </Command>
-
-    <Command Name="OrderEditSequentialCommand" Type="SequentialCommand" Assembly="Commands">
-      <Commands>
-        <Command Name="OrderEditFormShowCommand">
-          <Input Name="Edit">True</Input>
-          <Input Name="OrderId">
-            <Object Name="OrderDatabaseTable">
-              <Property Name="SelectedRowCellValueByColumnName">
-                <Parameters>
-                  <Parameter Name="ColumnName">OrderId</Parameter>
-                </Parameters>
-              </Property>
-            </Object>
-          </Input>
-        </Command>
-      </Commands>
-    </Command>
-
-    <Command Name="TestMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
-      <Caption>Test</Caption>
-      <Text>
-        <Command Name="EmptyOrderInsertSaveCommand" />
-      </Text>
-      <Icon Type="Information" />
-      <Buttons Type="Ok" />
-    </Command>
-
-    <Command Name="OrderDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="OrderSelectPrimaryGetDataConnection" Packet="True" />
-      </DataConnections>
     </Command>
 
     <Command Name="CityDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
@@ -253,34 +287,14 @@
       </DataConnections>
     </Command>
 
-    <Command Name="ClientFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">Client\TemplateClientList.xml</Xml>
-      <Show Type="None" />
-    </Command>
-
-    <Command Name="CityFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">City\TemplateCityList.xml</Xml>
-      <Show Type="None" />
-    </Command>
-
     <Command Name="ActiveFilterValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <Object Name="ActiveFilterVariable">
         <Input />
       </Object>
     </Command>
 
-    <Command Name="OrderDeleteListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">Order\TemplateOrderDeleteList.xml</Xml>
-      <Show Type="None" />
-    </Command>
-
-    <Command Name="UnitListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">Unit\TemplateUnitList.xml</Xml>
-      <Show Type="None" />
-    </Command>
-
-    <Command Name="MaterialListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">Material\TemplateMaterialList.xml</Xml>
+    <Command Name="DeletedOrderListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateDeletedOrderList.xml</Xml>
       <Show Type="None" />
     </Command>
 
@@ -288,6 +302,11 @@
       <DataConnections>
         <DataConnection Name="EmptyOrderInsertSetDataConnection" />
       </DataConnections>
+    </Command>
+
+    <Command Name="SettingsFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateSettings.xml</Xml>
+      <Show Type="None" />
     </Command>
   </Commands>
 
@@ -303,38 +322,62 @@
 
     <Execution>
       <ConditionExpression>
-        <Command Name="OrderEditFormShowCommand" Parameter="Updated" />
+        <Condition Name="OrderAddFormUpdatedTrueEqualCondition" />
       </ConditionExpression>
       <Commands>
         <Command Name="OrderDataConnectionRefreshCommand" />
-        <Command Name="OrderDatabaseTableSelectRowValueSetCommand" />
+        <Command Name="OrderSelectInTableValueSetCommand">
+          <Command Name="OrderAddFormShowCommand" Parameter="OrderId" />
+        </Command>
       </Commands>
     </Execution>
 
     <Execution>
       <ConditionExpression>
-        <Condition Name="OrderDatabaseTableCellDoubleClickCondition" />
+        <Condition Name="OrderEditFormUpdatedTrueEqualCondition" />
       </ConditionExpression>
       <Commands>
-        <Command Name="OrderEditSequentialCommand" />
+        <Command Name="OrderDataConnectionRefreshCommand" />
+        <Command Name="OrderSelectInTableValueSetCommand">
+          <Command Name="OrderEditFormShowCommand" Parameter="OrderId" />
+        </Command>
       </Commands>
     </Execution>
 
     <Execution>
       <ConditionExpression>
-        <Command Name="CityFormShowCommand" Parameter="Updated" />
+        <Command Name="OrderDeleteMessageBoxCommand" Parameter="Yes" />
       </ConditionExpression>
       <Commands>
-        <Command Name="CityDataConnectionRefreshCommand" />
+        <Command Name="OrderDeleteSaveCommand" />
+        <Command Name="OrderDataConnectionRefreshCommand" />
       </Commands>
     </Execution>
 
     <Execution>
       <ConditionExpression>
-        <Command Name="ClientFormShowCommand" Parameter="Updated" />
+        <Condition Name="OrderCellDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderEditFormShowCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="ClientListFormShowCommand" Parameter="Updated" />
       </ConditionExpression>
       <Commands>
         <Command Name="ClientDataConnectionRefreshCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="CityListFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="CityDataConnectionRefreshCommand" />
       </Commands>
     </Execution>
   </Executions>
@@ -362,22 +405,23 @@
       <Items>
         <MenuItem Name="CityMenuItem" Type="MenuItem">
           <Title>Города...</Title>
-          <Command Name="CityFormShowCommand" />
+          <Command Name="CityListFormShowCommand" />
         </MenuItem>
 
         <MenuItem Name="ClientMenuItem" Type="MenuItem">
           <Title>Клиенты...</Title>
-          <Command Name="ClientFormShowCommand" />
+          <Command Name="ClientListFormShowCommand" />
         </MenuItem>
 
-        <MenuItem Name="UnitSeparator" Type="Separator" />
-        <MenuItem Name="UnitMenuItem" Type="MenuItem">
-          <Title>Ед.измерения</Title>
+        <MenuItem Name="List1Separator" Type="Separator" />
+
+        <MenuItem Name="UnitListMenuItem" Type="MenuItem">
+          <Title>Единицы измерения...</Title>
           <Command Name="UnitListFormShowCommand" />
         </MenuItem>
 
-        <MenuItem Name="MaterialMenuItem" Type="MenuItem">
-          <Title>ТМЦ</Title>
+        <MenuItem Name="MaterialListMenuItem" Type="MenuItem">
+          <Title>ТМЦ...</Title>
           <Command Name="MaterialListFormShowCommand" />
         </MenuItem>
       </Items>
@@ -386,9 +430,19 @@
     <MenuItem Name="LogMenuItem" Type="MenuItem">
       <Title>Журналы</Title>
       <Items>
-        <MenuItem Name="LogDeletedOrdersMenuItem" Type="MenuItem">
-          <Title>Список удалённых заказов</Title>
-          <Command Name="OrderDeleteListFormShowCommand" />
+        <MenuItem Name="DeletedRentsListMenuItem" Type="MenuItem">
+          <Title>Список удаленных заказов...</Title>
+          <Command Name="DeletedOrderListFormShowCommand" />
+        </MenuItem>
+      </Items>
+    </MenuItem>
+
+    <MenuItem Name="AdminMenuItem" Type="MenuItem">
+      <Title>Администрирование</Title>
+      <Items>
+        <MenuItem Name="SettingsMenuItem" Type="MenuItem">
+          <Title>Настройки...</Title>
+          <Command Name="SettingsFormShowCommand" />
         </MenuItem>
       </Items>
     </MenuItem>
@@ -472,8 +526,6 @@
       <TabIndex>1</TabIndex>
       <BackColor>ThemeBackgroundColor</BackColor>
 
-      <!-- Insert your content-->
-
       <MyObject Name="FilterPanel" Type="Panel" Assembly="BaseControls">
         <Top>0</Top>
         <Left>0</Left>
@@ -482,9 +534,10 @@
             <Property Name="Height" />
           </Object>
         </Height>
-        <Width>200</Width>
+        <Width>180</Width>
         <BackColor>ThemeBackgroundColor</BackColor>
-        <MyObject Name="ActiveFilterVariable" Type="Variable" Assembly="SimpleControls">
+
+        <MyObject Name="ActiveFilterVariable" Type="Variable" Assembly="SimpleControls" ChangeForm="False">
           <Value>Today</Value>
         </MyObject>
 
@@ -494,7 +547,7 @@
           <Height>30</Height>
           <Width>
             <Calculate>
-              <Expression>{0} - {1} * 2</Expression>
+              <Expression>{0} - {1}*2</Expression>
               <Items>
                 <Item>
                   <Object Name="FilterPanel">
@@ -515,7 +568,7 @@
             <Switch>
               <Case>
                 <When>
-                  <Condition Name="IsActiveFilterTodayEqualCondition" />
+                  <Condition Name="FilterTodayIsActiveEqualCondition" />
                 </When>
                 <Then>ActiveFilterColor</Then>
               </Case>
@@ -528,7 +581,7 @@
             <Switch>
               <Case>
                 <When>
-                  <Condition Name="IsActiveFilterTodayEqualCondition" />
+                  <Condition Name="FilterTodayIsActiveEqualCondition" />
                 </When>
                 <Then>ActiveFilterColor</Then>
               </Case>
@@ -562,7 +615,11 @@
               <Property Name="Left" />
             </Object>
           </Left>
-          <Height>30</Height>
+          <Height>
+            <Object Name="TodayButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
           <Width>
             <Object Name="TodayButton">
               <Property Name="Width" />
@@ -574,7 +631,7 @@
             <Switch>
               <Case>
                 <When>
-                  <Condition Name="IsActiveFilterCurrentWeekEqualCondition" />
+                  <Condition Name="FilterCurrentWeekIsActiveEqualCondition" />
                 </When>
                 <Then>ActiveFilterColor</Then>
               </Case>
@@ -587,7 +644,7 @@
             <Switch>
               <Case>
                 <When>
-                  <Condition Name="IsActiveFilterCurrentWeekEqualCondition" />
+                  <Condition Name="FilterCurrentWeekIsActiveEqualCondition" />
                 </When>
                 <Then>ActiveFilterColor</Then>
               </Case>
@@ -603,7 +660,7 @@
           </Commands>
         </MyObject>
 
-        <MyObject Name="FortNightButton" Type="Button" Assembly="BaseControls">
+        <MyObject Name="FortnightButton" Type="Button" Assembly="BaseControls">
           <Top>
             <Calculate>
               <Expression>{0} + 5</Expression>
@@ -617,11 +674,15 @@
             </Calculate>
           </Top>
           <Left>
-            <Object Name="CurrentWeekButton">
+            <Object Name="TodayButton">
               <Property Name="Left" />
             </Object>
           </Left>
-          <Height>30</Height>
+          <Height>
+            <Object Name="TodayButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
           <Width>
             <Object Name="TodayButton">
               <Property Name="Width" />
@@ -633,7 +694,7 @@
             <Switch>
               <Case>
                 <When>
-                  <Condition Name="IsActiveFilterFortnightEqualCondition" />
+                  <Condition Name="FilterFortnightIsActiveEqualCondition" />
                 </When>
                 <Then>ActiveFilterColor</Then>
               </Case>
@@ -646,7 +707,7 @@
             <Switch>
               <Case>
                 <When>
-                  <Condition Name="IsActiveFilterFortnightEqualCondition" />
+                  <Condition Name="FilterFortnightIsActiveEqualCondition" />
                 </When>
                 <Then>ActiveFilterColor</Then>
               </Case>
@@ -668,7 +729,7 @@
               <Expression>{0} + 5</Expression>
               <Items>
                 <Item>
-                  <Object Name="FortNightButton">
+                  <Object Name="FortnightButton">
                     <Property Name="Bottom" />
                   </Object>
                 </Item>
@@ -676,11 +737,15 @@
             </Calculate>
           </Top>
           <Left>
-            <Object Name="FortNightButton">
+            <Object Name="TodayButton">
               <Property Name="Left" />
             </Object>
           </Left>
-          <Height>30</Height>
+          <Height>
+            <Object Name="TodayButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
           <Width>
             <Object Name="TodayButton">
               <Property Name="Width" />
@@ -692,7 +757,7 @@
             <Switch>
               <Case>
                 <When>
-                  <Condition Name="IsActiveFilterPeriodEqualCondition" />
+                  <Condition Name="FilterPeriodIsActiveEqualCondition" />
                 </When>
                 <Then>ActiveFilterColor</Then>
               </Case>
@@ -705,7 +770,7 @@
             <Switch>
               <Case>
                 <When>
-                  <Condition Name="IsActiveFilterPeriodEqualCondition" />
+                  <Condition Name="FilterPeriodIsActiveEqualCondition" />
                 </When>
                 <Then>ActiveFilterColor</Then>
               </Case>
@@ -722,36 +787,50 @@
 
         <MyObject Name="StartDateLabel" Type="Label" Assembly="BaseControls">
           <Top>
-            <Formula>
-              <Plus DataType="IntegerDataType">
+            <Calculate>
+              <Expression>{0} + 10</Expression>
+              <Items>
                 <Item>
                   <Object Name="PeriodButton">
                     <Property Name="Bottom" />
                   </Object>
                 </Item>
-                <Item>5</Item>
-              </Plus>
-            </Formula>
+              </Items>
+            </Calculate>
           </Top>
           <Left>
-            <Object Name="PeriodButton">
+            <Object Name="TodayButton">
               <Property Name="Left" />
             </Object>
           </Left>
           <Width>
-            <Object Name="PeriodButton">
-              <Property Name="Width" />
-            </Object>
+            <Calculate>
+              <Expression>{0} - {1}*2</Expression>
+              <Items>
+                <Item>
+                  <Object Name="FilterPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="StartDateLabel">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
           </Width>
           <Height>20</Height>
           <TextAlign>MiddleLeft</TextAlign>
+          <FontStyle>LabelFontStyle</FontStyle>
+          <ForeColor>LabelForeColor</ForeColor>
           <Text>Дата начала</Text>
           <Visible>
-            <Condition Name="IsActiveFilterPeriodEqualCondition" />
+            <Condition Name="FilterPeriodIsActiveEqualCondition" />
           </Visible>
         </MyObject>
 
-        <MyObject Name="StartDateDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
+        <MyObject Name="StartDateDateTimePicker" Type="DateTimePicker" Assembly="BaseControls" ChangeForm="False">
           <Top>
             <Object Name="StartDateLabel">
               <Property Name="Bottom" />
@@ -773,22 +852,22 @@
             <DateTime Variable="FirstDayOfCurrMonth" />
           </Value>
           <Visible>
-            <Condition Name="IsActiveFilterPeriodEqualCondition" />
+            <Condition Name="FilterPeriodIsActiveEqualCondition" />
           </Visible>
         </MyObject>
 
         <MyObject Name="EndDateLabel" Type="Label" Assembly="BaseControls">
           <Top>
-            <Formula>
-              <Plus DataType="IntegerDataType">
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
                 <Item>
                   <Object Name="StartDateDateTimePicker">
                     <Property Name="Bottom" />
                   </Object>
                 </Item>
-                <Item>5</Item>
-              </Plus>
-            </Formula>
+              </Items>
+            </Calculate>
           </Top>
           <Left>
             <Object Name="StartDateLabel">
@@ -800,46 +879,39 @@
               <Property Name="Width" />
             </Object>
           </Width>
-          <Height>
-            <Object Name="StartDateLabel">
-              <Property Name="Height" />
-            </Object>
-          </Height>
+          <Height>20</Height>
           <TextAlign>MiddleLeft</TextAlign>
+          <FontStyle>LabelFontStyle</FontStyle>
+          <ForeColor>LabelForeColor</ForeColor>
           <Text>Дата окончания</Text>
           <Visible>
-            <Condition Name="IsActiveFilterPeriodEqualCondition" />
+            <Condition Name="FilterPeriodIsActiveEqualCondition" />
           </Visible>
         </MyObject>
 
-        <MyObject Name="EndDateDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
+        <MyObject Name="EndDateDateTimePicker" Type="DateTimePicker" Assembly="BaseControls" ChangeForm="False">
           <Top>
             <Object Name="EndDateLabel">
               <Property Name="Bottom" />
             </Object>
           </Top>
           <Left>
-            <Object Name="StartDateDateTimePicker">
+            <Object Name="StartDateLabel">
               <Property Name="Left" />
             </Object>
           </Left>
           <Width>
-            <Object Name="StartDateDateTimePicker">
+            <Object Name="StartDateLabel">
               <Property Name="Width" />
             </Object>
           </Width>
-          <Height>
-            <Object Name="StartDateDateTimePicker">
-              <Property Name="Height" />
-            </Object>
-          </Height>
           <ShowCalendar>True</ShowCalendar>
           <NullValue Show="False" />
           <Value>
             <DateTime Variable="LastDayOfCurrMonth" />
           </Value>
           <Visible>
-            <Condition Name="IsActiveFilterPeriodEqualCondition" />
+            <Condition Name="FilterPeriodIsActiveEqualCondition" />
           </Visible>
         </MyObject>
 
@@ -861,12 +933,12 @@
               <Property Name="Left" />
             </Object>
           </Left>
-          <Height>30</Height>
           <Width>
             <Object Name="StartDateLabel">
               <Property Name="Width" />
             </Object>
           </Width>
+          <Height>30</Height>
           <TextAlign>MiddleCenter</TextAlign>
           <FontStyle>ButtonFontStyle</FontStyle>
           <ImageAlign>MiddleLeft</ImageAlign>
@@ -877,18 +949,12 @@
           <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
           <Text>Применить</Text>
           <Commands>
-            <Command Name="ActiveFilterValueSetCommand">Period</Command>
             <Command Name="OrderDataConnectionRefreshCommand" />
           </Commands>
           <Visible>
-            <Condition Name="IsActiveFilterPeriodEqualCondition" />
+            <Condition Name="FilterPeriodIsActiveEqualCondition" />
           </Visible>
         </MyObject>
-
-
-
-
-
       </MyObject>
 
       <MyObject Name="FilterSeparatePanel" Type="Panel" Assembly="BaseControls">
@@ -922,7 +988,7 @@
           </Object>
         </Left>
         <Height>
-          <Object Name="ContentPanel">
+          <Object Name="FilterPanel">
             <Property Name="Height" />
           </Object>
         </Height>
@@ -943,18 +1009,23 @@
             </Items>
           </Calculate>
         </Width>
-
+        <BackColor>ThemeBackgroundColor</BackColor>
 
         <MyObject Name="OrderDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
           <Top>5</Top>
           <Left>10</Left>
           <Height>
             <Calculate>
-              <Expression>{0} - 10</Expression>
+              <Expression>{0} - {1}*2</Expression>
               <Items>
                 <Item>
                   <Object Name="DataPanel">
                     <Property Name="Height" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="OrderDatabaseTable">
+                    <Property Name="Top" />
                   </Object>
                 </Item>
               </Items>
@@ -962,7 +1033,7 @@
           </Height>
           <Width>
             <Calculate>
-              <Expression>{0} - {1} * 2 - {2} - 5</Expression>
+              <Expression>{0} - {1}*2 - {2} - 5</Expression>
               <Items>
                 <Item>
                   <Object Name="DataPanel">
@@ -987,8 +1058,9 @@
           <AllowInsert>False</AllowInsert>
           <AllowUpdate>False</AllowUpdate>
           <AllowDelete>False</AllowDelete>
-          <AutoSizeColumnsMode Value="Fill" />
-          <SourceDataConnection Name="OrderSelectPrimaryGetDataConnection" />
+          <AutoSizeColumnsMode Value="Disable" />
+          <TabIndex>2</TabIndex>
+          <SourceDataConnection Name="OrderPrimaryGetDataConnection" />
           <Columns>
             <Column Name="OrderId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
               <Visible>False</Visible>
@@ -1000,22 +1072,21 @@
               <Visible>False</Visible>
             </Column>
             <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
-              <Title>#</Title>
+              <Title>№</Title>
               <Width>40</Width>
               <AutoFill Type="RowNumber" />
-              <AutoSizeMode Value="None" />
               <Alignment Value="MiddleCenter" />
+              <AutoSizeMode Value="None" />
             </Column>
             <Column Name="OrderNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
               <Title>Номер заказа</Title>
-              <MinimumWidth>150</MinimumWidth>
+              <Width>90</Width>
               <AutoSizeMode Value="None" />
               <Alignment Value="MiddleCenter" />
-
             </Column>
             <Column Name="OrderDate" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
               <Title>Дата и время заказа</Title>
-              <Width>150</Width>
+              <Width>130</Width>
               <AutoSizeMode Value="None" />
               <Alignment Value="MiddleCenter" />
               <DataType Type="DateTimeDataType" Format="dd.MM.yyyy HH:mm" />
@@ -1023,25 +1094,25 @@
             <Column Name="CityTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
               <Title>Город</Title>
               <Width>150</Width>
-              <MinimumWidth>150</MinimumWidth>
+              <AutoSizeMode Value="None" />
               <Substitution SourceColumn="CityId">
                 <DataConnection SourceDataConnection="CityPrimaryGetDataConnection">
                   <Fields>
                     <Field Name="CityId" />
-                    <Field Name="CityTitle" />
+                    <Field Name="Title" />
                   </Fields>
                 </DataConnection>
               </Substitution>
             </Column>
             <Column Name="ClientTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
               <Title>Клиент</Title>
-              <Width>200</Width>
-              <MinimumWidth>200</MinimumWidth>
+              <Width>300</Width>
+              <AutoSizeMode Value="Fill" />
               <Substitution SourceColumn="ClientId">
                 <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
                   <Fields>
                     <Field Name="ClientId" />
-                    <Field Name="ClientTitle" />
+                    <Field Name="Title" />
                   </Fields>
                 </DataConnection>
               </Substitution>
@@ -1067,9 +1138,10 @@
               </Items>
             </Calculate>
           </Left>
-          <Height>40</Height>
           <Width>40</Width>
-          <Hint>Добавить запись...</Hint>
+          <Height>40</Height>
+          <TabIndex>3</TabIndex>
+          <Hint>Добавить запись</Hint>
           <BackgroundImage>Images\24x24\plus.png</BackgroundImage>
           <BackgroundImageLayout>Center</BackgroundImageLayout>
           <FlatStyle>Flat</FlatStyle>
@@ -1079,11 +1151,7 @@
           <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
           <Commands>
             <Command Name="EmptyOrderInsertSaveCommand" />
-            <Command Name="OrderEditFormShowCommand">
-              <Input Name="OrderId">
-                <Command Name="EmptyOrderInsertSaveCommand" />
-              </Input>
-            </Command>
+            <Command Name="OrderAddFormShowCommand" />
           </Commands>
         </MyObject>
 
@@ -1105,8 +1173,17 @@
               <Property Name="Left" />
             </Object>
           </Left>
-          <Height>40</Height>
-          <Width>40</Width>
+          <Width>
+            <Object Name="OrderAddButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>
+            <Object Name="OrderAddButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <TabIndex>4</TabIndex>
           <Hint>Редактировать запись...</Hint>
           <BackgroundImage>Images\24x24\pencil.png</BackgroundImage>
           <BackgroundImageLayout>Center</BackgroundImageLayout>
@@ -1115,14 +1192,14 @@
           <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
           <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
           <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-          <DisabledMode>True</DisabledMode>
-          <DisabledText>Требуется выбрать заказ</DisabledText>
           <Enabled>
-            <Condition Name="OrderSelectedGreaterCondition" />
+            <Condition Name="OrderSelectedCondition" />
           </Enabled>
           <Commands>
-            <Command Name="OrderEditSequentialCommand" />
+            <Command Name="OrderEditFormShowCommand" />
           </Commands>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>Выберите запись для редактирования.</DisabledText>
         </MyObject>
 
         <MyObject Name="OrderDeleteButton" Type="Button" Assembly="BaseControls">
@@ -1143,9 +1220,18 @@
               <Property Name="Left" />
             </Object>
           </Left>
-          <Height>40</Height>
-          <Width>40</Width>
-          <Hint>Удалить запись...</Hint>
+          <Width>
+            <Object Name="OrderAddButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>
+            <Object Name="OrderAddButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <TabIndex>5</TabIndex>
+          <Hint>Удалить запись</Hint>
           <BackgroundImage>Images\24x24\delete.png</BackgroundImage>
           <BackgroundImageLayout>Center</BackgroundImageLayout>
           <FlatStyle>Flat</FlatStyle>
@@ -1153,20 +1239,17 @@
           <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
           <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
           <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-          <DisabledMode>True</DisabledMode>
-          <DisabledText>Требуется выбрать заказ</DisabledText>
           <Enabled>
-            <Condition Name="OrderSelectedGreaterCondition" />
+            <Condition Name="OrderSelectedCondition" />
           </Enabled>
           <Commands>
-            <Command Name="OrderDeleteSaveCommand" />
-            <Command Name="OrderDataConnectionRefreshCommand" />
+            <Command Name="OrderDeleteMessageBoxCommand" />
           </Commands>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>Выберите запись для удаления.</DisabledText>
         </MyObject>
+
       </MyObject>
-
-
-
     </MyObject>
   </MyObjects>
 </Form>

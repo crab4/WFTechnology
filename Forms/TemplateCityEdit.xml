@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
-<Form Name="TemplateCityEditForm" Width="350" Height="150" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateCityEditForm" Width="400" Height="160" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
+    <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
       <Switch>
         <Case>
@@ -13,9 +14,7 @@
       </Switch>
     </Parameter>
     <Parameter Name="CityTitle" />
-    <Parameter Name="Archive" />
     <Parameter Name="Updated">False</Parameter>
-    <Parameter Name="Edit">False</Parameter>
   </Parameters>
 
   <Appearance>
@@ -51,23 +50,8 @@
   <Conditions>
     <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
 
-    <Condition Name="CityTitleIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Object Name="CityTitleTextBox" />
-        </Item>
-      </Items>
-    </Condition>
-
-    <Condition Name="CheckingFiredFalseEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Form>
-            <Property Name="CheckingFired" />
-          </Form>
-        </Item>
-        <Item>False</Item>
-      </Items>
+    <Condition Name="EscapeKeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
+      <Key Value="Escape" />
     </Condition>
 
     <Condition Name="FormChangedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
@@ -79,9 +63,23 @@
         </Item>
         <Item>True</Item>
       </Items>
+      <DataType Type="BooleanDataType" />
     </Condition>
 
-    <Condition Name="SaveOnCloseYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
+    <Condition Name="MandatoryFieldsAreFilledEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Form>
+            <Property Name="CheckingFired" />
+          </Form>
+        </Item>
+        <Item>False</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="SaveOnCloseMessageBoxCommandYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
       <Items>
         <Item>
           <Command Name="SaveOnCloseMessageBoxCommand" />
@@ -90,7 +88,8 @@
       </Items>
     </Condition>
 
-    <Condition Name="SaveOnCloseNoEqualCondition" Type="EqualCondition" Assembly="Conditions">
+    <Condition Name="SaveOnCloseMessageBoxCommandNoEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
       <Items>
         <Item>
           <Command Name="SaveOnCloseMessageBoxCommand" />
@@ -99,7 +98,8 @@
       </Items>
     </Condition>
 
-    <Condition Name="CloseOnCloseYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
+    <Condition Name="CloseOnCloseMessageBoxCommandYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
       <Items>
         <Item>
           <Command Name="CloseOnCloseMessageBoxCommand" />
@@ -107,15 +107,29 @@
         <Item>Yes</Item>
       </Items>
     </Condition>
+
+    <Condition Name="TitleTextBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="TitleTextBox" />
+        </Item>
+      </Items>
+    </Condition>
   </Conditions>
 
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
+
     <Command Name="CityTitleValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <Parameter Name="CityTitle">
-        <Object Name="CityTitleTextBox" />
+        <Object Name="TitleTextBox" />
       </Parameter>
     </Command>
+
+    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Updated">True</Parameter>
+    </Command>
+
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
       <Commands>
         <Command Name="CityTitleValueSetCommand" />
@@ -123,20 +137,17 @@
         <Command Name="FormCloseCommand" />
       </Commands>
     </Command>
-    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Parameter Name="Updated">True</Parameter>
-    </Command>
 
     <Command Name="SaveOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
       <Caption>Сохранение</Caption>
-      <Text>Форма содержит несохранённые данные.\rСохранить их перед закрытием?</Text>
+      <Text>Форма содержит несохраненные изменения.\rСохранить их перед закрытием?</Text>
       <Icon Type="Question" />
       <Buttons Type="YesNoCancel" />
     </Command>
 
     <Command Name="CloseOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
       <Caption>Закрытие</Caption>
-      <Text>При закрытии все несохраненные изменения будет утеряны.\rВсё равно закрыть форму?</Text>
+      <Text>При закрытии все несохраненные изменения будут утеряны.\rВы уверены, что хотите закрыть форму?</Text>
       <Icon Type="Question" />
       <Buttons Type="YesNo" />
     </Command>
@@ -144,11 +155,11 @@
 
   <Checkings>
     <Checking>
-      <Object Name="CityTitleTextBox" />
+      <Object Name="TitleTextBox" />
       <ConditionExpression>
-        <Condition Name="CityTitleIsNullOrEmptyCondition" />
+        <Condition Name="TitleTextBoxIsNullOrEmptyCondition" />
       </ConditionExpression>
-      <AsteriskHint>Заполните это поле.</AsteriskHint>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
     </Checking>
   </Checkings>
 
@@ -156,14 +167,17 @@
     <Execution>
       <ConditionExpression>
         <And>
-          <Condition Name="FormClosingCondition" />
+          <Or>
+            <Condition Name="FormClosingCondition" />
+            <Condition Name="EscapeKeyDownCondition" />
+          </Or>
           <Condition Name="FormChangedTrueEqualCondition" />
         </And>
       </ConditionExpression>
       <Commands>
         <If>
           <When>
-            <Condition Name="CheckingFiredFalseEqualCondition" />
+            <Condition Name="MandatoryFieldsAreFilledEqualCondition" />
           </When>
           <Then>
             <Command Name="SaveOnCloseMessageBoxCommand" />
@@ -177,7 +191,7 @@
 
     <Execution>
       <ConditionExpression>
-        <Condition Name="SaveOnCloseYesEqualCondition" />
+        <Condition Name="SaveOnCloseMessageBoxCommandYesEqualCondition" />
       </ConditionExpression>
       <Commands>
         <Command Name="SaveSequentialCommand" />
@@ -188,13 +202,16 @@
       <ConditionExpression>
         <Or>
           <And>
-            <Condition Name="FormClosingCondition" />
+            <Or>
+              <Condition Name="FormClosingCondition" />
+              <Condition Name="EscapeKeyDownCondition" />
+            </Or>
             <Not>
               <Condition Name="FormChangedTrueEqualCondition" />
             </Not>
           </And>
-          <Condition Name="SaveOnCloseNoEqualCondition" />
-          <Condition Name="CloseOnCloseYesEqualCondition" />
+          <Condition Name="SaveOnCloseMessageBoxCommandNoEqualCondition" />
+          <Condition Name="CloseOnCloseMessageBoxCommandYesEqualCondition" />
         </Or>
       </ConditionExpression>
       <Commands>
@@ -291,14 +308,12 @@
       <TabIndex>1</TabIndex>
       <BackColor>ThemeBackgroundColor</BackColor>
 
-      <!-- Insert your content-->
       <MyObject Name="TitleLabel" Type="Label" Assembly="BaseControls">
         <Top>5</Top>
         <Left>10</Left>
-        <Height>20</Height>
         <Width>
           <Calculate>
-            <Expression>{0} - {1} * 2</Expression>
+            <Expression>{0} - {1} - 10</Expression>
             <Items>
               <Item>
                 <Object Name="ContentPanel">
@@ -313,14 +328,14 @@
             </Items>
           </Calculate>
         </Width>
+        <Height>20</Height>
         <TextAlign>MiddleLeft</TextAlign>
         <FontStyle>LabelFontStyle</FontStyle>
         <ForeColor>LabelForeColor</ForeColor>
         <Text>Наименование</Text>
       </MyObject>
-      <MyObject Name="CityTitleTextBox" Type="TextBox" Assembly="BaseControls">
-        <ReadOnly><Parameter Name="Archive" />
-        </ReadOnly>
+
+      <MyObject Name="TitleTextBox" Type="TextBox" Assembly="BaseControls">
         <Top>
           <Object Name="TitleLabel">
             <Property Name="Bottom" />
@@ -332,9 +347,21 @@
           </Object>
         </Left>
         <Width>
-          <Object Name="TitleLabel">
-            <Property Name="Width" />
-          </Object>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="TitleTextBox">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
         </Width>
         <Text>
           <Parameter Name="CityTitle" />
@@ -401,7 +428,7 @@
         <TextAlign>MiddleCenter</TextAlign>
         <FontStyle>ButtonFontStyle</FontStyle>
         <ImageAlign>MiddleLeft</ImageAlign>
-        <Image>..\Images\24x24\content-save.png</Image>
+        <Image>Images\24x24\content-save.png</Image>
         <FlatStyle>Flat</FlatStyle>
         <FlatBorderSize>1</FlatBorderSize>
         <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
@@ -410,10 +437,10 @@
         <Text>Сохранить</Text>
         <TabIndex>1</TabIndex>
         <Enabled>
-          <Condition Name="CheckingFiredFalseEqualCondition" />
+          <Condition Name="MandatoryFieldsAreFilledEqualCondition" />
         </Enabled>
         <DisabledMode>True</DisabledMode>
-        <DisabledText>Для сохранения требуется дать городу название</DisabledText>
+        <DisabledText>Одно или несколько полей заполнены некорректно.</DisabledText>
         <Commands>
           <Command Name="SaveSequentialCommand" />
         </Commands>
