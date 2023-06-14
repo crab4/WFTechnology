@@ -829,6 +829,9 @@
         <Parameter Name="OrderId">
           <Parameter Name="OrderId" />
         </Parameter>
+        <Parameter Name="TotalDebtSumm">
+          <Object Name="TotalDebtVariable" />
+        </Parameter>
       </Parameters>
       <Show Type="None" />
     </Command>

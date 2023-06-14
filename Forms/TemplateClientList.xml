@@ -46,11 +46,27 @@
           <Field Name="CityTitle" />
           <Field Name="Phone" />
           <Field Name="Archive" />
+          <Field Name="Count" />
         </Fields>
         <Parameters>
+          <Parameter NativeName="Archive">
+            <Value>
+              <Object Name="ArchiveFilterComboBox" />
+            </Value>
+          </Parameter>
           <Parameter NativeName="SearchKeywords" RefreshQuery="False">
             <Value>
               <Object Name="SearchKeywordsVariable" />
+            </Value>
+          </Parameter>
+          <Parameter NativeName="Limit">
+            <Value>
+              <Object Name="ItemsPerPageComboBox" />
+            </Value>
+          </Parameter>
+          <Parameter NativeName="Page">
+            <Value>
+              <Object Name="CurrentPageVariable" />
             </Value>
           </Parameter>
         </Parameters>
@@ -169,7 +185,89 @@
         </Item>
       </Items>
     </Condition>
+
+    <Condition Name="NumberOfClientsEqual0Condition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+            <Property Name="Count" />
+          </DataConnection>
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="NumberOfClientsVariableEqual0Condition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="NumberOfClientsVariable" />
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="ItemsPerPageComboBoxIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Object Name="ItemsPerPageComboBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="CurrentPageVariableEqual1Condition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="CurrentPageVariable" />
+        </Item>
+        <Item>1</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="CurrentPageVariableEqualMaxCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="CurrentPageVariable" />
+        </Item>
+        <Item>
+          <Object Name="TotalPagesVariable" />
+        </Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="CurrentPageTextBoxKeyEnterPressCondition" Type="KeyDownCondition" Assembly="Conditions">
+      <Object Name="CurrentPageTextBox" />
+      <Key Value="Enter" />
+    </Condition>
+
+    <Condition Name="CurrentPageTextBoxNotLessMinCondition" Type="NotLessCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="CurrentPageTextBox" />
+        </Item>
+        <Item>1</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="CurrentPageTextBoxNotGreaterMaxCondition" Type="NotGreaterCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="CurrentPageTextBox" />
+        </Item>
+        <Item>
+          <Object Name="TotalPagesVariable" />
+        </Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
   </Conditions>
+
+
 
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
@@ -328,6 +426,53 @@
         <Input />
       </Object>
     </Command>
+
+    <Command Name="CurrentPageVariableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="CurrentPageVariable">
+        <Input />
+      </Object>
+    </Command>
+
+    <Command Name="CurrentPageVariableDecValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="CurrentPageVariable">
+        <Formula>
+          <Minus DataType="IntegerDataType">
+            <Item>
+              <Object Name="CurrentPageVariable" />
+            </Item>
+            <Item>1</Item>
+          </Minus>
+        </Formula>
+      </Object>
+    </Command>
+
+    <Command Name="CurrentPageVariableIncValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="CurrentPageVariable">
+        <Formula>
+          <Plus DataType="IntegerDataType">
+            <Item>
+              <Object Name="CurrentPageVariable" />
+            </Item>
+            <Item>1</Item>
+          </Plus>
+        </Formula>
+      </Object>
+    </Command>
+
+    <Command Name="TestMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>
+        <Object Name="NumberOfClientsVariable" />
+      </Caption>
+      <Text>
+        <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+          <Fields>
+            <Field Name="Count" />
+          </Fields>
+        </DataConnection>
+      </Text>
+      <Icon Type="Information" />
+      <Buttons Type="Ok" />
+    </Command>
   </Commands>
 
   <Executions>
@@ -407,9 +552,106 @@
         <Command Name="UpdatedTrueValueSetCommand" />
       </Commands>
     </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="CurrentPageTextBoxKeyEnterPressCondition" />
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <And>
+              <Condition Name="CurrentPageTextBoxNotGreaterMaxCondition" />
+              <Condition Name="CurrentPageTextBoxNotLessMinCondition" />
+            </And>
+          </When>
+          <Then>
+            <Command Name="CurrentPageVariableValueSetCommand">
+              <Object Name="CurrentPageTextBox" />
+            </Command>
+          </Then>
+          <ElseIf>
+            <When>
+              <Not>
+                <Condition Name="CurrentPageTextBoxNotLessMinCondition" />
+              </Not>
+            </When>
+            <Then>
+              <Command Name="CurrentPageVariableValueSetCommand">1</Command>
+            </Then>
+          </ElseIf>
+          <ElseIf>
+            <When>
+              <Not>
+                <Condition Name="CurrentPageTextBoxNotGreaterMaxCondition" />
+              </Not>
+            </When>
+            <Then>
+              <Command Name="CurrentPageVariableValueSetCommand">
+                <Object Name="TotalPagesVariable" />
+              </Command>
+            </Then>
+          </ElseIf>
+        </If>
+      </Commands>
+    </Execution>
   </Executions>
 
   <MyObjects>
+    <MyObject Name="VarPanel" Type="Panel" Assembly="BaseControls">
+      <Visible>False</Visible>
+      <MyObject Name="NumberOfClientsVariable" Type="Variable" Assembly="SimpleControls">
+        <Value>
+          <Switch>
+            <Case>
+              <When>
+                <Condition Name="NumberOfClientsEqual0Condition" />
+              </When>
+              <Then>0</Then>
+            </Case>
+            <Case>
+              <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="Count" />
+                </Fields>
+              </DataConnection>
+            </Case>
+          </Switch>
+        </Value>
+      </MyObject>
+
+
+      <MyObject Name="CurrentPageVariable" Type="Variable" Assembly="SimpleControls">
+        <Value>1</Value>
+      </MyObject>
+
+      <MyObject Name="TotalPagesVariable" Type="Variable" Assembly="SimpleControls">
+        <Value>
+          <Switch>
+            <Case>
+              <When>
+                <Condition Name="ItemsPerPageComboBoxIsNullCondition" />
+              </When>
+              <Then>1</Then>
+            </Case>
+            <Case>
+              <Calculate>
+                <Expression>Ceiling({0}/{1})</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="NumberOfClientsVariable" />
+                  </Item>
+                  <Item>
+                    <Object Name="ItemsPerPageComboBox" />
+                  </Item>
+                </Items>
+              </Calculate>
+            </Case>
+          </Switch>
+        </Value>
+      </MyObject>
+    </MyObject>
+
     <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
       <Top>0</Top>
       <Left>0</Left>
@@ -708,7 +950,7 @@
         <Left>10</Left>
         <Height>
           <Calculate>
-            <Expression>{0} - {1} - 5</Expression>
+            <Expression>{0} - {1} - 10 - {2}</Expression>
             <Items>
               <Item>
                 <Object Name="ContentPanel">
@@ -718,6 +960,11 @@
               <Item>
                 <Object Name="ClientDatabaseTable">
                   <Property Name="Top" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="PagePanel">
+                  <Property Name="Height" />
                 </Object>
               </Item>
             </Items>
@@ -798,6 +1045,394 @@
             </Items>
           </BackColor>
         </Formatting>
+      </MyObject>
+
+      <MyObject Name="PagePanel" Type="Panel" Assembly="BaseControls">
+        <Top>
+          <Object Name="ClientDatabaseTable">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Calculate>
+            <Expression>Ceiling(({0} - {1})/2)</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="PagePanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Left>
+        <Height>30</Height>
+        <Width>
+          <Object Name="TotalItemsLabel">
+            <Property Name="Right" />
+          </Object>
+        </Width>
+
+        <MyObject Name="FirstPageButton" Type="Button" Assembly="BaseControls">
+          <Top>5</Top>
+          <Left>0</Left>
+          <Height>
+            <Object Name="CurrentPageTextBox">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <Width>
+            <Object Name="FirstPageButton">
+              <Property Name="Height" />
+            </Object>
+          </Width>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>0</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <BackgroundImage>Images\16x16\arrow-collapse-left.png</BackgroundImage>
+          <Commands>
+            <Command Name="CurrentPageVariableValueSetCommand">1</Command>
+          </Commands>
+          <Enabled>
+            <And>
+              <Not>
+                <Condition Name="CurrentPageVariableEqual1Condition" />
+              </Not>
+              <Not>
+                <Condition Name="NumberOfClientsVariableEqual0Condition" />
+              </Not>
+            </And>
+          </Enabled>
+        </MyObject>
+
+        <MyObject Name="PrevPageButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Object Name="FirstPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 3</Expression>
+              <Items>
+                <Item>
+                  <Object Name="FirstPageButton">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Height>
+            <Object Name="FirstPageButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <Width>
+            <Object Name="FirstPageButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>0</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <BackgroundImage>Images\16x16\arrow-left.png</BackgroundImage>
+          <Commands>
+            <Command Name="CurrentPageVariableDecValueSetCommand" />
+          </Commands>
+          <Enabled>
+            <And>
+              <Not>
+                <Condition Name="CurrentPageVariableEqual1Condition" />
+              </Not>
+              <Not>
+                <Condition Name="NumberOfClientsVariableEqual0Condition" />
+              </Not>
+            </And>
+          </Enabled>
+        </MyObject>
+
+        <MyObject Name="CurrentPageTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
+          <Top>
+            <Object Name="PrevPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 3</Expression>
+              <Items>
+                <Item>
+                  <Object Name="PrevPageButton">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Width>30</Width>
+          <MaxLength>3</MaxLength>
+          <AllowedSymbols>0123456789</AllowedSymbols>
+          <TextAlign>Right</TextAlign>
+          <Text>
+            <Object Name="CurrentPageVariable" />
+          </Text>
+        </MyObject>
+
+        <MyObject Name="TotalPagesLabel" Type="Label" Assembly="BaseControls" ChangeForm="False">
+          <Top>
+            <Object Name="PrevPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="CurrentPageTextBox">
+              <Property Name="Right" />
+            </Object>
+          </Left>
+          <Height>20</Height>
+          <Width>40</Width>
+          <TextAlign>MiddleLeft</TextAlign>
+          <Text>
+            <String>
+              <Format>/ {0}</Format>
+              <Items>
+                <Item>
+                  <Switch>
+                    <Case>
+                      <When>
+                        <Condition Name="NumberOfClientsVariableEqual0Condition" />
+                      </When>
+                      <Then>1</Then>
+                    </Case>
+                    <Case>
+                      <Object Name="TotalPagesVariable" />
+                    </Case>
+                  </Switch>
+                </Item>
+              </Items>
+            </String>
+          </Text>
+        </MyObject>
+
+        <MyObject Name="NextPageButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Object Name="FirstPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 3</Expression>
+              <Items>
+                <Item>
+                  <Object Name="TotalPagesLabel">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Height>
+            <Object Name="FirstPageButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <Width>
+            <Object Name="FirstPageButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>0</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <BackgroundImage>Images\16x16\arrow-right.png</BackgroundImage>
+          <Commands>
+            <Command Name="CurrentPageVariableIncValueSetCommand" />
+          </Commands>
+          <Enabled>
+            <And>
+              <Not>
+                <Condition Name="CurrentPageVariableEqualMaxCondition" />
+              </Not>
+              <Not>
+                <Condition Name="NumberOfClientsVariableEqual0Condition" />
+              </Not>
+            </And>
+          </Enabled>
+        </MyObject>
+
+        <MyObject Name="LastPageButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Object Name="PrevPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 3</Expression>
+              <Items>
+                <Item>
+                  <Object Name="NextPageButton">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Height>
+            <Object Name="FirstPageButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <Width>
+            <Object Name="FirstPageButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>0</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <BackgroundImage>Images\16x16\arrow-collapse-right.png</BackgroundImage>
+          <Commands>
+            <Command Name="CurrentPageVariableValueSetCommand">
+              <Object Name="TotalPagesVariable" />
+            </Command>
+          </Commands>
+          <Enabled>
+            <And>
+              <Not>
+                <Condition Name="CurrentPageVariableEqualMaxCondition" />
+              </Not>
+              <Not>
+                <Condition Name="NumberOfClientsVariableEqual0Condition" />
+              </Not>
+            </And>
+          </Enabled>
+        </MyObject>
+
+        <MyObject Name="PerPageLabel" Type="Label" Assembly="BaseControls">
+          <Top>
+            <Object Name="PrevPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 20</Expression>
+              <Items>
+                <Item>
+                  <Object Name="LastPageButton">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Height>20</Height>
+          <Width>110</Width>
+          <TextAlign>MiddleRight</TextAlign>
+          <Text>строк на странице</Text>
+        </MyObject>
+
+        <MyObject Name="ItemsPerPageComboBox" Type="ComboBox" Assembly="BaseControls" ChangeForm="False">
+          <Top>
+            <Object Name="PrevPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="PerPageLabel">
+              <Property Name="Right" />
+            </Object>
+          </Left>
+          <Width>50</Width>
+          <ValueList>
+            <Structure Type="Table">
+              <Row>
+                <Item />
+                <Item>[Все]</Item>
+              </Row>
+              <Row>
+                <Item>5</Item>
+                <Item>5</Item>
+              </Row>
+              <Row>
+                <Item>10</Item>
+                <Item>10</Item>
+              </Row>
+              <Row>
+                <Item>50</Item>
+                <Item>50</Item>
+              </Row>
+              <Row>
+                <Item>100</Item>
+                <Item>100</Item>
+              </Row>
+            </Structure>
+          </ValueList>
+          <Value>50</Value>
+        </MyObject>
+
+        <MyObject Name="TotalItemsLabel" Type="Label" Assembly="BaseControls" ChangeForm="False">
+          <Top>
+            <Object Name="PrevPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 3</Expression>
+              <Items>
+                <Item>
+                  <Object Name="ItemsPerPageComboBox">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Height>20</Height>
+          <Width>60</Width>
+          <TextAlign>MiddleLeft</TextAlign>
+          <Text>
+            <String>
+              <Format>из {0}</Format>
+              <Items>
+                <Item>
+                  <Switch>
+                    <Case>
+                      <When>
+                        <Condition Name="NumberOfClientsVariableEqual0Condition" />
+                      </When>
+                      <Then>0</Then>
+                    </Case>
+                    <Case>
+                      <Object Name="NumberOfClientsVariable" />
+                    </Case>
+                  </Switch>
+                </Item>
+              </Items>
+            </String>
+          </Text>
+        </MyObject>
+
       </MyObject>
 
       <MyObject Name="ClientAddButton" Type="Button" Assembly="BaseControls">

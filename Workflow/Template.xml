@@ -69,18 +69,22 @@
 
     <SqlQuery Name="ClientSelectSqlQuery">
       <Text>
-		SELECT
-		  client.client_id AS "ClientId",
-		  client.title AS "Name",
-		  city.title AS "CityTitle",
-		  client.phone AS "Phone",
-		  client.archive AS "Archive"
-		FROM
-		  template.client
-		  LEFT JOIN template.city USING(city_id)
-		WHERE
-		  {SearchKeywords} ISNULL OR client.title ilike '%' || {SearchKeywords} ||'%'
-		ORDER BY client.title;
+    SELECT
+      client.client_id AS "ClientId",
+      client.title AS "Name",
+      city.title AS "CityTitle",
+      client.phone AS "Phone",
+      client.archive AS "Archive",
+      COUNT(*) OVER() AS "Count"
+    FROM
+      template.client
+      LEFT JOIN template.city USING(city_id)
+    WHERE
+      ({Archive} ISNULL OR client.archive = {Archive}) AND
+      ({SearchKeywords} ISNULL OR client.title ilike '%' || {SearchKeywords} ||'%')
+    ORDER BY client.title
+    LIMIT {Limit}
+    OFFSET GREATEST(({Page} - 1) * {Limit}, 0);
       </Text>
     </SqlQuery>
 
@@ -119,9 +123,12 @@
 		  client.city_id AS "CityId",
 		  client.date_of_birth AS "DateOfBirth",
 		  client.email AS "Email",
-		  client.phone AS "Phone"
+		  client.phone AS "Phone",
+          F.guid as "PhotoGuid",
+          'guid://' || F.guid as "PhotoGuidPath"
 		FROM
 		  template.client
+          left join public.file f on client.photo_file_id = f.file_id
 		WHERE
 		  client.client_id = {ClientId};
       </Text>
@@ -134,14 +141,16 @@
 		  date_of_birth,
 		  title,
 		  email,
-		  phone
+		  phone,
+          photo_file_id
 		)
 		VALUES (
 		  {CityId},
 		  {DateOfBirth},
 		  {Name},
 		  {Email},
-		  {Phone}
+		  {Phone},
+          (Select f.file_id from public.file f where f.guid = {PhotoGuid})
 		)
         RETURNING client_id;
       </Text>
@@ -155,7 +164,8 @@
 		  date_of_birth = {DateOfBirth},
 		  title = {Name},
 		  email = {Email},
-		  phone = {Phone}
+		  phone = {Phone},
+            photo_file_id = (SELECT F.file_id FROM public.file F WHERE F.guid = {PhotoGuid})
 		WHERE
 		  client_id = {ClientId};
       </Text>
@@ -212,7 +222,8 @@
 		  O.client_id AS "ClientId",
 		  C.city_id AS "CityId",
 		  O.order_number AS "OrderNumber",
-		  O.order_date AS "OrderDate"
+		  O.order_date AS "OrderDate",
+          count(*) over() as "Count"
 		FROM
 		  template.order O
 		  LEFT JOIN template.client C USING(client_id)
@@ -222,7 +233,9 @@
 		  NOT O.deleted AND
 		  O.order_date BETWEEN convert_date_filter(_filter.start_date)
                            AND convert_date_filter(_filter.end_date)
-		ORDER BY O.order_number ASC;
+		ORDER BY O.order_number ASC
+            LIMIT {Limit}
+    OFFSET GREATEST(({Page} - 1) * {Limit}, 0);
       </Text>
     </SqlQuery>
 
@@ -1118,6 +1131,212 @@
         ORDER BY account.title;
       </Text>
     </SqlQuery>
+
+    <SqlQuery Name="CashSelectSqlQuery">
+      <Text>
+		select
+		  c.cash_id as "CashId",
+		  c.cash_date as "CashDate",
+		  a.title as "AccountTitle",
+		  o.title as "OperationTitle",
+		  or_payment.order_id as "OrderId",
+		  client.title as "ClientTitle",
+		  case when o.income then c.summ else null end as "Income",
+		  case when not o.income then c.summ else null end as "Expense"
+		from
+		  template.cash c
+		  left join template.account a using(account_id)
+		  left join template.operation o using (operation_id)
+		  left join template.order_payment or_payment using (cash_id)
+		  left join template.order using(order_id)
+		  left join template.client using(client_id)
+		where 
+		  not c.deleted and c.cash_date between {StartDate}::timestamp and {EndDate}::timestamp + interval'1d - 1s';
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="CashByIdSqlQuery">
+      <Text>
+        select
+          cash_date as "CashDate",
+          account_id as "AccountId",
+          operation_id as "OperationId",
+          summ as "Summ"
+        from template.cash
+        where cash_id = {CashId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="OperationShortSelectSqlQuery">
+      <Text>
+	    SELECT
+	      operation_id AS "OperationId",
+	      title AS "Title",
+	      archive AS "Archive"
+	    FROM template.operation O
+	    WHERE
+	      id_title IS NULL AND
+	      NOT EXISTS (SELECT * FROM template.operation O2 WHERE O2.operation_category_id = O.operation_id)
+	    ORDER BY title, operation_id ASC;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="CashInsertSqlQuery">
+      <Text>
+        Insert into template.cash(
+          cash_date,
+          account_id,
+          operation_id,
+          summ
+        )values(
+          {CashDate},
+          {AccountId},
+          {OperationId},
+          {Summ}
+        )
+        returning cash_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="CashUpdateSqlQuery">
+      <Text>
+        update template.cash
+        set
+          cash_date = {CashDate},
+          account_id = {AccountId},
+          operation_id = {OperationId},
+          summ = {Summ}
+        where
+          cash_id = {CashId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="CashDeleteSqlQuery">
+      <Text>
+        update template.cash
+        set
+          deleted = true,
+          date_deleted = now(),
+        where 
+          cash_id = {CashId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="ReportBudgetSqlQuery">
+      <Text>
+		    WITH RECURSIVE _operation_tree (operation_id, operation_category_id, title, income, archive, path, child_array) AS (
+		      SELECT -2::integer, NULL::bigint, 'ДОХОД', True, False, ARRAY[-2]::integer[], template.operation_get_child(null, true)
+		
+		      UNION
+		
+		      SELECT -1::integer, NULL::bigint, 'РАСХОД', False, False, ARRAY[-1]::integer[], template.operation_get_child(null, false)
+		
+		      UNION
+		
+		      SELECT
+		        O.operation_id,
+		        T.operation_id,
+		        O.title,
+		        O.income,
+		        O.archive,
+		        T.path || O.operation_id,
+		        template.operation_get_child(O.operation_id)
+		      FROM
+		        template.operation O, _operation_tree T
+		      WHERE
+		        COALESCE(O.operation_category_id, CASE WHEN O.income THEN -2 ELSE -1 END) = T.operation_id
+		    ), _cash AS (
+		      SELECT
+		        Oper.operation_id,
+		        Oper.income,
+		        SUM(summ) AS summ
+		      FROM
+		        template.cash C
+		        JOIN template.operation Oper USING(operation_id)
+		        LEFT JOIN template.order_payment OP USING(cash_id)
+		        LEFT JOIN template.order O USING(order_id)
+		      WHERE
+		        NOT C.deleted AND
+		        NOT COALESCE(O.deleted, false) AND
+		        C.cash_date BETWEEN {DateStart}::timestamp AND {DateFinish}::timestamp + interval '1d - 1s'
+		      GROUP BY Oper.operation_id
+		    ), report_tmp AS (
+		      SELECT
+		        O.operation_id,
+		        O.operation_category_id,
+		        O.title AS operation_title,
+		        O.income,
+		        O.archive,
+		        O.path,
+		        COALESCE(C.summ, 0) summ
+		      FROM
+		        _operation_tree O
+		        LEFT JOIN LATERAL
+		        (
+		          SELECT SUM(summ) AS summ
+		          FROM _cash C
+		          WHERE C.operation_id = ANY(O.child_array)
+		        ) AS C ON True
+		    )
+		    SELECT
+		      true AS "Expand",
+		      operation_id AS "OperationId",
+		      operation_category_id AS "OperationCategoryId",
+		      operation_title AS "OperationTitle",
+		      summ AS "Summ",
+		      operation_id IN (-1, -2) AS "Total",
+		      income AS "Income",
+		      false AS "Profit"
+		    FROM report_tmp
+		    WHERE
+		      NOT archive OR
+		      summ != 0
+		
+		    UNION ALL
+		
+		    SELECT
+		      true AS "Expand",
+		      -3 AS "OperationId",
+		      NULL AS "OperationCategoryId",
+		      'Прибыль' AS "OperationTitle",
+		      SUM(summ * CASE WHEN income THEN 1 ELSE -1 END) AS "Summ",
+		      false AS "Total",
+		      NULL AS "Income",
+		      true AS "Profit"
+		    FROM report_tmp
+		    WHERE operation_id IN (-1, -2);
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="BudgetReportDetailSelectSqlQuery">
+      <Text>
+    WITH operation_tmp AS (
+      SELECT template.operation_get_child({OperationId}, {Income}) AS operation_id_array
+    )
+    SELECT
+      C.cash_id AS "CashId",
+      O.order_id AS "OrderId",
+      C.cash_date AS "Date",
+      A.title AS "AccountTitle",
+      Oper.title AS "OperationTitle",
+      C.summ * (CASE WHEN NOT Oper.income AND {OperationId} IS NULL AND {Income} IS NULL THEN -1 ELSE 1 END)AS "Summ",
+      Cl.title AS "ClientTitle"
+    FROM
+      operation_tmp, template.cash C
+      JOIN template.account A USING(account_id)
+      JOIN template.operation Oper USING(operation_id)
+      LEFT JOIN template.order_payment OP USING(cash_id)
+      LEFT JOIN template.order O USING(order_id)
+      LEFT JOIN template.client Cl USING(client_id)
+    WHERE
+      NOT C.deleted AND
+      NOT COALESCE(O.deleted, false) AND
+      C.cash_date BETWEEN {DateStart}::timestamp AND {DateFinish}::timestamp + interval '1d - 1s' AND
+      C.operation_id = ANY(operation_id_array)
+    ORDER BY C.cash_date, C.cash_id;
+  </Text>
+    </SqlQuery>
+
   </SqlQueries>
 
   <Permissions>
@@ -1324,6 +1543,32 @@
         <SqlQuery Name="OrderPaymentDeleteSqlQuery" />
       </SqlQueries>
     </Permission>
+
+    <Permission Name="CashViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="CashSelectSqlQuery" />
+        <SqlQuery Name="CashByIdSqlQuery" />
+        <SqlQuery Name="AccountShortSelectSqlQuery" />
+        <SqlQuery Name="OperationShortSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="CashEditSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="CashInsertSqlQuery" />
+        <SqlQuery Name="CashUpdateSqlQuery" />
+        <SqlQuery Name="CashDeleteSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="ReportBudgetSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="ReportBudgetSqlQuery" />
+        <SqlQuery Name="BudgetReportDetailSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+
   </Permissions>
 
   <Roles>
@@ -1478,6 +1723,24 @@
         <Permission Name="OrderPaymentEditSqlQueryPermission" />
       </Permissions>
     </Role>
+
+    <Role Name="CashViewRole">
+      <Permissions>
+        <Permission Name="CashViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
+    <Role Name="CashEditRole">
+      <Permissions>
+        <Permission Name="CashViewSqlQueryPermission" />
+        <Permission Name="CashEditSqlQueryPermission" />
+      </Permissions>
+    </Role>
+
+    <Role Name="ReportBudgetRole">
+      <Permissions>
+        <Permission Name="ReportBudgetSqlQueryPermission" />
+      </Permissions>
+    </Role>
   </Roles>
 
   <Groups>
@@ -1495,6 +1758,8 @@
         <Role Name="OperationEditRole" />
         <Role Name="AccountEditRole" />
         <Role Name="OrderPaymentEditRole" />
+        <Role Name="CashEditRole" />
+        <Role Name="ReportBudgetRole" />
       </Roles>
     </Group>
 
