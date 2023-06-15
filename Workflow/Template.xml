@@ -165,7 +165,12 @@
 		  title = {Name},
 		  email = {Email},
 		  phone = {Phone},
-            photo_file_id = (SELECT F.file_id FROM public.file F WHERE F.guid = {PhotoGuid})
+		  photo_file_id = CASE
+		                    WHEN {EditPhoto} THEN (SELECT F.file_id FROM public.file F WHERE F.guid = {PhotoGuid})
+		                    WHEN {DeletePhoto} THEN NULL
+		                    ELSE photo_file_id
+		                  END
+		    
 		WHERE
 		  client_id = {ClientId};
       </Text>
@@ -1337,6 +1342,140 @@
   </Text>
     </SqlQuery>
 
+    <!--============================================================-->
+    <!--===Пользователи===-->
+    <!--============================================================-->
+    <SqlQuery Name="UserSelectSqlQuery">
+      <Text>  
+   SELECT
+      user_id AS "UserId",
+      user_full_name AS "Title",
+      G.title AS "GroupTitle",
+      UI.archive AS "Archive"
+    FROM
+      template.user_info UI
+      JOIN template.user_group UG USING(user_id)
+      JOIN template.group G USING (group_id)
+    WHERE person
+    ORDER BY user_full_name, user_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="UserByIdSelectSqlQuery">
+      <Text>
+    SELECT
+      user_name AS "UserName",
+      user_full_name AS "UserFullName",
+      group_id AS "GroupId",
+      user_id = {UserId} AS "IsCurrent"
+    FROM
+      template.user_info
+      JOIN template.user_group USING(user_id)
+    WHERE
+      user_id = {EditedUserId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="UserExistsSelectSqlQuery">
+      <Text>
+        select exists(
+          select user_name
+          from 
+            public.user pu
+            join template.user u on u.public_user_id = pu.user_id
+          where
+            user_name = {UserName} And
+            (U.user_id != {EditedUserId} or {EditedUserId} is NULL)
+        ) as "UserExists";
+        
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="UserInsertSqlQuery">
+      <Text>
+  INSERT INTO public.user(user_name, user_full_name, user_password)
+    VALUES({Name}, {FullName}, {Password});
+
+    INSERT INTO template.user(public_user_id)
+    VALUES(CURRVAL('public.user_id_seq'))
+    RETURNING user_id;
+
+    INSERT INTO template.user_group(user_id, group_id)
+    VALUES(CURRVAL('template.user_id_seq'), {GroupId});
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="UserUpdateSqlQuery">
+      <Text>
+  UPDATE public.user
+    SET
+      user_name = {Name},
+      user_full_name = {FullName}
+    FROM
+      template.user U
+    WHERE
+      "user".user_id = U.public_user_id AND
+      U.user_id = {EditedUserId};
+
+    UPDATE template.user_group
+    SET
+      group_id = {GroupId}
+    WHERE
+      user_id = {EditedUserId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="UserArchiveUpdateSqlQuery">
+      <Text>
+    UPDATE public.user
+    SET
+      enabled = NOT {Archive}
+    FROM
+      template.user U
+    WHERE
+      "user".user_id = U.public_user_id AND
+      U.user_id = {EditedUserId};
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="UserDeleteSqlQuery">
+      <Text>
+        SELECT public.user_try_delete({UserId});
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="GroupSelectSqlQuery">
+      <Text>
+   SELECT
+      group_id AS "GroupId",
+      title AS "Title",
+      description AS "Description",
+      archive AS "Archive",
+      name IS NOT NULL AS "System"
+    FROM
+      template.group
+    WHERE
+      name IS DISTINCT FROM 'GuestGroup'
+    ORDER BY title, group_id;
+      </Text>
+    </SqlQuery>
+
+    <SqlQuery Name="UserLoginSelectSqlQuery">
+      <Text>
+    SELECT
+      user_id AS "UserId",
+      user_name AS "UserName",
+      user_full_name AS "UserFullName"
+    FROM
+      template.user_info UI
+      JOIN template.user_group UG USING(user_id)
+      JOIN template.group G USING (group_id)
+    WHERE
+      UI.person AND NOT UI.archive AND
+      G.name IS DISTINCT FROM 'GuestGroup';
+      </Text>
+    </SqlQuery>
+
   </SqlQueries>
 
   <Permissions>
@@ -1568,6 +1707,36 @@
       </SqlQueries>
     </Permission>
 
+    <Permission Name="UserViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="UserSelectSqlQuery" />
+        <SqlQuery Name="UserByIdSelectSqlQuery" />
+        <SqlQuery Name="UserExistsSelectSqlQuery" />
+        <SqlQuery Name="UserLoginSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="UserEditSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="UserInsertSqlQuery" />
+        <SqlQuery Name="UserUpdateSqlQuery" />
+        <SqlQuery Name="UserArchiveUpdateSqlQuery" />
+        <SqlQuery Name="UserDeleteSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="GroupViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="GroupSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
+    <Permission Name="BaseViewSqlQueryPermission" Type="SqlQueryPermission">
+      <SqlQueries>
+        <SqlQuery Name="UserLoginSelectSqlQuery" />
+      </SqlQueries>
+    </Permission>
+
 
   </Permissions>
 
@@ -1741,10 +1910,33 @@
         <Permission Name="ReportBudgetSqlQueryPermission" />
       </Permissions>
     </Role>
+
+    <Role Name="UserViewRole">
+      <Permissions>
+        <Permission Name="UserViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
+    <Role Name="UserEditRole">
+      <Permissions>
+        <Permission Name="UserViewSqlQueryPermission" />
+        <Permission Name="UserEditSqlQueryPermission" />
+      </Permissions>
+    </Role>
+    <Role Name="GroupViewRole">
+      <Permissions>
+        <Permission Name="GroupViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
+
+    <Role Name="BaseRole">
+      <Permissions>
+        <Permission Name="BaseViewSqlQueryPermission" />
+      </Permissions>
+    </Role>
   </Roles>
 
   <Groups>
-    <Group Name="GuestGroup">
+    <Group Name="AdministratorGroup">
       <Roles>
         <Role Name="CityEditRole" />
         <Role Name="ClientEditRole" />
@@ -1760,6 +1952,38 @@
         <Role Name="OrderPaymentEditRole" />
         <Role Name="CashEditRole" />
         <Role Name="ReportBudgetRole" />
+        <Role Name="UserEditRole" />
+        <Role Name="GroupViewRole" />
+        <Role Name="BaseRole" />
+      </Roles>
+    </Group>
+
+    <Group Name="UserGroup">
+      <Roles>
+        <Role Name="CityEditRole" />
+        <Role Name="ClientEditRole" />
+        <Role Name="OrderEditRole" />
+        <Role Name="DeletedOrderViewRole" />
+        <Role Name="UnitEditRole" />
+        <Role Name="MaterialEditRole" />
+        <Role Name="MaterialCategoryEditRole" />
+        <Role Name="OrderPositionEditRole" />
+        <Role Name="SettingsEditRole" />
+        <Role Name="OperationEditRole" />
+        <Role Name="AccountEditRole" />
+        <Role Name="OrderPaymentEditRole" />
+        <Role Name="CashEditRole" />
+        <Role Name="ReportBudgetRole" />
+        <Role Name="UserEditRole" />
+        <Role Name="GroupViewRole" />
+        <Role Name="BaseRole" />
+      </Roles>
+    </Group>
+
+
+    <Group Name="GuestGroup">
+      <Roles>
+        <Role Name="BaseRole" />
       </Roles>
     </Group>
 

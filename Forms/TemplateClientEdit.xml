@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateClientEditForm" Width="500" Height="340" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateClientEditForm" Width="600" Height="340" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
@@ -129,6 +129,20 @@
             <Object Name="EmailTextBox" />
           </Value>
         </Parameter>
+        <Parameter NativeName="PhotoGuid">
+          <Value>
+            <Switch>
+              <Case>
+                <When>
+                  <Condition Name="PhotoPictureBoxIsNotEmptyCondition" />
+                </When>
+                <Then>
+                  <Command Name="PhotoPictureBoxUploadFileCommand" />
+                </Then>
+              </Case>
+            </Switch>
+          </Value>
+        </Parameter>
       </Parameters>
       <SqlQueries>
         <SqlQuery Name="ClientInsertSqlQuery" Type="Insert" />
@@ -177,6 +191,30 @@
         <Parameter NativeName="Email">
           <Value>
             <Object Name="EmailTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="EditPhoto">
+          <Value>
+            <Object Name="EditPhotoVariable" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="DeletePhoto">
+          <Value>
+            <Object Name="DeletePhotoVariable" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="PhotoGuid">
+          <Value>
+            <Switch>
+              <Case>
+                <When>
+                  <Condition Name="PhotoPictureBoxIsNotEmptyCondition" />
+                </When>
+                <Then>
+                  <Command Name="PhotoPictureBoxUploadFileCommand" />
+                </Then>
+              </Case>
+            </Switch>
           </Value>
         </Parameter>
       </Parameters>
@@ -336,12 +374,29 @@
       </ConditionExpression>
     </Condition>
 
-    <Condition Name="PhotoPictureBoxChangedCondition" Type="ChangedCondition" Assembly="Conditions">
+    <Condition Name="PhotoPictureBoxDoubleClickCondition" Type="DoubleClickCondition" Assembly="Conditions">
+      <Object Name="PhotoPictureBox" />
+    </Condition>
+
+    <Condition Name="CurrentImageSourceIsGuidStartsWithCondition" Type="StartsWithCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="PhotoPictureBox">
-            <Property Name="Image" />
+            <Property Name="CurrentImageSource" />
           </Object>
+        </Item>
+        <Item>guid://</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PhotoGuidIsNotNullCondition" Type="IsNotNullCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="PhotoGuid" />
+            </Fields>
+          </DataConnection>
         </Item>
       </Items>
     </Condition>
@@ -350,16 +405,16 @@
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
 
+    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Updated">True</Parameter>
+    </Command>
+
     <Command Name="FormChangedValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <Form>
         <Property Name="FormChanged">
           <Input />
         </Property>
       </Form>
-    </Command>
-
-    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Parameter Name="Updated">True</Parameter>
     </Command>
 
     <Command Name="ClientInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
@@ -384,10 +439,32 @@
       <Commands>
         <If>
           <When>
+            <And>
+              <Object Name="EditPhotoVariable" />
+              <Condition Name="PhotoPictureBoxIsNotEmptyCondition" />
+            </And>
+          </When>
+          <Then>
+            <Command Name="PhotoPictureBoxUploadFileCommand" />
+          </Then>
+        </If>
+        <If>
+          <When>
             <Parameter Name="Edit" />
           </When>
           <Then>
             <Command Name="ClientUpdateSaveCommand" />
+            <If>
+              <When>
+                <And>
+                  <Object Name="DeletePhotoVariable" />
+                  <Condition Name="PhotoGuidIsNotNullCondition" />
+                </And>
+              </When>
+              <Then>
+                <Command Name="PhotoDeleteFileCommand" />
+              </Then>
+            </If>
           </Then>
           <Else>
             <Command Name="ClientInsertSaveCommand" />
@@ -419,7 +496,7 @@
       <Filter>Photo Files|*.jpeg;*.jpg;*.png</Filter>
     </Command>
 
-    <Command Name="PhotoPictureBoxValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+    <Command Name="PhotoPictureBoxPhotoValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <Object Name="PhotoPictureBox">
         <Property Name="Image">
           <Command Name="PhotoFileDialogShowCommand" Parameter="FullPath" />
@@ -437,25 +514,55 @@
       </Object>
     </Command>
 
-    <Command Name="TestMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
-      <Caption>DebugInfo!</Caption>
-      <Text>
-        <String>
-          <Format>PhotoGuidPath: {0}</Format>
-          <Items>
-            <Item>
-              <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
-                <Fields>
-                  <Field Name="PhotoGuidPath" />
-                </Fields>
-              </DataConnection>
-            </Item>
-            <Item />
-          </Items>
-        </String>
-      </Text>
-      <Icon Type="Information" />
-      <Buttons Type="Ok" />
+    <Command Name="PhotoPictureBoxUploadFileCommand" Type="UploadFileCommand" Assembly="Commands">
+      <FileName>
+        <Object Name="PhotoPictureBox">
+          <Property Name="CurrentImageSource" />
+        </Object>
+      </FileName>
+    </Command>
+
+    <Command Name="PhotoApplicationRunCommand" Type="ApplicationRunCommand" Assembly="Commands">
+      <Condition Name="PhotoPictureBoxIsNotEmptyCondition" />
+      <Application>
+        <Object Name="PhotoPictureBox">
+          <Property Name="CurrentImageSource" />
+        </Object>
+      </Application>
+    </Command>
+
+    <Command Name="PhotoDownloadFileCommand" Type="DownloadFileCommand" Assembly="Commands">
+      <Condition Name="PhotoPictureBoxIsNotEmptyCondition" />
+      <FileGuid>
+        <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+          <Fields>
+            <Field Name="PhotoGuid" />
+          </Fields>
+        </DataConnection>
+      </FileGuid>
+      <AllowOverwrite>True</AllowOverwrite>
+    </Command>
+
+    <Command Name="PhotoDeleteFileCommand" Type="DeleteFileCommand" Assembly="Commands">
+      <FileGuid>
+        <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+          <Fields>
+            <Field Name="PhotoGuid" />
+          </Fields>
+        </DataConnection>
+      </FileGuid>
+    </Command>
+
+    <Command Name="EditPhotoVariableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="EditPhotoVariable">
+        <Input />
+      </Object>
+    </Command>
+
+    <Command Name="DeletePhotoVariableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="DeletePhotoVariable">
+        <Input />
+      </Object>
     </Command>
   </Commands>
 
@@ -551,8 +658,28 @@
         <Command Name="PhotoFileDialogShowCommand" Parameter="OK" />
       </ConditionExpression>
       <Commands>
-        <Command Name="PhotoPictureBoxValueSetCommand" />
+        <Command Name="EditPhotoVariableValueSetCommand">True</Command>
+        <Command Name="PhotoPictureBoxPhotoValueSetCommand" />
         <Command Name="FormChangedValueSetCommand">True</Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="PhotoPictureBoxDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <Condition Name="CurrentImageSourceIsGuidStartsWithCondition" />
+          </When>
+          <Then>
+            <Command Name="PhotoDownloadFileCommand" />
+          </Then>
+          <Else>
+            <Command Name="PhotoApplicationRunCommand" />
+          </Else>
+        </If>
       </Commands>
     </Execution>
   </Executions>
@@ -653,18 +780,8 @@
             <Property Name="Height" />
           </Object>
         </Height>
-        <Width>
-          <Calculate>
-            <Expression>Ceiling({0}/ 2)</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Width>
+        <Width>350</Width>
+        <TabIndex>2</TabIndex>
 
         <MyObject Name="NameLabel" Type="Label" Assembly="BaseControls">
           <Top>5</Top>
@@ -831,7 +948,7 @@
               <Expression>{0} - {1} - 10</Expression>
               <Items>
                 <Item>
-                  <Object Name="ContentPanel">
+                  <Object Name="MainPanel">
                     <Property Name="Width" />
                   </Object>
                 </Item>
@@ -1001,7 +1118,7 @@
               <Expression>{0} - {1} - 10</Expression>
               <Items>
                 <Item>
-                  <Object Name="ContentPanel">
+                  <Object Name="MainPanel">
                     <Property Name="Width" />
                   </Object>
                 </Item>
@@ -1076,16 +1193,30 @@
         </Height>
         <Width>
           <Calculate>
-            <Expression>Ceiling({0}/2)</Expression>
+            <Expression>{0} - {1}</Expression>
             <Items>
               <Item>
                 <Object Name="ContentPanel">
                   <Property Name="Width" />
                 </Object>
               </Item>
+              <Item>
+                <Object Name="MainPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
             </Items>
           </Calculate>
         </Width>
+        <TabIndex>3</TabIndex>
+
+        <MyObject Name="EditPhotoVariable" Type="Variable" Assembly="SimpleControls">
+          <Value>False</Value>
+        </MyObject>
+
+        <MyObject Name="DeletePhotoVariable" Type="Variable" Assembly="SimpleControls">
+          <Value>False</Value>
+        </MyObject>
 
         <MyObject Name="PhotoPictureBox" Type="PictureBox" Assembly="BaseControls">
           <Change User="True" Source="False" ValueSet="False" />
@@ -1224,12 +1355,12 @@
           <Enabled>
             <Condition Name="PhotoPictureBoxIsNotEmptyCondition" />
           </Enabled>
-          <Commands />
+          <Commands>
+            <Command Name="PhotoPictureBoxNullValueSetCommand" />
+            <Command Name="DeletePhotoVariableValueSetCommand">True</Command>
+          </Commands>
         </MyObject>
-
       </MyObject>
-
-
 
     </MyObject>
 
@@ -1305,7 +1436,6 @@
         <DisabledMode>True</DisabledMode>
         <DisabledText>Одно или несколько полей заполнены некорректно.</DisabledText>
         <Commands>
-          <Command Name="TestMessageBoxCommand" />
           <Command Name="SaveSequentialCommand" />
         </Commands>
       </MyObject>

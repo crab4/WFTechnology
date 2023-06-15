@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateStartForm" Width="900" Height="400" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateStartForm" Width="900" Height="400" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable" Opacity="0">
   <Parameters>
     <Parameter Name="Title">Заказы</Parameter>
   </Parameters>
@@ -38,6 +38,7 @@
 
   <DataConnections>
     <DataConnection Name="OrderPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <ManualLoad>True</ManualLoad>
       <SqlQuery Name="OrderSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
@@ -79,6 +80,7 @@
     </DataConnection>
 
     <DataConnection Name="ClientPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <ManualLoad>True</ManualLoad>
       <SqlQuery Name="ClientSimpleSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
@@ -89,6 +91,7 @@
     </DataConnection>
 
     <DataConnection Name="CityPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <ManualLoad>True</ManualLoad>
       <SqlQuery Name="CitySimpleSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
@@ -128,6 +131,8 @@
 
   <Conditions>
     <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
+
+    <Condition Name="FormLoadedCondition" Type="FormLoadedCondition" Assembly="Conditions" />
 
     <Condition Name="OrderSelectedCondition" Type="GreaterCondition" Assembly="Conditions">
       <Items>
@@ -294,6 +299,12 @@
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
 
+    <Command Name="FormShowValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Form>
+        <Property Name="Opacity">1</Property>
+      </Form>
+    </Command>
+
     <Command Name="OrderDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
       <DataConnections>
         <DataConnection Name="OrderPrimaryGetDataConnection" />
@@ -400,6 +411,14 @@
       </DataConnections>
     </Command>
 
+    <Command Name="AllPrimaryDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <Parallel>True</Parallel>
+      <DataConnections>
+        <DataConnection Name="CityPrimaryGetDataConnection" Packet="True" />
+        <DataConnection Name="ClientPrimaryGetDataConnection" Packet="True" />
+      </DataConnections>
+    </Command>
+
     <Command Name="ActiveFilterValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <Object Name="ActiveFilterVariable">
         <Input />
@@ -425,6 +444,21 @@
     <Command Name="SettingsFormShowCommand" Type="FormShowCommand" Assembly="Commands">
       <Xml Type="Path">TemplateSettings.xml</Xml>
       <Show Type="None" />
+    </Command>
+
+    <Command Name="UserListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateUserList.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="LoginFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateLogin.xml</Xml>
+      <Show Type="Modal" />
+    </Command>
+
+    <Command Name="ReloginFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateLogin.xml</Xml>
+      <Show Type="Modal" />
     </Command>
 
     <!-- Paggination -->
@@ -465,6 +499,47 @@
   </Commands>
 
   <Executions>
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="FormLoadedCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="LoginFormShowCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="LoginFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="FormShowValueSetCommand" />
+        <Command Name="AllPrimaryDataConnectionRefreshCommand" />
+        <Command Name="OrderDataConnectionRefreshCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Not>
+          <Command Name="LoginFormShowCommand" Parameter="Updated" />
+        </Not>
+      </ConditionExpression>
+      <Commands>
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="ReloginFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="AllPrimaryDataConnectionRefreshCommand" />
+        <Command Name="OrderDataConnectionRefreshCommand" />
+      </Commands>
+    </Execution>
+
     <Execution>
       <ConditionExpression>
         <Condition Name="FormClosingCondition" />
@@ -583,6 +658,13 @@
     <MenuItem Name="FileMenuItem" Type="MenuItem">
       <Title>Файл</Title>
       <Items>
+        <MenuItem Name="ReloginMenuItem" Type="MenuItem">
+          <Title>Войти как...</Title>
+          <Command Name="ReloginFormShowCommand" />
+        </MenuItem>
+
+        <MenuItem Name="ReloginFileRefreshSeparator" Type="Separator" />
+
         <MenuItem Name="FileRefreshMenuItem" Type="MenuItem">
           <Title>Обновить</Title>
           <Command Name="OrderDataConnectionRefreshCommand" />
@@ -669,6 +751,11 @@
     <MenuItem Name="AdminMenuItem" Type="MenuItem">
       <Title>Администрирование</Title>
       <Items>
+        <MenuItem Name="UserListMenuItem" Type="MenuItem">
+          <Title>Пользователи...</Title>
+          <Command Name="UserListFormShowCommand" />
+        </MenuItem>
+        <MenuItem Name="UserSettingsSeparator" Type="Separator" />
         <MenuItem Name="SettingsMenuItem" Type="MenuItem">
           <Title>Настройки...</Title>
           <Command Name="SettingsFormShowCommand" />
