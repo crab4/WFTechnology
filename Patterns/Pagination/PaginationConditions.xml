@@ -1,0 +1,78 @@
+<Condition Name="NumberOf{ItemName}sEqual0Condition" Type="EqualCondition" Assembly="Conditions">
+  <Items>
+    <Item>
+      <DataConnection SourceDataConnection="{ItemName}PrimaryGetDataConnection">
+        <Property Name="Count" />
+      </DataConnection>
+    </Item>
+    <Item>0</Item>
+  </Items>
+  <DataType Type="IntegerDataType" />
+</Condition>
+
+<Condition Name="NumberOf{ItemName}sVariableEqual0Condition" Type="EqualCondition" Assembly="Conditions">
+  <Items>
+    <Item>
+      <Object Name="NumberOf{ItemName}sVariable" />
+    </Item>
+    <Item>0</Item>
+  </Items>
+  <DataType Type="IntegerDataType" />
+</Condition>
+
+<Condition Name="{ItemName}ItemsPerPageComboBoxIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
+  <Items>
+    <Item>
+      <Object Name="{ItemName}ItemsPerPageComboBox" />
+    </Item>
+  </Items>
+</Condition>
+
+<Condition Name="{ItemName}CurrentPageVariableEqual1Condition" Type="EqualCondition" Assembly="Conditions">
+  <Items>
+    <Item>
+      <Object Name="{ItemName}CurrentPageVariable" />
+    </Item>
+    <Item>1</Item>
+  </Items>
+  <DataType Type="IntegerDataType" />
+</Condition>
+
+<Condition Name="{ItemName}CurrentPageVariableEqualMaxCondition" Type="EqualCondition" Assembly="Conditions">
+  <Items>
+    <Item>
+      <Object Name="{ItemName}CurrentPageVariable" />
+    </Item>
+    <Item>
+      <Object Name="{ItemName}TotalPagesVariable" />
+    </Item>
+  </Items>
+  <DataType Type="IntegerDataType" />
+</Condition>
+
+<Condition Name="{ItemName}CurrentPageTextBoxKeyEnterPressCondition" Type="KeyDownCondition" Assembly="Conditions">
+  <Object Name="{ItemName}CurrentPageTextBox" />
+  <Key Value="Enter" />
+</Condition>
+
+<Condition Name="{ItemName}CurrentPageTextBoxNotLessMinCondition" Type="NotLessCondition" Assembly="Conditions">
+  <Items>
+    <Item>
+      <Object Name="{ItemName}CurrentPageTextBox" />
+    </Item>
+    <Item>1</Item>
+  </Items>
+  <DataType Type="IntegerDataType" />
+</Condition>
+
+<Condition Name="{ItemName}CurrentPageTextBoxNotGreaterMaxCondition" Type="NotGreaterCondition" Assembly="Conditions">
+  <Items>
+    <Item>
+      <Object Name="{ItemName}CurrentPageTextBox" />
+    </Item>
+    <Item>
+      <Object Name="{ItemName}TotalPagesVariable" />
+    </Item>
+  </Items>
+  <DataType Type="IntegerDataType" />
+</Condition>

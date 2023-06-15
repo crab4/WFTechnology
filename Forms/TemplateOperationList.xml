@@ -1,10 +1,8 @@
 <?xml version="1.0"?>
-<Form Name="TemplateOperationListForm" Width="700" Height="600" FormBorderStyle="Sizable" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" BackColor="ThemeBackgroundColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True">
+<Form Name="TemplateOperationListForm" Width="600" Height="300" FormBorderStyle="Sizable" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" BackColor="ThemeBackgroundColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True">
   <Parameters>
-    <Parameter Name="Title">Назначение платежей</Parameter>
+    <Parameter Name="Title">Назначения платежей</Parameter>
     <Parameter Name="Updated">False</Parameter>
-    <Parameter Name="SelectionMode">False</Parameter>
-    <Parameter Name="Selected" />
   </Parameters>
 
   <Appearance>
@@ -21,13 +19,13 @@
       <Color Name="TableBackgroundColor" Red="200" Green="200" Blue="200" Alpha="255" />
       <Color Name="TableArchiveColor" Red="230" Green="230" Blue="230" Alpha="255" />
 
-      <Color Name="Yellow" Red="249" Green="242" Blue="165" Alpha="255" />
-      <Color Name="LightYellow" Red="255" Green="255" Blue="213" Alpha="255" />
-
       <!-- Стили кнопок -->
       <Color Name="ButtonFlatBorderColor" Red="225" Green="225" Blue="225" Alpha="255" />
       <Color Name="ButtonFlatMouseDownBackColor" Red="201" Green="219" Blue="241" Alpha="255" />
       <Color Name="ButtonFlatMouseOverBackColor" Red="228" Green="237" Blue="248" Alpha="255" />
+
+      <Color Name="Yellow" Red="249" Green="242" Blue="165" Alpha="255" />
+      <Color Name="LightYellow" Red="255" Green="255" Blue="213" Alpha="255" />
     </Colors>
 
     <FontStyles>
@@ -40,6 +38,16 @@
   </Appearance>
 
   <DataConnections>
+    <DataConnection Name="AccessPointDataConnection" Type="AccessPointDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <AccessPoints>
+        <AccessPoint Name="OperationAddAccessPoint" />
+        <AccessPoint Name="OperationEditAccessPoint" />
+        <AccessPoint Name="OperationDeleteAccessPoint" />
+        <AccessPoint Name="OperationArchiveAccessPoint" />
+      </AccessPoints>
+    </DataConnection>
+
     <DataConnection Name="OperationPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <SqlQuery Name="OperationSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
@@ -52,6 +60,37 @@
           <Field Name="Archive" />
         </Fields>
       </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="OperationTreeGetDataConnection" Type="TreeGetDataConnection" Assembly="DataConnections">
+      <SourceDataConnection Name="OperationPrimaryGetDataConnection">
+        <Fields>
+          <Field Name="OperationId" />
+          <Field Name="Title" />
+          <Field Name="Expand" />
+
+          <Field Name="OperationCategoryId" />
+          <Field Name="System" />
+          <Field Name="Archive" />
+        </Fields>
+      </SourceDataConnection>
+      <RelationshipDataConnection Name="OperationPrimaryGetDataConnection">
+        <Fields>
+          <Field Name="OperationId" />
+          <Field Name="OperationCategoryId" />
+        </Fields>
+      </RelationshipDataConnection>
+      <AdditionalColumns>
+        <HasChildrenColumn Name="HasChildren" />
+        <StateColumn Name="State" CloseState="+" OpenState="-" />
+      </AdditionalColumns>
+      <Filter FilterByNullValue="False">
+        <Field NativeName="Archive" />
+        <Value>
+          <Object Name="ArchiveFilterComboBox" />
+        </Value>
+        <DataType Type="BooleanDataType" />
+      </Filter>
     </DataConnection>
 
     <DataConnection Name="OperationArchiveSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
@@ -69,6 +108,19 @@
                 </Parameters>
               </Property>
             </Object>
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Archive">
+          <Value>
+            <Not>
+              <Object Name="OperationDatabaseTable">
+                <Property Name="SelectedRowCellValueByColumnName">
+                  <Parameters>
+                    <Parameter Name="ColumnName">Archive</Parameter>
+                  </Parameters>
+                </Property>
+              </Object>
+            </Not>
           </Value>
         </Parameter>
       </Parameters>
@@ -95,37 +147,6 @@
       <Refresh>
         <DataConnection Name="OperationPrimaryGetDataConnection" />
       </Refresh>
-    </DataConnection>
-
-
-    <DataConnection Name="OperationTreeGetDataConnection" Type="TreeGetDataConnection" Assembly="DataConnections">
-      <SourceDataConnection Name="OperationPrimaryGetDataConnection">
-        <Fields>
-          <Field Name="OperationId" />
-          <Field Name="Title" />
-          <Field Name="Expand" />
-          <Field Name="OperationCategoryId" />
-          <Field Name="System" />
-          <Field Name="Archive" />
-        </Fields>
-      </SourceDataConnection>
-      <RelationshipDataConnection Name="OperationPrimaryGetDataConnection">
-        <Fields>
-          <Field Name="OperationId" />
-          <Field Name="OperationCategoryId" />
-        </Fields>
-      </RelationshipDataConnection>
-      <AdditionalColumns>
-        <HasChildrenColumn Name="hasChildren" />
-        <StateColumn Name="State" CloseState="+" OpenState="-" />
-      </AdditionalColumns>
-      <Filter FilterByNullValue="False">
-        <Field NativeName="Archive" />
-        <Value>
-          <Object Name="ArchiveFilterComboBox" />
-        </Value>
-        <DataType Type="BooleanDataType" />
-      </Filter>
     </DataConnection>
   </DataConnections>
 
@@ -170,6 +191,37 @@
       <DataType Type="BooleanDataType" />
     </Condition>
 
+    <Condition Name="SelectedOperationIsNotSystemCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OperationDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">System</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Item>
+        <Item>False</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="SelectedOperationIdGreater0Condition" Type="GreaterCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OperationDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">OperationId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
     <Condition Name="OperationCellDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
       <Table Name="OperationDatabaseTable" />
     </Condition>
@@ -196,53 +248,7 @@
       <DataType Type="BooleanDataType" />
     </Condition>
 
-    <Condition Name="SelectedOperationIsNotSystemEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Object Name="OperationDatabaseTable">
-            <Property Name="SelectedRowCellValueByColumnName">
-              <Parameters>
-                <Parameter Name="ColumnName">System</Parameter>
-              </Parameters>
-            </Property>
-          </Object>
-        </Item>
-        <Item>False</Item>
-      </Items>
-    </Condition>
-
-    <Condition Name="SelectedOperationIdGreaterCondition" Type="GreaterCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Object Name="OperationDatabaseTable">
-            <Property Name="SelectedRowCellValueByColumnName">
-              <Parameters>
-                <Parameter Name="ColumnName">OperationId</Parameter>
-              </Parameters>
-            </Property>
-          </Object>
-        </Item>
-        <Item>0</Item>
-      </Items>
-      <DataType Type="IntegerDataType" />
-    </Condition>
-
-    <Condition Name="OperationCellClickCondition" Type="CellClickCondition" Assembly="Conditions">
-      <Table Name="OperationDatabaseTable" />
-    </Condition>
-
-    <Condition Name="OperationLastCellClickedColumnNameStateEqualCondition" Type="EqualCondition" Assembly="Conditions">
-      <Items>
-        <Item>
-          <Object Name="OperationDatabaseTable">
-            <Property Name="LastCellClickedColumnName" />
-          </Object>
-        </Item>
-        <Item>State</Item>
-      </Items>
-    </Condition>
-
-    <Condition Name="SelectedOperationHasChildEqualCondition" Type="EqualCondition" Assembly="Conditions">
+    <Condition Name="SelectedOperationHasChildrenCondition" Type="EqualCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="OperationDatabaseTable">
@@ -257,13 +263,28 @@
       </Items>
     </Condition>
 
+    <Condition Name="OperationLastCellClickedColumnNameEqualStateCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OperationDatabaseTable">
+            <Property Name="LastCellClickedColumnName" />
+          </Object>
+        </Item>
+        <Item>State</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="OperationCellClickCondition" Type="CellClickCondition" Assembly="Conditions">
+      <Table Name="OperationDatabaseTable" />
+    </Condition>
+
     <Condition Name="OperationToggleFoldingNodeNestedCondition" Type="NestedCondition" Assembly="Conditions">
       <AlwaysChange Value="True" />
       <ConditionExpression>
         <And>
+          <Condition Name="SelectedOperationHasChildrenCondition" />
+          <Condition Name="OperationLastCellClickedColumnNameEqualStateCondition" />
           <Condition Name="OperationCellClickCondition" />
-          <Condition Name="OperationLastCellClickedColumnNameStateEqualCondition" />
-          <Condition Name="SelectedOperationHasChildEqualCondition" />
         </And>
       </ConditionExpression>
     </Condition>
@@ -414,6 +435,12 @@
       </Object>
     </Command>
 
+    <Command Name="BlockRefreshVariableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="BlockRefreshVariable">
+        <Input />
+      </Object>
+    </Command>
+
     <Command Name="OperationToggleFoldingNodeValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <DataConnection Name="OperationTreeGetDataConnection">
         <Property Name="ToggleFoldingNode">
@@ -432,36 +459,21 @@
       </DataConnection>
     </Command>
 
-    <Command Name="BlockRefreshVariableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Object Name="BlockRefreshVariable">
-        <Input />
-      </Object>
-    </Command>
-
     <Command Name="OperationTreeDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
       <DataConnections>
-        <DataConnection Name="OperationTreeGetDataConnection" Packet="True" />
+        <DataConnection Name="OperationTreeGetDataConnection" />
       </DataConnections>
     </Command>
 
-    <Command Name="SelectedValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Parameter Name="Selected">
-        <Object Name="OperationDatabaseTable">
-          <Property Name="SelectedRowCellValueByColumnName">
-            <Parameters>
-              <Parameter Name="ColumnName">OperationId</Parameter>
-            </Parameters>
-          </Property>
-        </Object>
-      </Parameter>
-    </Command>
-
-    <Command Name="SelectOperationSequentialCommand" Type="SequentialCommand" Assembly="Commands">
-      <Commands>
-        <Command Name="SelectedValueSetCommand" />
-        <Command Name="UpdatedTrueValueSetCommand" />
-        <Command Name="FormCloseCommand" />
-      </Commands>
+    <Command Name="WarningMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>
+        <Input Name="Caption" />
+      </Caption>
+      <Text>
+        <Input Name="Text" />
+      </Text>
+      <Icon Type="Warning" />
+      <Buttons Type="Ok" />
     </Command>
   </Commands>
 
@@ -548,6 +560,7 @@
         </If>
       </Commands>
     </Execution>
+
     <Execution>
       <ConditionExpression>
         <Condition Name="OperationCellDoubleClickCondition" />
@@ -555,22 +568,26 @@
       <Commands>
         <If>
           <When>
-            <Condition Name="SelectedOperationIsArchiveCondition" />
+            <Not>
+              <AccessPoint Name="OperationEditAccessPoint" />
+            </Not>
           </When>
           <Then>
-            <Command Name="EditingArchiveOperationMessageBoxCommand" />
+            <Command Name="WarningMessageBoxCommand">
+              <Input Name="Caption">Редактирование</Input>
+              <Input Name="Text">У вас недостаточно прав для выполнения команды.</Input>
+            </Command>
           </Then>
+          <ElseIf>
+            <When>
+              <Condition Name="SelectedOperationIsArchiveCondition" />
+            </When>
+            <Then>
+              <Command Name="EditingArchiveOperationMessageBoxCommand" />
+            </Then>
+          </ElseIf>
           <Else>
-            <If>
-              <When>
-                <Not>
-                  <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
-                </Not>
-              </When>
-              <Then>
-                <Command Name="OperationEditFormShowCommand" />
-              </Then>
-            </If>
+            <Command Name="OperationEditFormShowCommand" />
           </Else>
         </If>
       </Commands>
@@ -606,10 +623,9 @@
   </Executions>
 
   <MyObjects>
-    <MyObject Name="BlockRefreshVariable" Type="Variable" Assembly="SimpleControls">
+    <MyObject Name="BlockRefreshVariable" Type="Variable" Assembly="SimpleControls" ChangeForm="False">
       <Value>True</Value>
     </MyObject>
-
 
     <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
       <Top>0</Top>
@@ -743,7 +759,7 @@
         <Left>10</Left>
         <Height>
           <Calculate>
-            <Expression>{0} - {1}*2 - {2}</Expression>
+            <Expression>{0} - {1}*2</Expression>
             <Items>
               <Item>
                 <Object Name="ContentPanel">
@@ -754,17 +770,6 @@
                 <Object Name="OperationDatabaseTable">
                   <Property Name="Top" />
                 </Object>
-              </Item>
-              <Item>
-                <Switch>
-                  <Case>
-                    <When>
-                      <Parameter Name="SelectionMode" />
-                    </When>
-                    <Then>50</Then>
-                  </Case>
-                  <Case>0</Case>
-                </Switch>
               </Item>
             </Items>
           </Calculate>
@@ -816,15 +821,16 @@
           </Column>
           <Column Name="Title" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
             <Title>Наименование</Title>
-            <Width>100</Width>
+            <MinimumWidth>100</MinimumWidth>
             <AutoSizeMode Value="Fill" />
             <AllowSort Value="False" />
           </Column>
           <Column Name="System" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
             <Visible>False</Visible>
           </Column>
-          <Column Name="Archive" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+          <Column Name="Archive" Type="DatabaseTableColumnCheckBox" Assembly="DatabaseTableColumnControls">
             <Visible>False</Visible>
+            <DataType Type="BooleanDataType" />
           </Column>
           <Column Name="Expand" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
             <Visible>False</Visible>
@@ -834,7 +840,16 @@
           </Column>
         </Columns>
         <Formatting>
-
+          <BackColor Name="TableArchiveColor">
+            <Expression>Archive AND {0}</Expression>
+            <Items>
+              <Item>
+                <Not>
+                  <Object Name="ArchiveFilterComboBox" />
+                </Not>
+              </Item>
+            </Items>
+          </BackColor>
           <BackColor Name="LightYellow">
             <Expression>HasChildren AND OperationId <![CDATA[>]]> 0</Expression>
           </BackColor>
@@ -846,64 +861,6 @@
           </FontStyle>
         </Formatting>
       </MyObject>
-
-      <MyObject Name="SelectionButton" Type="Button" Assembly="BaseControls">
-        <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="OperationDatabaseTable">
-                  <Property Name="Bottom" />
-                </Object>
-              </Item>
-              <Item />
-            </Items>
-          </Calculate>
-        </Top>
-        <Right>
-          <Calculate>
-            <Expression>{0} - 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Right" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Right>
-        <Height>30</Height>
-        <Width>200</Width>
-        <TextAlign>MiddleCenter</TextAlign>
-        <FontStyle>ButtonFontStyle</FontStyle>
-        <ImageAlign>MiddleLeft</ImageAlign>
-        <Image>Images\24x24\check.png</Image>
-        <Text>Выбрать</Text>
-        <FlatStyle>Flat</FlatStyle>
-        <FlatBorderSize>1</FlatBorderSize>
-        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
-        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Visible>
-          <Parameter Name="SelectionMode" />
-        </Visible>
-        <Enabled>
-          <And>
-            <Condition Name="OperationSelectedCondition" />
-            <Not>
-              <Condition Name="SelectedOperationHasChildEqualCondition" />
-            </Not>
-            <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
-          </And>
-        </Enabled>
-        <Commands>
-          <Command Name="SelectOperationSequentialCommand" />
-        </Commands>
-        <DisabledMode>True</DisabledMode>
-        <DisabledText>Чтобы продолжить, необходимо выбрать запись в таблице без детей и не системную.</DisabledText>
-      </MyObject>
-
 
       <MyObject Name="OperationAddButton" Type="Button" Assembly="BaseControls">
         <Top>
@@ -935,21 +892,51 @@
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
-          <Or>
-            <Not>
-              <Condition Name="OperationSelectedCondition" />
-            </Not>
-            <And>
-              <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
+          <And>
+            <AccessPoint Name="OperationAddAccessPoint" />
+            <Or>
               <Not>
-                <Condition Name="SelectedOperationIsArchiveCondition" />
+                <Condition Name="OperationSelectedCondition" />
               </Not>
-            </And>
-          </Or>
+              <And>
+                <Condition Name="SelectedOperationIsNotSystemCondition" />
+                <Not>
+                  <Condition Name="SelectedOperationIsArchiveCondition" />
+                </Not>
+              </And>
+            </Or>
+          </And>
         </Enabled>
         <Commands>
           <Command Name="OperationAddFormShowCommand" />
         </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="OperationAddAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="SelectedOperationIsNotSystemCondition" />
+                </Not>
+              </When>
+              <Then>Выбранное назначение платежа является системным и не может быть выбрано в качества категории при добавлении назначения.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="SelectedOperationIsArchiveCondition" />
+              </When>
+              <Then>Выбранное назначение платежа является архивным и не может быть выбрано в качества категории при добавлении назначения.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
       </MyObject>
 
       <MyObject Name="OperationEditButton" Type="Button" Assembly="BaseControls">
@@ -991,11 +978,12 @@
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
           <And>
+            <AccessPoint Name="OperationEditAccessPoint" />
             <Condition Name="OperationSelectedCondition" />
             <Not>
               <Condition Name="SelectedOperationIsArchiveCondition" />
             </Not>
-            <Condition Name="SelectedOperationIdGreaterCondition" />
+            <Condition Name="SelectedOperationIdGreater0Condition" />
           </And>
         </Enabled>
         <Commands>
@@ -1004,6 +992,14 @@
         <DisabledMode>True</DisabledMode>
         <DisabledText>
           <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="OperationEditAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
             <Case>
               <When>
                 <Not>
@@ -1021,7 +1017,7 @@
             <Case>
               <When>
                 <Not>
-                  <Condition Name="SelectedOperationIdGreaterCondition" />
+                  <Condition Name="SelectedOperationIdGreater0Condition" />
                 </Not>
               </When>
               <Then>Выбранная запись является служебной и не может быть отредактирована.</Then>
@@ -1069,14 +1065,15 @@
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
           <And>
+            <AccessPoint Name="OperationDeleteAccessPoint" />
             <Condition Name="OperationSelectedCondition" />
             <Not>
               <Condition Name="SelectedOperationIsArchiveCondition" />
             </Not>
-            <Condition Name="SelectedOperationIdGreaterCondition" />
-            <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
+            <Condition Name="SelectedOperationIdGreater0Condition" />
+            <Condition Name="SelectedOperationIsNotSystemCondition" />
             <Not>
-              <Condition Name="SelectedOperationHasChildEqualCondition" />
+              <Condition Name="SelectedOperationHasChildrenCondition" />
             </Not>
           </And>
         </Enabled>
@@ -1086,6 +1083,14 @@
         <DisabledMode>True</DisabledMode>
         <DisabledText>
           <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="OperationDeleteAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
             <Case>
               <When>
                 <Not>
@@ -1103,7 +1108,7 @@
             <Case>
               <When>
                 <Not>
-                  <Condition Name="SelectedOperationIdGreaterCondition" />
+                  <Condition Name="SelectedOperationIdGreater0Condition" />
                 </Not>
               </When>
               <Then>Выбранная запись является служебной и не может быть удалена.</Then>
@@ -1111,14 +1116,14 @@
             <Case>
               <When>
                 <Not>
-                  <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
+                  <Condition Name="SelectedOperationIsNotSystemCondition" />
                 </Not>
               </When>
               <Then>Выбранное назначение платежа является системным и не может быть удалено.</Then>
             </Case>
             <Case>
               <When>
-                <Condition Name="SelectedOperationHasChildEqualCondition" />
+                <Condition Name="SelectedOperationHasChildrenCondition" />
               </When>
               <Then>Выбранное назначение платежа содержит дочерние элементы и не может быть удалено.</Then>
             </Case>
@@ -1188,9 +1193,10 @@
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
           <And>
+            <AccessPoint Name="OperationArchiveAccessPoint" />
             <Condition Name="OperationSelectedCondition" />
-            <Condition Name="SelectedOperationIdGreaterCondition" />
-            <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
+            <Condition Name="SelectedOperationIdGreater0Condition" />
+            <Condition Name="SelectedOperationIsNotSystemCondition" />
           </And>
         </Enabled>
         <Commands>
@@ -1199,6 +1205,14 @@
         <DisabledMode>True</DisabledMode>
         <DisabledText>
           <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="OperationArchiveAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
             <Case>
               <When>
                 <Not>
@@ -1220,7 +1234,7 @@
             <Case>
               <When>
                 <Not>
-                  <Condition Name="SelectedOperationIdGreaterCondition" />
+                  <Condition Name="SelectedOperationIdGreater0Condition" />
                 </Not>
               </When>
               <Then>Выбранная запись является служебной и не может быть перенесена в архив.</Then>
@@ -1228,7 +1242,7 @@
             <Case>
               <When>
                 <Not>
-                  <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
+                  <Condition Name="SelectedOperationIsNotSystemCondition" />
                 </Not>
               </When>
               <Then>Выбранное назначение платежа является системным и не может быть перенесено в архив.</Then>

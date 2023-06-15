@@ -37,6 +37,20 @@
   </Appearance>
 
   <DataConnections>
+    <DataConnection Name="AccessPointDataConnection" Type="AccessPointDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <AccessPoints>
+        <AccessPoint Name="MaterialCategoryAddAccessPoint" />
+        <AccessPoint Name="MaterialCategoryEditAccessPoint" />
+        <AccessPoint Name="MaterialCategoryDeleteAccessPoint" />
+        <AccessPoint Name="MaterialCategoryArchiveAccessPoint" />
+        <AccessPoint Name="MaterialAddAccessPoint" />
+        <AccessPoint Name="MaterialEditAccessPoint" />
+        <AccessPoint Name="MaterialDeleteAccessPoint" />
+        <AccessPoint Name="MaterialArchiveAccessPoint" />
+      </AccessPoints>
+    </DataConnection>
+
     <DataConnection Name="UnitPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <SqlQuery Name="UnitSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
@@ -570,6 +584,17 @@
       </Commands>
     </Command>
 
+    <Command Name="WarningMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>
+        <Input Name="Caption" />
+      </Caption>
+      <Text>
+        <Input Name="Text" />
+      </Text>
+      <Icon Type="Warning" />
+      <Buttons Type="Ok" />
+    </Command>
+
   </Commands>
 
   <Executions>
@@ -594,6 +619,19 @@
           <Then>
             <Command Name="SelectMaterialSequentialCommand" />
           </Then>
+          <ElseIf>
+            <When>
+              <Not>
+                <AccessPoint Name="MaterialEditAccessPoint" />
+              </Not>
+            </When>
+            <Then>
+              <Command Name="WarningMessageBoxCommand">
+                <Input Name="Caption">Редактирование</Input>
+                <Input Name="Text">У вас недостаточно прав для выполнения команды.</Input>
+              </Command>
+            </Then>
+          </ElseIf>
           <ElseIf>
             <When>
               <Condition Name="SelectedMaterialIsArchiveCondition" />
@@ -671,11 +709,24 @@
       <Commands>
         <If>
           <When>
-            <Condition Name="SelectedMaterialCategoryIsArchiveCondition" />
+            <Not>
+              <AccessPoint Name="MaterialCategoryEditAccessPoint" />
+            </Not>
           </When>
           <Then>
-            <Command Name="EditingArchiveMaterialMessageBoxCommand" />
+            <Command Name="WarningMessageBoxCommand">
+              <Input Name="Caption">Редактирование</Input>
+              <Input Name="Text">У вас недостаточно прав для выполнения команды.</Input>
+            </Command>
           </Then>
+          <ElseIf>
+            <When>
+              <Condition Name="SelectedMaterialCategoryIsArchiveCondition" />
+            </When>
+            <Then>
+              <Command Name="EditingArchiveMaterialMessageBoxCommand" />
+            </Then>
+          </ElseIf>
           <Else>
             <Command Name="MaterialCategoryEditFormShowCommand" />
           </Else>
@@ -1034,6 +1085,11 @@
           <Commands>
             <Command Name="MaterialCategoryAddFormShowCommand" />
           </Commands>
+          <Enabled>
+            <AccessPoint Name="MaterialCategoryAddAccessPoint" />
+          </Enabled>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>У вас недостаточно прав для выполнения команды.</DisabledText>
         </MyObject>
 
         <MyObject Name="MaterialCategoryEditButton" Type="Button" Assembly="BaseControls">
@@ -1075,6 +1131,7 @@
           <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
           <Enabled>
             <And>
+              <AccessPoint Name="MaterialCategoryEditAccessPoint" />
               <Condition Name="MaterialCategorySelectedCondition" />
               <Not>
                 <Condition Name="SelectedMaterialCategoryIsArchiveCondition" />
@@ -1087,6 +1144,14 @@
           <DisabledMode>True</DisabledMode>
           <DisabledText>
             <Switch>
+              <Case>
+                <When>
+                  <Not>
+                    <AccessPoint Name="MaterialCategoryEditAccessPoint" />
+                  </Not>
+                </When>
+                <Then>У вас недостаточно прав для выполнения команды.</Then>
+              </Case>
               <Case>
                 <When>
                   <Not>
@@ -1144,6 +1209,7 @@
           <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
           <Enabled>
             <And>
+              <AccessPoint Name="MaterialCategoryDeleteAccessPoint" />
               <Condition Name="MaterialCategorySelectedCondition" />
               <Not>
                 <Condition Name="SelectedMaterialCategoryIsArchiveCondition" />
@@ -1156,6 +1222,14 @@
           <DisabledMode>True</DisabledMode>
           <DisabledText>
             <Switch>
+              <Case>
+                <When>
+                  <Not>
+                    <AccessPoint Name="MaterialCategoryDeleteAccessPoint" />
+                  </Not>
+                </When>
+                <Then>У вас недостаточно прав для выполнения команды.</Then>
+              </Case>
               <Case>
                 <When>
                   <Not>
@@ -1207,7 +1281,10 @@
             <Switch>
               <Case>
                 <When>
-                  <Condition Name="SelectedMaterialCategoryIsArchiveCondition" />
+                  <Or>
+                    <Condition Name="SelectedMaterialCategoryIsArchiveCondition" />
+                    <Object Name="ArchiveFilterComboBox" />
+                  </Or>
                 </When>
                 <Then>Восстановить архива</Then>
               </Case>
@@ -1218,7 +1295,10 @@
             <Switch>
               <Case>
                 <When>
-                  <Condition Name="SelectedMaterialCategoryIsArchiveCondition" />
+                  <Or>
+                    <Condition Name="SelectedMaterialCategoryIsArchiveCondition" />
+                    <Object Name="ArchiveFilterComboBox" />
+                  </Or>
                 </When>
                 <Then>Images\24x24\unarchive.png</Then>
               </Case>
@@ -1235,10 +1315,42 @@
             <Command Name="MaterialCategoryArchiveMessageBoxCommand" />
           </Commands>
           <Enabled>
-            <Condition Name="MaterialCategorySelectedCondition" />
+            <And>
+              <AccessPoint Name="MaterialCategoryArchiveAccessPoint" />
+              <Condition Name="MaterialCategorySelectedCondition" />
+            </And>
           </Enabled>
           <DisabledMode>True</DisabledMode>
-          <DisabledText>Выберите запись для переноса в архив.</DisabledText>
+          <DisabledText>
+            <Switch>
+              <Case>
+                <When>
+                  <Not>
+                    <AccessPoint Name="MaterialCategoryArchiveAccessPoint" />
+                  </Not>
+                </When>
+                <Then>У вас недостаточно прав для выполнения команды.</Then>
+              </Case>
+              <Case>
+                <When>
+                  <Not>
+                    <Condition Name="MaterialCategorySelectedCondition" />
+                  </Not>
+                </When>
+                <Then>
+                  <Switch>
+                    <Case>
+                      <When>
+                        <Object Name="ArchiveFilterComboBox" />
+                      </When>
+                      <Then>Для восстановления из архива выберите запись.</Then>
+                    </Case>
+                    <Case>Для переноса в архив выберите запись.</Case>
+                  </Switch>
+                </Then>
+              </Case>
+            </Switch>
+          </DisabledText>
         </MyObject>
 
       </MyObject>
@@ -1470,6 +1582,11 @@
           <Commands>
             <Command Name="MaterialAddFormShowCommand" />
           </Commands>
+          <Enabled>
+            <AccessPoint Name="MaterialAddAccessPoint" />
+          </Enabled>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>У вас недостаточно прав для выполнения команды.</DisabledText>
         </MyObject>
 
         <MyObject Name="MaterialEditButton" Type="Button" Assembly="BaseControls">
@@ -1511,6 +1628,7 @@
           <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
           <Enabled>
             <And>
+              <AccessPoint Name="MaterialEditAccessPoint" />
               <Condition Name="MaterialSelectedCondition" />
               <Not>
                 <Condition Name="SelectedMaterialIsArchiveCondition" />
@@ -1523,6 +1641,14 @@
           <DisabledMode>True</DisabledMode>
           <DisabledText>
             <Switch>
+              <Case>
+                <When>
+                  <Not>
+                    <AccessPoint Name="MaterialEditAccessPoint" />
+                  </Not>
+                </When>
+                <Then>У вас недостаточно прав для выполнения команды.</Then>
+              </Case>
               <Case>
                 <When>
                   <Not>
@@ -1580,6 +1706,7 @@
           <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
           <Enabled>
             <And>
+              <AccessPoint Name="MaterialDeleteAccessPoint" />
               <Condition Name="MaterialSelectedCondition" />
               <Not>
                 <Condition Name="SelectedMaterialIsArchiveCondition" />
@@ -1592,6 +1719,14 @@
           <DisabledMode>True</DisabledMode>
           <DisabledText>
             <Switch>
+              <Case>
+                <When>
+                  <Not>
+                    <AccessPoint Name="MaterialDeleteAccessPoint" />
+                  </Not>
+                </When>
+                <Then>У вас недостаточно прав для выполнения команды.</Then>
+              </Case>
               <Case>
                 <When>
                   <Not>
@@ -1643,7 +1778,10 @@
             <Switch>
               <Case>
                 <When>
-                  <Condition Name="SelectedMaterialIsArchiveCondition" />
+                  <Or>
+                    <Condition Name="SelectedMaterialIsArchiveCondition" />
+                    <Object Name="ArchiveFilterComboBox" />
+                  </Or>
                 </When>
                 <Then>Восстановить архива</Then>
               </Case>
@@ -1654,7 +1792,10 @@
             <Switch>
               <Case>
                 <When>
-                  <Condition Name="SelectedMaterialIsArchiveCondition" />
+                  <Or>
+                    <Condition Name="SelectedMaterialIsArchiveCondition" />
+                    <Object Name="ArchiveFilterComboBox" />
+                  </Or>
                 </When>
                 <Then>Images\24x24\unarchive.png</Then>
               </Case>
@@ -1671,10 +1812,42 @@
             <Command Name="MaterialArchiveMessageBoxCommand" />
           </Commands>
           <Enabled>
-            <Condition Name="MaterialSelectedCondition" />
+            <And>
+              <AccessPoint Name="MaterialArchiveAccessPoint" />
+              <Condition Name="MaterialSelectedCondition" />
+            </And>
           </Enabled>
           <DisabledMode>True</DisabledMode>
-          <DisabledText>Выберите запись для переноса в архив.</DisabledText>
+          <DisabledText>
+            <Switch>
+              <Case>
+                <When>
+                  <Not>
+                    <AccessPoint Name="MaterialArchiveAccessPoint" />
+                  </Not>
+                </When>
+                <Then>У вас недостаточно прав для выполнения команды.</Then>
+              </Case>
+              <Case>
+                <When>
+                  <Not>
+                    <Condition Name="MaterialSelectedCondition" />
+                  </Not>
+                </When>
+                <Then>
+                  <Switch>
+                    <Case>
+                      <When>
+                        <Object Name="ArchiveFilterComboBox" />
+                      </When>
+                      <Then>Для восстановления из архива выберите запись.</Then>
+                    </Case>
+                    <Case>Для переноса в архив выберите запись.</Case>
+                  </Switch>
+                </Then>
+              </Case>
+            </Switch>
+          </DisabledText>
         </MyObject>
 
       </MyObject>

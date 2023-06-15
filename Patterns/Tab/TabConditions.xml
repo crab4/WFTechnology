@@ -1,0 +1,17 @@
+<Condition Name="{Tab1Name}TabActiveEqualCondition" Type="EqualCondition" Assembly="Conditions">
+  <Items>
+    <Item>
+      <Object Name="ActiveTabVariable" />
+    </Item>
+    <Item>{Tab1Name}</Item>
+  </Items>
+</Condition>
+
+<Condition Name="{Tab2Name}TabActiveEqualCondition" Type="EqualCondition" Assembly="Conditions">
+  <Items>
+    <Item>
+      <Object Name="ActiveTabVariable" />
+    </Item>
+    <Item>{Tab2Name}</Item>
+  </Items>
+</Condition>

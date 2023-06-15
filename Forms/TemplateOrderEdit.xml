@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateOrderEditForm" Width="1000" Height="550" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateOrderEditForm" Width="1000" Height="600" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
@@ -46,6 +46,15 @@
   </Appearance>
 
   <DataConnections>
+    <DataConnection Name="AccessPointDataConnection" Type="AccessPointDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <AccessPoints>
+        <AccessPoint Name="ClientViewAccessPoint" />
+        <AccessPoint Name="ClientAddAccessPoint" />
+        <AccessPoint Name="ClientEditAccessPoint" />
+      </AccessPoints>
+    </DataConnection>
+
     <DataConnection Name="SettingsPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <SqlQuery Name="SettingsSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
@@ -56,6 +65,16 @@
           <Field Name="Email" />
           <Field Name="EmailPassword" />
           <Field Name="SmtpSettingsAreCorrect" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="AccountPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="AccountSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="AccountId" />
+          <Field Name="Title" />
         </Fields>
       </SqlQuery>
     </DataConnection>
@@ -167,6 +186,9 @@
     </DataConnection>
 
     <DataConnection Name="OrderPositionPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <DependOn>
+        <DataConnection Name="MaterialPrimaryGetDataConnection" />
+      </DependOn>
       <SqlQuery Name="OrderPositionByOrderIdSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
@@ -208,22 +230,8 @@
       </Refresh>
     </DataConnection>
 
-    <DataConnection Name="EmptyOrderDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
-      <Workflow Name="Template" />
-      <Parameters>
-        <Parameter NativeName="OrderId">
-          <Value>
-            <Parameter Name="OrderId" />
-          </Value>
-        </Parameter>
-      </Parameters>
-      <SqlQueries>
-        <SqlQuery Name="EmptyOrderDeleteSqlQuery" Type="Delete" />
-      </SqlQueries>
-    </DataConnection>
-
     <DataConnection Name="OrderPaymentPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
-      <SqlQuery Name="OrderPaymentSelectSqlQuery" Type="Select">
+      <SqlQuery Name="OrderPaymentByOrderIdSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
           <Field Name="OrderPaymentId" />
@@ -265,14 +273,18 @@
       </Refresh>
     </DataConnection>
 
-    <DataConnection Name="AccountShortPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
-      <SqlQuery Name="AccountShortWithArchiveSelectSqlQuery" Type="Select">
-        <Workflow Name="Template" />
-        <Fields>
-          <Field Name="AccountId" />
-          <Field Name="Title" />
-        </Fields>
-      </SqlQuery>
+    <DataConnection Name="EmptyOrderDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="OrderId">
+          <Value>
+            <Parameter Name="OrderId" />
+          </Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="EmptyOrderDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
     </DataConnection>
   </DataConnections>
 
@@ -404,7 +416,6 @@
         </Item>
         <Item>0</Item>
       </Items>
-
       <DataType Type="IntegerDataType" />
     </Condition>
 
@@ -451,7 +462,7 @@
     </Command>
 
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
-      <Commands>
+      <Commands Lock="True">
         <Command Name="OrderUpdateSaveCommand" />
         <Command Name="UpdatedTrueValueSetCommand" />
         <Command Name="EditTrueValueSetCommand" />
@@ -566,6 +577,68 @@
     <Command Name="OrderPositionDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
       <DataConnections>
         <DataConnection Name="OrderPositionDeleteDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="OrderPaymentDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OrderPaymentPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="OrderPaymentAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateOrderPaymentEdit.xml</Xml>
+      <Show Type="Modal" />
+      <Parameters>
+        <Parameter Name="OrderId">
+          <Parameter Name="OrderId" />
+        </Parameter>
+        <Parameter Name="TotalDebt">
+          <Object Name="TotalDebtVariable" />
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="OrderPaymentEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateOrderPaymentEdit.xml</Xml>
+      <Show Type="Modal" />
+      <Parameters>
+        <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="OrderPaymentId">
+          <Object Name="OrderPaymentDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">OrderPaymentId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="OrderPaymentSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="OrderPaymentDatabaseTable">
+        <Property Name="SelectRowByFieldValue">
+          <Parameters>
+            <Parameter Name="ColumnName">OrderPaymentId</Parameter>
+            <Parameter Name="Value">
+              <Input />
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+
+    <Command Name="OrderPaymentDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Вы действительно хотите удалить выбранную запись?</Text>
+      <Buttons Type="YesNo" />
+      <Icon Type="Question" />
+    </Command>
+
+    <Command Name="OrderPaymentDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OrderPaymentDeleteDataConnection" />
       </DataConnections>
     </Command>
 
@@ -811,69 +884,6 @@
       </Text>
       <Icon Type="Information" />
       <Buttons Type="Ok" />
-    </Command>
-
-    <Command Name="OrderPaymentDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="OrderPaymentPrimaryGetDataConnection" />
-      </DataConnections>
-    </Command>
-    <Command Name="OrderPaymentDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="OrderPaymentDeleteDataConnection" />
-      </DataConnections>
-    </Command>
-    <Command Name="OrderPaymentAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">TemplateOrderPaymentEdit.xml</Xml>
-      <Parameters>
-        <Parameter Name="OrderId">
-          <Parameter Name="OrderId" />
-        </Parameter>
-        <Parameter Name="TotalDebtSumm">
-          <Object Name="TotalDebtVariable" />
-        </Parameter>
-      </Parameters>
-      <Show Type="None" />
-    </Command>
-
-
-    <Command Name="OrderPaymentEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">TemplateOrderPaymentEdit.xml</Xml>
-      <Show Type="None" />
-      <Parameters>
-        <Parameter Name="Edit">True</Parameter>
-        <Parameter Name="OrderPaymentId">
-          <Object Name="OrderPaymentDatabaseTable">
-            <Property Name="SelectedRowCellValueByColumnName">
-              <Parameters>
-                <Parameter Name="ColumnName">OrderPaymentId</Parameter>
-              </Parameters>
-            </Property>
-          </Object>
-        </Parameter>
-        <Parameter Name="OrderId">
-          <Parameter Name="OrderId" />
-        </Parameter>
-      </Parameters>
-    </Command>
-
-    <Command Name="OrderPaymentSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Object Name="OrderPaymentDatabaseTable">
-        <Property Name="SelectRowByFieldValue">
-          <Parameters>
-            <Parameter Name="ColumnName">OrderPaymentId</Parameter>
-            <Parameter Name="Value">
-              <Input />
-            </Parameter>
-          </Parameters>
-        </Property>
-      </Object>
-    </Command>
-    <Command Name="OrderPaymentDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
-      <Caption>Удаление</Caption>
-      <Text>Вы действительно хотите удалить выбранную запись?</Text>
-      <Buttons Type="YesNo" />
-      <Icon Type="Question" />
     </Command>
   </Commands>
 
@@ -1250,7 +1260,7 @@
             </Left>
             <Width>
               <Calculate>
-                <Expression>{0} - {1}*2 - {2} - {3} - 10</Expression>
+                <Expression>{0} - {1}*2 - {2} - {3}</Expression>
                 <Items>
                   <Item>
                     <Object Name="ClientPanel">
@@ -1263,14 +1273,52 @@
                     </Object>
                   </Item>
                   <Item>
-                    <Object Name="ClientAddEditButton">
-                      <Property Name="Width" />
-                    </Object>
+                    <Switch>
+                      <Case>
+                        <When>
+                          <Object Name="ClientAddEditButton">
+                            <Property Name="Visible" />
+                          </Object>
+                        </When>
+                        <Then>
+                          <Formula>
+                            <Plus DataType="IntegerDataType">
+                              <Item>
+                                <Object Name="ClientAddEditButton">
+                                  <Property Name="Width" />
+                                </Object>
+                              </Item>
+                              <Item>5</Item>
+                            </Plus>
+                          </Formula>
+                        </Then>
+                      </Case>
+                      <Case>0</Case>
+                    </Switch>
                   </Item>
                   <Item>
-                    <Object Name="ClientListButton">
-                      <Property Name="Width" />
-                    </Object>
+                    <Switch>
+                      <Case>
+                        <When>
+                          <Object Name="ClientListButton">
+                            <Property Name="Visible" />
+                          </Object>
+                        </When>
+                        <Then>
+                          <Formula>
+                            <Plus DataType="IntegerDataType">
+                              <Item>
+                                <Object Name="ClientListButton">
+                                  <Property Name="Width" />
+                                </Object>
+                              </Item>
+                              <Item>5</Item>
+                            </Plus>
+                          </Formula>
+                        </Then>
+                      </Case>
+                      <Case>0</Case>
+                    </Switch>
                   </Item>
                 </Items>
               </Calculate>
@@ -1357,6 +1405,12 @@
                 </Else>
               </If>
             </Commands>
+            <Visible>
+              <And>
+                <AccessPoint Name="ClientAddAccessPoint" />
+                <AccessPoint Name="ClientEditAccessPoint" />
+              </And>
+            </Visible>
           </MyObject>
 
           <MyObject Name="ClientListButton" Type="Button" Assembly="BaseControls">
@@ -1370,9 +1424,25 @@
                 <Expression>{0} + 5</Expression>
                 <Items>
                   <Item>
-                    <Object Name="ClientAddEditButton">
-                      <Property Name="Right" />
-                    </Object>
+                    <Switch>
+                      <Case>
+                        <When>
+                          <Object Name="ClientAddEditButton">
+                            <Property Name="Visible" />
+                          </Object>
+                        </When>
+                        <Then>
+                          <Object Name="ClientAddEditButton">
+                            <Property Name="Right" />
+                          </Object>
+                        </Then>
+                      </Case>
+                      <Case>
+                        <Object Name="ClientComboBox">
+                          <Property Name="Right" />
+                        </Object>
+                      </Case>
+                    </Switch>
                   </Item>
                 </Items>
               </Calculate>
@@ -1398,6 +1468,9 @@
             <Commands>
               <Command Name="ClientListFormShowCommand" />
             </Commands>
+            <Visible>
+              <AccessPoint Name="ClientViewAccessPoint" />
+            </Visible>
           </MyObject>
 
           <MyObject Name="CityLabel" Type="Label" Assembly="BaseControls">
@@ -1897,7 +1970,7 @@
             </Value>
           </MyObject>
 
-          <MyObject Name="TotalPaidSumVariable" Type="Variable" Assembly="SimpleControls">
+          <MyObject Name="TotalPaidSumVariable" Type="Variable" Assembly="SimpleControls" ChangeForm="False">
             <Value>
               <Object Name="OrderPaymentDatabaseTable">
                 <Property Name="ColumnSum">
@@ -1909,7 +1982,7 @@
             </Value>
           </MyObject>
 
-          <MyObject Name="TotalDebtVariable" Type="Variable" Assembly="SimpleControls">
+          <MyObject Name="TotalDebtVariable" Type="Variable" Assembly="SimpleControls" ChangeForm="False">
             <Value>
               <Calculate>
                 <Expression>{0} - {1}</Expression>
@@ -1925,29 +1998,23 @@
             </Value>
           </MyObject>
 
-
           <MyObject Name="TotalSumToPayLabel" Type="Label" Assembly="BaseControls">
             <Top>5</Top>
             <Left>10</Left>
             <Width>
               <Calculate>
-                <Expression>Ceiling({0} /3) - 15</Expression>
+                <Expression>Ceiling(({0} - 30)/3)</Expression>
                 <Items>
                   <Item>
                     <Object Name="TotalPanel">
                       <Property Name="Width" />
                     </Object>
                   </Item>
-                  <Item>
-                    <Object Name="TotalSumToPayLabel">
-                      <Property Name="Left" />
-                    </Object>
-                  </Item>
                 </Items>
               </Calculate>
             </Width>
             <Height>20</Height>
-            <TextAlign>MiddleCenter</TextAlign>
+            <TextAlign>MiddleLeft</TextAlign>
             <FontStyle>LabelFontStyle</FontStyle>
             <ForeColor>LabelForeColor</ForeColor>
             <Text>Всего к оплате</Text>
@@ -1980,7 +2047,11 @@
           </MyObject>
 
           <MyObject Name="TotalPaidSumLabel" Type="Label" Assembly="BaseControls">
-            <Top>5</Top>
+            <Top>
+              <Object Name="TotalSumToPayLabel">
+                <Property Name="Top" />
+              </Object>
+            </Top>
             <Left>
               <Calculate>
                 <Expression>{0} + 5</Expression>
@@ -1994,24 +2065,12 @@
               </Calculate>
             </Left>
             <Width>
-              <Calculate>
-                <Expression>Ceiling({0} /3) - 15</Expression>
-                <Items>
-                  <Item>
-                    <Object Name="TotalPanel">
-                      <Property Name="Width" />
-                    </Object>
-                  </Item>
-                  <Item>
-                    <Object Name="TotalSumToPayLabel">
-                      <Property Name="Left" />
-                    </Object>
-                  </Item>
-                </Items>
-              </Calculate>
+              <Object Name="TotalSumToPayLabel">
+                <Property Name="Width" />
+              </Object>
             </Width>
             <Height>20</Height>
-            <TextAlign>MiddleCenter</TextAlign>
+            <TextAlign>MiddleLeft</TextAlign>
             <FontStyle>LabelFontStyle</FontStyle>
             <ForeColor>LabelForeColor</ForeColor>
             <Text>Сумма оплат</Text>
@@ -2019,7 +2078,7 @@
 
           <MyObject Name="TotalPaidSumTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
             <Top>
-              <Object Name="TotalSumToPayLabel">
+              <Object Name="TotalPaidSumLabel">
                 <Property Name="Bottom" />
               </Object>
             </Top>
@@ -2029,11 +2088,11 @@
               </Object>
             </Left>
             <Width>
-              <Object Name="TotalSumToPayLabel">
+              <Object Name="TotalPaidSumLabel">
                 <Property Name="Width" />
               </Object>
             </Width>
-            <TabIndex>1</TabIndex>
+            <TabIndex>2</TabIndex>
             <TextAlign>Right</TextAlign>
             <ReadOnly>True</ReadOnly>
             <Text>
@@ -2044,7 +2103,11 @@
           </MyObject>
 
           <MyObject Name="TotalDebtLabel" Type="Label" Assembly="BaseControls">
-            <Top>5</Top>
+            <Top>
+              <Object Name="TotalSumToPayLabel">
+                <Property Name="Top" />
+              </Object>
+            </Top>
             <Left>
               <Calculate>
                 <Expression>{0} + 5</Expression>
@@ -2058,24 +2121,12 @@
               </Calculate>
             </Left>
             <Width>
-              <Calculate>
-                <Expression>Ceiling({0} /3) - 15</Expression>
-                <Items>
-                  <Item>
-                    <Object Name="TotalPanel">
-                      <Property Name="Width" />
-                    </Object>
-                  </Item>
-                  <Item>
-                    <Object Name="TotalSumToPayLabel">
-                      <Property Name="Left" />
-                    </Object>
-                  </Item>
-                </Items>
-              </Calculate>
+              <Object Name="TotalSumToPayLabel">
+                <Property Name="Width" />
+              </Object>
             </Width>
             <Height>20</Height>
-            <TextAlign>MiddleCenter</TextAlign>
+            <TextAlign>MiddleLeft</TextAlign>
             <FontStyle>LabelFontStyle</FontStyle>
             <ForeColor>LabelForeColor</ForeColor>
             <Text>Задолженность</Text>
@@ -2083,7 +2134,7 @@
 
           <MyObject Name="TotalDebtTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
             <Top>
-              <Object Name="TotalSumToPayLabel">
+              <Object Name="TotalDebtLabel">
                 <Property Name="Bottom" />
               </Object>
             </Top>
@@ -2093,11 +2144,11 @@
               </Object>
             </Left>
             <Width>
-              <Object Name="TotalSumToPayLabel">
+              <Object Name="TotalDebtLabel">
                 <Property Name="Width" />
               </Object>
             </Width>
-            <TabIndex>1</TabIndex>
+            <TabIndex>3</TabIndex>
             <TextAlign>Right</TextAlign>
             <ReadOnly>True</ReadOnly>
             <Text>
@@ -2124,7 +2175,7 @@
         </Left>
         <Height>
           <Calculate>
-            <Expression>Ceiling({0} * 2 / 3)</Expression>
+            <Expression>Ceiling({0} * 3/5)</Expression>
             <Items>
               <Item>
                 <Object Name="ContentPanel">
@@ -2416,7 +2467,6 @@
           <DisabledMode>True</DisabledMode>
           <DisabledText>Выберите запись для удаления.</DisabledText>
         </MyObject>
-
       </MyObject>
 
       <MyObject Name="OrderPaymentPanel" Type="Panel" Assembly="BaseControls">
@@ -2430,24 +2480,13 @@
             <Property Name="Left" />
           </Object>
         </Left>
-        <Height>
-          <Calculate>
-            <Expression>Ceiling({0} / 3)</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Height" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Height>
+        <Height>200</Height>
         <Width>
           <Object Name="OrderPositionPanel">
             <Property Name="Width" />
           </Object>
         </Width>
-
+        <TabIndex>3</TabIndex>
 
         <MyObject Name="OrderPaymentLabel" Type="Label" Assembly="BaseControls">
           <Top>5</Top>
@@ -2457,7 +2496,7 @@
               <Expression>{0} - 10</Expression>
               <Items>
                 <Item>
-                  <Object Name="OrderPaymentPanel">
+                  <Object Name="ContentPanel">
                     <Property Name="Width" />
                   </Object>
                 </Item>
@@ -2529,33 +2568,34 @@
           <AutoSizeColumnsMode Value="Fill" />
           <SourceDataConnection Name="OrderPaymentPrimaryGetDataConnection" />
           <Columns>
-            <Column Name="OrderPaymentId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
-              <Visible>False</Visible>
-            </Column>
             <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
               <Title>№</Title>
               <Width>30</Width>
+              <AutoSizeMode Value="None" />
               <AutoFill Type="RowNumber" />
               <Alignment Value="MiddleCenter" />
-              <AutoSizeMode Value="None" />
             </Column>
-            <Column Name="Date" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
-              <Title>Дата оплаты</Title>
-              <Width>100</Width>
-              <DataType Type="DateTimeDataType" Format="dd.MM.yyyy" />
+            <Column Name="OrderPaymentId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
             </Column>
             <Column Name="CashId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
               <Visible>False</Visible>
+            </Column>
+            <Column Name="Date" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Дата оплаты</Title>
+              <Width>130</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DateTimeDataType" Format="dd.MM.yyyy HH:mm" />
+              <Alignment Value="MiddleCenter" />
             </Column>
             <Column Name="AccountId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
               <Visible>False</Visible>
             </Column>
             <Column Name="AccountTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
-              <Title>Счёт</Title>
-              <Width>200</Width>
-              <AutoSizeMode Value="Fill" />
+              <Title>Счет</Title>
+              <MinimumWidth>100</MinimumWidth>
               <Substitution SourceColumn="AccountId">
-                <DataConnection SourceDataConnection="AccountShortPrimaryGetDataConnection">
+                <DataConnection SourceDataConnection="AccountPrimaryGetDataConnection">
                   <Fields>
                     <Field Name="AccountId" />
                     <Field Name="Title" />
@@ -2565,10 +2605,11 @@
             </Column>
             <Column Name="Summ" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
               <Title>Сумма</Title>
-              <Width>200</Width>
+              <Width>130</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" Format="N2" />
+              <Alignment Value="MiddleRight" />
             </Column>
-
-
           </Columns>
         </MyObject>
 
@@ -2699,10 +2740,9 @@
           <DisabledMode>True</DisabledMode>
           <DisabledText>Выберите запись для удаления.</DisabledText>
         </MyObject>
+
+
       </MyObject>
-
-
-
 
 
     </MyObject>
@@ -2933,7 +2973,7 @@
               </If>
             </Then>
             <Else>
-              <Command Name="PrintingMessageBoxCommand">Для отправки счета клиенту на почту необходимо заполнить обязательные поля</Command>
+              <Command Name="PrintingMessageBoxCommand">Для отправки счета клиенту на почту необходимо заполнить обязательные поля.</Command>
             </Else>
           </If>
         </Commands>

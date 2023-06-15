@@ -37,6 +37,16 @@
   </Appearance>
 
   <DataConnections>
+    <DataConnection Name="AccessPointDataConnection" Type="AccessPointDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <AccessPoints>
+        <AccessPoint Name="UnitAddAccessPoint" />
+        <AccessPoint Name="UnitEditAccessPoint" />
+        <AccessPoint Name="UnitDeleteAccessPoint" />
+        <AccessPoint Name="UnitArchiveAccessPoint" />
+      </AccessPoints>
+    </DataConnection>
+
     <DataConnection Name="UnitPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <SqlQuery Name="UnitSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
@@ -300,6 +310,17 @@
       <Icon Type="Warning" />
       <Buttons Type="Ok" />
     </Command>
+
+    <Command Name="WarningMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>
+        <Input Name="Caption" />
+      </Caption>
+      <Text>
+        <Input Name="Text" />
+      </Text>
+      <Icon Type="Warning" />
+      <Buttons Type="Ok" />
+    </Command>
   </Commands>
 
   <Executions>
@@ -384,6 +405,19 @@
           <Then>
             <Command Name="SelectUnitSequentialCommand" />
           </Then>
+          <ElseIf>
+            <When>
+              <Not>
+                <AccessPoint Name="UnitEditAccessPoint" />
+              </Not>
+            </When>
+            <Then>
+              <Command Name="WarningMessageBoxCommand">
+                <Input Name="Caption">Редактирование</Input>
+                <Input Name="Text">У вас недостаточно прав для выполнения команды.</Input>
+              </Command>
+            </Then>
+          </ElseIf>
           <ElseIf>
             <When>
               <Condition Name="SelectedUnitIsArchiveCondition" />
@@ -677,6 +711,11 @@
         <Commands>
           <Command Name="UnitAddFormShowCommand" />
         </Commands>
+        <Enabled>
+          <AccessPoint Name="UnitAddAccessPoint" />
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>У вас недостаточно прав для выполнения команды.</DisabledText>
       </MyObject>
 
       <MyObject Name="UnitEditButton" Type="Button" Assembly="BaseControls">
@@ -718,6 +757,7 @@
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
           <And>
+            <AccessPoint Name="UnitEditAccessPoint" />
             <Condition Name="UnitSelectedCondition" />
             <Not>
               <Condition Name="SelectedUnitIsArchiveCondition" />
@@ -730,6 +770,14 @@
         <DisabledMode>True</DisabledMode>
         <DisabledText>
           <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="UnitEditAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
             <Case>
               <When>
                 <Not>
@@ -787,6 +835,7 @@
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
           <And>
+            <AccessPoint Name="UnitDeleteAccessPoint" />
             <Not>
               <Condition Name="SelectedUnitIsArchiveCondition" />
             </Not>
@@ -799,6 +848,14 @@
         <DisabledMode>True</DisabledMode>
         <DisabledText>
           <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="UnitDeleteAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
             <Case>
               <When>
                 <Not>
@@ -878,7 +935,10 @@
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
-          <Condition Name="UnitSelectedCondition" />
+          <And>
+            <AccessPoint Name="UnitArchiveAccessPoint" />
+            <Condition Name="UnitSelectedCondition" />
+          </And>
         </Enabled>
         <Commands>
           <Command Name="UnitArchiveMessageBoxCommand" />
@@ -888,11 +948,30 @@
           <Switch>
             <Case>
               <When>
-                <Object Name="ArchiveFilterComboBox" />
+                <Not>
+                  <AccessPoint Name="UnitArchiveAccessPoint" />
+                </Not>
               </When>
-              <Then>Для восстановления из архива выберите запись.</Then>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
             </Case>
-            <Case>Для переноса в архив выберите запись.</Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="UnitSelectedCondition" />
+                </Not>
+              </When>
+              <Then>
+                <Switch>
+                  <Case>
+                    <When>
+                      <Object Name="ArchiveFilterComboBox" />
+                    </When>
+                    <Then>Для восстановления из архива выберите запись.</Then>
+                  </Case>
+                  <Case>Для переноса в архив выберите запись.</Case>
+                </Switch>
+              </Then>
+            </Case>
           </Switch>
         </DisabledText>
       </MyObject>

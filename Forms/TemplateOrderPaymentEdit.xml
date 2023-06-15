@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateOrderPaymentEditForm" Width="450" Height="250" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateOrderPaymentEditForm" Width="400" Height="245" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
@@ -8,15 +8,15 @@
           <When>
             <Parameter Name="Edit" />
           </When>
-          <Then>Редактирование оплаты</Then>
+          <Then>Редактирование  оплаты</Then>
         </Case>
         <Case>Добавление оплаты</Case>
       </Switch>
     </Parameter>
-    <Parameter Name="OrderPaymentId" />
     <Parameter Name="OrderId" />
+    <Parameter Name="OrderPaymentId" />
+    <Parameter Name="TotalDebt" />
     <Parameter Name="Updated">False</Parameter>
-    <Parameter Name="TotalDebtSumm" />
   </Parameters>
 
   <Appearance>
@@ -77,14 +77,14 @@
         <SqlQuery Name="OrderPaymentInsertSqlQuery" Type="Insert" />
       </SqlQueries>
       <Parameters>
+        <Parameter NativeName="OrderId">
+          <Value>
+            <Parameter Name="OrderId" />
+          </Value>
+        </Parameter>
         <Parameter NativeName="Date">
           <Value>
             <Object Name="DateDateTimePicker" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="Summ">
-          <Value>
-            <Object Name="SummNumericBox" />
           </Value>
         </Parameter>
         <Parameter NativeName="AccountId">
@@ -92,9 +92,9 @@
             <Object Name="AccountComboBox" />
           </Value>
         </Parameter>
-        <Parameter NativeName="OrderId">
+        <Parameter NativeName="Summ">
           <Value>
-            <Parameter Name="OrderId" />
+            <Object Name="SummNumericBox" />
           </Value>
         </Parameter>
       </Parameters>
@@ -116,42 +116,47 @@
             <Object Name="DateDateTimePicker" />
           </Value>
         </Parameter>
-        <Parameter NativeName="Summ">
-          <Value>
-            <Object Name="SummNumericBox" />
-          </Value>
-        </Parameter>
         <Parameter NativeName="AccountId">
           <Value>
             <Object Name="AccountComboBox" />
           </Value>
         </Parameter>
-        <Parameter NativeName="OrderId">
+        <Parameter NativeName="Summ">
           <Value>
-            <Parameter Name="OrderId" />
+            <Object Name="SummNumericBox" />
           </Value>
         </Parameter>
       </Parameters>
     </DataConnection>
 
-    <DataConnection Name="AccountShortPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
-      <SqlQuery Name="AccountShortSelectSqlQuery" Type="Select">
+    <DataConnection Name="AccountPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="AccountSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
           <Field Name="AccountId" />
           <Field Name="Title" />
+          <Field Name="Archive" />
         </Fields>
-        <Parameters>
-          <Parameter NativeName="AccountId">
-            <Value>
-              <DataConnection SourceDataConnection="OrderPaymentPrimaryGetDataConnection">
-                <Fields>
-                  <Field Name="AccountId" />
-                </Fields>
-              </DataConnection>
-            </Value>
-          </Parameter>
-        </Parameters>
+        <Filter Type="Nested">
+          <Or>
+            <Filter>
+              <Field NativeName="Archive" />
+              <Value>False</Value>
+              <DataType Type="BooleanDataType" />
+            </Filter>
+            <Filter>
+              <Field NativeName="AccountId" />
+              <Value>
+                <DataConnection SourceDataConnection="OrderPaymentPrimaryGetDataConnection">
+                  <Fields>
+                    <Field Name="AccountId" />
+                  </Fields>
+                </DataConnection>
+              </Value>
+              <DataType Type="IntegerDataType" />
+            </Filter>
+          </Or>
+        </Filter>
       </SqlQuery>
     </DataConnection>
   </DataConnections>
@@ -187,7 +192,7 @@
       <DataType Type="BooleanDataType" />
     </Condition>
 
-    <Condition Name="AccountIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+    <Condition Name="AccountIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="AccountComboBox" />
@@ -195,7 +200,7 @@
       </Items>
     </Condition>
 
-    <Condition Name="SummIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+    <Condition Name="SummIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="SummNumericBox" />
@@ -203,6 +208,15 @@
       </Items>
     </Condition>
 
+    <Condition Name="SummNotGreater0Condition" Type="NotGreaterCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="SummNumericBox" />
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="DecimalDataType" />
+    </Condition>
   </Conditions>
 
   <Commands>
@@ -245,7 +259,7 @@
     </Command>
 
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
-      <Commands>
+      <Commands Lock="True">
         <If>
           <When>
             <Parameter Name="Edit" />
@@ -261,15 +275,6 @@
         <Command Name="UpdatedTrueValueSetCommand" />
         <Command Name="FormCloseCommand" />
       </Commands>
-    </Command>
-
-    <Command Name="TestMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
-      <Caption>
-        <Parameter Name="OrderId" />
-      </Caption>
-      <Text />
-      <Icon Type="Information" />
-      <Buttons Type="Ok" />
     </Command>
   </Commands>
 
@@ -334,19 +339,31 @@
     <Checking>
       <Object Name="AccountComboBox" />
       <ConditionExpression>
-        <Condition Name="AccountIsNullOrEmptyCondition" />
+        <Condition Name="AccountIsNullCondition" />
       </ConditionExpression>
-      <AsteriskHint>Выбери счёт, собака!</AsteriskHint>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
     </Checking>
 
     <Checking>
       <Object Name="SummNumericBox" />
       <ConditionExpression>
-        <Condition Name="SummIsNullOrEmptyCondition" />
+        <Condition Name="SummIsNullCondition" />
       </ConditionExpression>
-      <AsteriskHint>уже выбрал, пёс</AsteriskHint>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
     </Checking>
 
+    <Checking>
+      <Object Name="SummNumericBox" />
+      <ConditionExpression>
+        <And>
+          <Not>
+            <Condition Name="SummIsNullCondition" />
+          </Not>
+          <Condition Name="SummNotGreater0Condition" />
+        </And>
+      </ConditionExpression>
+      <AsteriskHint>Значение поля "Сумма" должно быть больше 0</AsteriskHint>
+    </Checking>
   </Checkings>
 
   <MyObjects>
@@ -493,9 +510,8 @@
           </Calculate>
         </Width>
         <TabIndex>1</TabIndex>
-        <Format>dd MMMM yyyy</Format>
-        <ShowCalendar>True</ShowCalendar>
         <NullValue Show="False" />
+        <Format>dd MMMM yyyy HH:mm</Format>
         <Value>
           <DataConnection SourceDataConnection="OrderPaymentPrimaryGetDataConnection">
             <Fields>
@@ -507,9 +523,16 @@
 
       <MyObject Name="AccountLabel" Type="Label" Assembly="BaseControls">
         <Top>
-          <Object Name="DateDateTimePicker">
-            <Property Name="Bottom" />
-          </Object>
+          <Formula>
+            <Plus DataType="IntegerDataType">
+              <Item>
+                <Object Name="DateDateTimePicker">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+              <Item>5</Item>
+            </Plus>
+          </Formula>
         </Top>
         <Left>
           <Object Name="DateLabel">
@@ -517,27 +540,15 @@
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="AccountLabel">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="DateLabel">
+            <Property Name="Width" />
+          </Object>
         </Width>
         <Height>20</Height>
         <TextAlign>MiddleLeft</TextAlign>
         <FontStyle>LabelFontStyle</FontStyle>
         <ForeColor>LabelForeColor</ForeColor>
-        <Text>Счёт</Text>
+        <Text>Счет</Text>
       </MyObject>
 
       <MyObject Name="AccountComboBox" Type="ComboBox" Assembly="BaseControls">
@@ -547,32 +558,20 @@
           </Object>
         </Top>
         <Left>
-          <Object Name="AccountLabel">
+          <Object Name="DateDateTimePicker">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="AccountComboBox">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="DateDateTimePicker">
+            <Property Name="Width" />
+          </Object>
         </Width>
-        <NullValue Show="True" />
-        <NullValueTitle>[Не выбрано]</NullValueTitle>
+        <TabIndex>2</TabIndex>
+        <NullValue Show="True" Title="[Не выбрано]" />
         <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
         <ValueList>
-          <DataConnection SourceDataConnection="AccountShortPrimaryGetDataConnection">
+          <DataConnection SourceDataConnection="AccountPrimaryGetDataConnection">
             <Fields>
               <Field Name="AccountId" />
               <Field Name="Title" />
@@ -590,38 +589,26 @@
 
       <MyObject Name="SummLabel" Type="Label" Assembly="BaseControls">
         <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
+          <Formula>
+            <Plus DataType="IntegerDataType">
               <Item>
                 <Object Name="AccountComboBox">
                   <Property Name="Bottom" />
                 </Object>
               </Item>
-            </Items>
-          </Calculate>
+              <Item>5</Item>
+            </Plus>
+          </Formula>
         </Top>
         <Left>
-          <Object Name="AccountComboBox">
+          <Object Name="DateLabel">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="SummLabel">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="DateLabel">
+            <Property Name="Width" />
+          </Object>
         </Width>
         <Height>20</Height>
         <TextAlign>MiddleLeft</TextAlign>
@@ -637,30 +624,20 @@
           </Object>
         </Top>
         <Left>
-          <Object Name="SummLabel">
+          <Object Name="DateDateTimePicker">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="SummNumericBox">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="DateDateTimePicker">
+            <Property Name="Width" />
+          </Object>
         </Width>
         <Minimum>0</Minimum>
-        <Maximum />
         <Increment>100</Increment>
+        <DecimalPlaces>2</DecimalPlaces>
+        <ThousandsSeparator>True</ThousandsSeparator>
+        <TabIndex>3</TabIndex>
         <Value>
           <Switch>
             <Case>
@@ -676,14 +653,11 @@
               </Then>
             </Case>
             <Case>
-              <Parameter Name="TotalDebtSumm" />
+              <Parameter Name="TotalDebt" />
             </Case>
           </Switch>
         </Value>
       </MyObject>
-
-
-
 
 
     </MyObject>

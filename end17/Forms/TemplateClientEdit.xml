@@ -1,0 +1,1444 @@
+<?xml version="1.0"?>
+<Form Name="TemplateClientEditForm" Width="600" Height="340" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+  <Parameters>
+    <Parameter Name="Edit">False</Parameter>
+    <Parameter Name="Title">
+      <Switch>
+        <Case>
+          <When>
+            <Parameter Name="Edit" />
+          </When>
+          <Then>Редактирование клиента</Then>
+        </Case>
+        <Case>Добавление клиента</Case>
+      </Switch>
+    </Parameter>
+    <Parameter Name="ClientId" />
+    <Parameter Name="ClientTitle" />
+    <Parameter Name="Updated">False</Parameter>
+  </Parameters>
+
+  <Appearance>
+    <Colors>
+      <Color Name="ThemeForeColor" Red="0" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeBackgroundColor" Red="255" Green="255" Blue="255" Alpha="255" />
+      <Color Name="ThemeFlatColor" Red="255" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeSeparateBackgroundColor" Red="225" Green="225" Blue="225" Alpha="255" />
+
+      <Color Name="HeadBackgroundColor" Red="221" Green="232" Blue="246" Alpha="255" />
+      <Color Name="HeadForeColor" Red="70" Green="70" Blue="70" Alpha="255" />
+
+      <Color Name="LabelForeColor" Red="100" Green="100" Blue="100" Alpha="255" />
+      <Color Name="TableBackgroundColor" Red="200" Green="200" Blue="200" Alpha="255" />
+      <Color Name="TableArchiveColor" Red="230" Green="230" Blue="230" Alpha="255" />
+
+      <!-- Стили кнопок -->
+      <Color Name="ButtonFlatBorderColor" Red="225" Green="225" Blue="225" Alpha="255" />
+      <Color Name="ButtonFlatMouseDownBackColor" Red="201" Green="219" Blue="241" Alpha="255" />
+      <Color Name="ButtonFlatMouseOverBackColor" Red="228" Green="237" Blue="248" Alpha="255" />
+    </Colors>
+
+    <FontStyles>
+      <FontStyle Name="ThemeFontStyle" Font="Segoe UI" Size="9" />
+      <FontStyle Name="HeadFontStyle" Font="Segoe UI" Size="15" />
+      <FontStyle Name="LabelFontStyle" Font="Segoe UI" Size="9" Italic="True" />
+      <FontStyle Name="ButtonFontStyle" Font="Segoe UI" Size="10" />
+    </FontStyles>
+  </Appearance>
+
+  <DataConnections>
+    <DataConnection Name="ClientPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="ClientByIdSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="Name" />
+          <Field Name="CityId" />
+          <Field Name="DateOfBirth" />
+          <Field Name="Email" />
+          <Field Name="Phone" />
+          <Field Name="PhotoGuid" />
+          <Field Name="PhotoGuidPath" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="ClientId">
+            <Value>
+              <Parameter Name="ClientId" />
+            </Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="CityShortPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="CityShortSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="CityId" />
+          <Field Name="Title" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="CityId">
+            <Value>
+              <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="CityId" />
+                </Fields>
+              </DataConnection>
+            </Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="ClientInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="Name">
+          <Value>
+            <Object Name="NameTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="DateOfBirth">
+          <Value>
+            <Object Name="DateOfBirthDateTimePicker" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="CityId">
+          <Value>
+            <Object Name="CityComboBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Phone">
+          <Value>
+            <Switch>
+              <Case>
+                <When>
+                  <Not>
+                    <Condition Name="PhoneIsEmptyCondition" />
+                  </Not>
+                </When>
+                <Then>
+                  <Object Name="PhoneTextBox" />
+                </Then>
+              </Case>
+            </Switch>
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Email">
+          <Value>
+            <Object Name="EmailTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="PhotoGuid">
+          <Value>
+            <Switch>
+              <Case>
+                <When>
+                  <Condition Name="PhotoPictureBoxIsNotEmptyCondition" />
+                </When>
+                <Then>
+                  <Command Name="PhotoPictureBoxUploadFileCommand" />
+                </Then>
+              </Case>
+            </Switch>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="ClientInsertSqlQuery" Type="Insert" />
+      </SqlQueries>
+    </DataConnection>
+
+    <DataConnection Name="ClientUpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="ClientId">
+          <Value>
+            <Parameter Name="ClientId" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Name">
+          <Value>
+            <Object Name="NameTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="DateOfBirth">
+          <Value>
+            <Object Name="DateOfBirthDateTimePicker" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="CityId">
+          <Value>
+            <Object Name="CityComboBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Phone">
+          <Value>
+            <Switch>
+              <Case>
+                <When>
+                  <Not>
+                    <Condition Name="PhoneIsEmptyCondition" />
+                  </Not>
+                </When>
+                <Then>
+                  <Object Name="PhoneTextBox" />
+                </Then>
+              </Case>
+            </Switch>
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Email">
+          <Value>
+            <Object Name="EmailTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="EditPhoto">
+          <Value>
+            <Object Name="EditPhotoVariable" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="DeletePhoto">
+          <Value>
+            <Object Name="DeletePhotoVariable" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="PhotoGuid">
+          <Value>
+            <Switch>
+              <Case>
+                <When>
+                  <Condition Name="PhotoPictureBoxIsNotEmptyCondition" />
+                </When>
+                <Then>
+                  <Command Name="PhotoPictureBoxUploadFileCommand" />
+                </Then>
+              </Case>
+            </Switch>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="ClientUpdateSqlQuery" Type="Update" />
+      </SqlQueries>
+    </DataConnection>
+  </DataConnections>
+
+  <Conditions>
+    <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
+
+    <Condition Name="EscapeKeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
+      <Key Value="Escape" />
+    </Condition>
+
+    <Condition Name="FormChangedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Form>
+            <Property Name="FormChanged" />
+          </Form>
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="MandatoryFieldsAreFilledEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Form>
+            <Property Name="CheckingFired" />
+          </Form>
+        </Item>
+        <Item>False</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="SaveOnCloseMessageBoxCommandYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="SaveOnCloseMessageBoxCommand" />
+        </Item>
+        <Item>Yes</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="SaveOnCloseMessageBoxCommandNoEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="SaveOnCloseMessageBoxCommand" />
+        </Item>
+        <Item>No</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="CloseOnCloseMessageBoxCommandYesEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="CloseOnCloseMessageBoxCommand" />
+        </Item>
+        <Item>Yes</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PhoneIsEmptyCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="PhoneTextBox" />
+        </Item>
+        <Item>+</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PhoneMaskNotCompletedCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="PhoneTextBox">
+            <Property Name="MaskCompleted" />
+          </Object>
+        </Item>
+        <Item>False</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="NameTextBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="NameTextBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="CityComboBoxIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="CityComboBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PhotoPictureBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="PhotoPictureBox">
+            <Property Name="CurrentImageSource" />
+          </Object>
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PhotoPictureBoxIsNotNullImageCondition" Type="NotEqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="PhotoPictureBox">
+            <Property Name="CurrentImageSource" />
+          </Object>
+        </Item>
+        <Item>
+          <Object Name="PhotoPictureBox">
+            <Property Name="NullImage" />
+          </Object>
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PhotoPictureBoxIsNotErrorImageCondition" Type="NotEqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="PhotoPictureBox">
+            <Property Name="CurrentImageSource" />
+          </Object>
+        </Item>
+        <Item>
+          <Object Name="PhotoPictureBox">
+            <Property Name="ErrorImage" />
+          </Object>
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PhotoPictureBoxIsNotEmptyCondition" Type="NestedCondition" Assembly="Conditions">
+      <ConditionExpression>
+        <And>
+          <Not>
+            <Condition Name="PhotoPictureBoxIsNullOrEmptyCondition" />
+          </Not>
+          <Condition Name="PhotoPictureBoxIsNotNullImageCondition" />
+          <Condition Name="PhotoPictureBoxIsNotErrorImageCondition" />
+        </And>
+      </ConditionExpression>
+    </Condition>
+
+    <Condition Name="PhotoPictureBoxDoubleClickCondition" Type="DoubleClickCondition" Assembly="Conditions">
+      <Object Name="PhotoPictureBox" />
+    </Condition>
+
+    <Condition Name="CurrentImageSourceIsGuidStartsWithCondition" Type="StartsWithCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="PhotoPictureBox">
+            <Property Name="CurrentImageSource" />
+          </Object>
+        </Item>
+        <Item>guid://</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PhotoGuidIsNotNullCondition" Type="IsNotNullCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="PhotoGuid" />
+            </Fields>
+          </DataConnection>
+        </Item>
+      </Items>
+    </Condition>
+  </Conditions>
+
+  <Commands>
+    <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
+
+    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Updated">True</Parameter>
+    </Command>
+
+    <Command Name="FormChangedValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Form>
+        <Property Name="FormChanged">
+          <Input />
+        </Property>
+      </Form>
+    </Command>
+
+    <Command Name="ClientInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="ClientInsertSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="ClientUpdateSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="ClientUpdateSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="ClientIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="ClientId">
+        <Command Name="ClientInsertSaveCommand" />
+      </Parameter>
+    </Command>
+
+    <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
+      <Commands>
+        <If>
+          <When>
+            <And>
+              <Object Name="EditPhotoVariable" />
+              <Condition Name="PhotoPictureBoxIsNotEmptyCondition" />
+            </And>
+          </When>
+          <Then>
+            <Command Name="PhotoPictureBoxUploadFileCommand" />
+          </Then>
+        </If>
+        <If>
+          <When>
+            <Parameter Name="Edit" />
+          </When>
+          <Then>
+            <Command Name="ClientUpdateSaveCommand" />
+            <If>
+              <When>
+                <And>
+                  <Object Name="DeletePhotoVariable" />
+                  <Condition Name="PhotoGuidIsNotNullCondition" />
+                </And>
+              </When>
+              <Then>
+                <Command Name="PhotoDeleteFileCommand" />
+              </Then>
+            </If>
+          </Then>
+          <Else>
+            <Command Name="ClientInsertSaveCommand" />
+            <Command Name="ClientIdValueSetCommand" />
+          </Else>
+        </If>
+        <Command Name="UpdatedTrueValueSetCommand" />
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Command>
+
+    <Command Name="SaveOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Сохранение</Caption>
+      <Text>Форма содержит несохраненные изменения.\rСохранить их перед закрытием?</Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNoCancel" />
+    </Command>
+
+    <Command Name="CloseOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Закрытие</Caption>
+      <Text>При закрытии все несохраненные изменения будут утеряны.\rВы уверены, что хотите закрыть форму?</Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNo" />
+    </Command>
+
+    <Command Name="PhotoFileDialogShowCommand" Type="FileDialogShowCommand" Assembly="Commands">
+      <Title>Выбор фотографии клиента</Title>
+      <Type Value="Open" />
+      <Filter>Photo Files|*.jpeg;*.jpg;*.png</Filter>
+    </Command>
+
+    <Command Name="PhotoPictureBoxPhotoValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="PhotoPictureBox">
+        <Property Name="Image">
+          <Command Name="PhotoFileDialogShowCommand" Parameter="FullPath" />
+        </Property>
+      </Object>
+    </Command>
+
+    <Command Name="PhotoPictureBoxNullValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="PhotoPictureBox">
+        <Property Name="Image">
+          <Object Name="PhotoPictureBox">
+            <Property Name="NullImage" />
+          </Object>
+        </Property>
+      </Object>
+    </Command>
+
+    <Command Name="PhotoPictureBoxUploadFileCommand" Type="UploadFileCommand" Assembly="Commands">
+      <FileName>
+        <Object Name="PhotoPictureBox">
+          <Property Name="CurrentImageSource" />
+        </Object>
+      </FileName>
+    </Command>
+
+    <Command Name="PhotoApplicationRunCommand" Type="ApplicationRunCommand" Assembly="Commands">
+      <Condition Name="PhotoPictureBoxIsNotEmptyCondition" />
+      <Application>
+        <Object Name="PhotoPictureBox">
+          <Property Name="CurrentImageSource" />
+        </Object>
+      </Application>
+    </Command>
+
+    <Command Name="PhotoDownloadFileCommand" Type="DownloadFileCommand" Assembly="Commands">
+      <Condition Name="PhotoPictureBoxIsNotEmptyCondition" />
+      <FileGuid>
+        <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+          <Fields>
+            <Field Name="PhotoGuid" />
+          </Fields>
+        </DataConnection>
+      </FileGuid>
+      <AllowOverwrite>True</AllowOverwrite>
+    </Command>
+
+    <Command Name="PhotoDeleteFileCommand" Type="DeleteFileCommand" Assembly="Commands">
+      <FileGuid>
+        <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+          <Fields>
+            <Field Name="PhotoGuid" />
+          </Fields>
+        </DataConnection>
+      </FileGuid>
+    </Command>
+
+    <Command Name="EditPhotoVariableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="EditPhotoVariable">
+        <Input />
+      </Object>
+    </Command>
+
+    <Command Name="DeletePhotoVariableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="DeletePhotoVariable">
+        <Input />
+      </Object>
+    </Command>
+  </Commands>
+
+  <Checkings>
+    <Checking>
+      <Object Name="PhoneTextBox" />
+      <ConditionExpression>
+        <And>
+          <Not>
+            <Condition Name="PhoneIsEmptyCondition" />
+          </Not>
+          <Condition Name="PhoneMaskNotCompletedCondition" />
+        </And>
+      </ConditionExpression>
+      <AsteriskHint>Некорректный номер телефона</AsteriskHint>
+    </Checking>
+
+    <Checking>
+      <Object Name="NameTextBox" />
+      <ConditionExpression>
+        <Condition Name="NameTextBoxIsNullOrEmptyCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
+    </Checking>
+
+    <Checking>
+      <Object Name="CityComboBox" />
+      <ConditionExpression>
+        <Condition Name="CityComboBoxIsNullCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, выберите элемент в этом списке</AsteriskHint>
+    </Checking>
+  </Checkings>
+
+  <Executions>
+    <Execution>
+      <ConditionExpression>
+        <And>
+          <Or>
+            <Condition Name="FormClosingCondition" />
+            <Condition Name="EscapeKeyDownCondition" />
+          </Or>
+          <Condition Name="FormChangedTrueEqualCondition" />
+        </And>
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <Condition Name="MandatoryFieldsAreFilledEqualCondition" />
+          </When>
+          <Then>
+            <Command Name="SaveOnCloseMessageBoxCommand" />
+          </Then>
+          <Else>
+            <Command Name="CloseOnCloseMessageBoxCommand" />
+          </Else>
+        </If>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="SaveOnCloseMessageBoxCommandYesEqualCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="SaveSequentialCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Or>
+          <And>
+            <Or>
+              <Condition Name="FormClosingCondition" />
+              <Condition Name="EscapeKeyDownCondition" />
+            </Or>
+            <Not>
+              <Condition Name="FormChangedTrueEqualCondition" />
+            </Not>
+          </And>
+          <Condition Name="SaveOnCloseMessageBoxCommandNoEqualCondition" />
+          <Condition Name="CloseOnCloseMessageBoxCommandYesEqualCondition" />
+        </Or>
+      </ConditionExpression>
+      <Commands>
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="PhotoFileDialogShowCommand" Parameter="OK" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="EditPhotoVariableValueSetCommand">True</Command>
+        <Command Name="PhotoPictureBoxPhotoValueSetCommand" />
+        <Command Name="FormChangedValueSetCommand">True</Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="PhotoPictureBoxDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <Condition Name="CurrentImageSourceIsGuidStartsWithCondition" />
+          </When>
+          <Then>
+            <Command Name="PhotoDownloadFileCommand" />
+          </Then>
+          <Else>
+            <Command Name="PhotoApplicationRunCommand" />
+          </Else>
+        </If>
+      </Commands>
+    </Execution>
+  </Executions>
+
+  <MyObjects>
+    <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
+      <Top>0</Top>
+      <Left>0</Left>
+      <Height>50</Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <BackColor>HeadBackgroundColor</BackColor>
+
+      <MyObject Name="HeadLabel" Type="Label" Assembly="BaseControls" ChangeForm="False">
+        <Top>0</Top>
+        <Left>10</Left>
+        <Height>
+          <Object Name="HeadPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="HeadLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <FontStyle>HeadFontStyle</FontStyle>
+        <ForeColor>HeadForeColor</ForeColor>
+        <TextAlign>MiddleLeft</TextAlign>
+        <Text>
+          <Parameter Name="Title" />
+        </Text>
+      </MyObject>
+    </MyObject>
+
+    <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="HeadPanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>0</Left>
+      <Height>
+        <Calculate>
+          <Expression>{0} - {1} - {2} - {3}</Expression>
+          <Items>
+            <Item>
+              <Form>
+                <Property Name="Height" />
+              </Form>
+            </Item>
+            <Item>
+              <Object Name="ContentPanel">
+                <Property Name="Top" />
+              </Object>
+            </Item>
+            <Item>
+              <Object Name="FootSeparatePanel">
+                <Property Name="Height" />
+              </Object>
+            </Item>
+            <Item>
+              <Object Name="FootPanel">
+                <Property Name="Height" />
+              </Object>
+            </Item>
+          </Items>
+        </Calculate>
+      </Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>1</TabIndex>
+      <BackColor>ThemeBackgroundColor</BackColor>
+
+      <MyObject Name="MainPanel" Type="Panel" Assembly="BaseControls">
+        <Top>0</Top>
+        <Left>0</Left>
+        <Height>
+          <Object Name="ContentPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>350</Width>
+        <TabIndex>2</TabIndex>
+
+        <MyObject Name="NameLabel" Type="Label" Assembly="BaseControls">
+          <Top>5</Top>
+          <Left>10</Left>
+          <Width>
+            <Calculate>
+              <Expression>{0} - {1} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MainPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="NameLabel">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <Height>20</Height>
+          <TextAlign>MiddleLeft</TextAlign>
+          <FontStyle>LabelFontStyle</FontStyle>
+          <ForeColor>LabelForeColor</ForeColor>
+          <Text>Имя (ФИО)</Text>
+        </MyObject>
+
+        <MyObject Name="NameTextBox" Type="TextBox" Assembly="BaseControls">
+          <Top>
+            <Object Name="NameLabel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="NameLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Calculate>
+              <Expression>{0} - {1} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MainPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="NameTextBox">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <Text>
+            <Switch>
+              <Case>
+                <When>
+                  <Parameter Name="Edit" />
+                </When>
+                <Then>
+                  <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+                    <Fields>
+                      <Field Name="Name" />
+                    </Fields>
+                  </DataConnection>
+                </Then>
+              </Case>
+              <Case>
+                <Parameter Name="ClientTitle" />
+              </Case>
+            </Switch>
+          </Text>
+        </MyObject>
+
+        <MyObject Name="DateOfBirthLabel" Type="Label" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="NameTextBox">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="NameLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Calculate>
+              <Expression>{0} - {1} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MainPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="DateOfBirthLabel">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <Height>20</Height>
+          <TextAlign>MiddleLeft</TextAlign>
+          <FontStyle>LabelFontStyle</FontStyle>
+          <ForeColor>LabelForeColor</ForeColor>
+          <Text>Дата рождения</Text>
+        </MyObject>
+
+        <MyObject Name="DateOfBirthDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
+          <Top>
+            <Object Name="DateOfBirthLabel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="DateOfBirthLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>150</Width>
+          <Format>dd MMMM yyyy</Format>
+          <ShowCalendar>True</ShowCalendar>
+          <NullValue Show="True" />
+          <Value>
+            <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+              <Fields>
+                <Field Name="DateOfBirth" />
+              </Fields>
+            </DataConnection>
+          </Value>
+        </MyObject>
+
+        <MyObject Name="CityLabel" Type="Label" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="DateOfBirthDateTimePicker">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="DateOfBirthLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Calculate>
+              <Expression>{0} - {1} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MainPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="CityLabel">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <Height>20</Height>
+          <TextAlign>MiddleLeft</TextAlign>
+          <FontStyle>LabelFontStyle</FontStyle>
+          <ForeColor>LabelForeColor</ForeColor>
+          <Text>Город</Text>
+        </MyObject>
+
+        <MyObject Name="CityComboBox" Type="ComboBox" Assembly="BaseControls">
+          <Top>
+            <Object Name="CityLabel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="CityLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Calculate>
+              <Expression>{0} - {1}*2</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MainPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="CityComboBox">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <NullValue Show="True" />
+          <NullValueTitle>[Не выбрано]</NullValueTitle>
+          <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
+          <ValueList>
+            <DataConnection SourceDataConnection="CityShortPrimaryGetDataConnection">
+              <Fields>
+                <Field Name="CityId" />
+                <Field Name="Title" />
+              </Fields>
+            </DataConnection>
+          </ValueList>
+          <Value>
+            <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+              <Fields>
+                <Field Name="CityId" />
+              </Fields>
+            </DataConnection>
+          </Value>
+        </MyObject>
+
+        <MyObject Name="PhoneLabel" Type="Label" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="CityComboBox">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="CityLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Calculate>
+              <Expression>{0} - {1} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MainPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="PhoneLabel">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <Height>20</Height>
+          <TextAlign>MiddleLeft</TextAlign>
+          <FontStyle>LabelFontStyle</FontStyle>
+          <ForeColor>LabelForeColor</ForeColor>
+          <Text>Контактный телефон</Text>
+        </MyObject>
+
+        <MyObject Name="PhoneTextBox" Type="TextBox" Assembly="BaseControls">
+          <Top>
+            <Object Name="PhoneLabel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="PhoneLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Calculate>
+              <Expression>{0} - {1} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MainPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="PhoneTextBox">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <Text>
+            <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+              <Fields>
+                <Field Name="Phone" />
+              </Fields>
+            </DataConnection>
+          </Text>
+          <Mask>PHONE</Mask>
+        </MyObject>
+
+        <MyObject Name="EmailLabel" Type="Label" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="PhoneTextBox">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="PhoneLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Calculate>
+              <Expression>{0} - {1} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MainPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="EmailLabel">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <Height>20</Height>
+          <TextAlign>MiddleLeft</TextAlign>
+          <FontStyle>LabelFontStyle</FontStyle>
+          <ForeColor>LabelForeColor</ForeColor>
+          <Text>E-mail</Text>
+        </MyObject>
+
+        <MyObject Name="EmailTextBox" Type="TextBox" Assembly="BaseControls">
+          <Top>
+            <Object Name="EmailLabel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="EmailLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Calculate>
+              <Expression>{0} - {1} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="MainPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="EmailTextBox">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <Text>
+            <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+              <Fields>
+                <Field Name="Email" />
+              </Fields>
+            </DataConnection>
+          </Text>
+        </MyObject>
+      </MyObject>
+
+      <MyObject Name="PhotoPanel" Type="Panel" Assembly="BaseControls">
+        <Top>
+          <Object Name="MainPanel">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Left>
+          <Object Name="MainPanel">
+            <Property Name="Right" />
+          </Object>
+        </Left>
+        <Height>
+          <Object Name="ContentPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1}</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="MainPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <TabIndex>3</TabIndex>
+
+        <MyObject Name="EditPhotoVariable" Type="Variable" Assembly="SimpleControls">
+          <Value>False</Value>
+        </MyObject>
+
+        <MyObject Name="DeletePhotoVariable" Type="Variable" Assembly="SimpleControls">
+          <Value>False</Value>
+        </MyObject>
+
+        <MyObject Name="PhotoPictureBox" Type="PictureBox" Assembly="BaseControls">
+          <Change User="True" Source="False" ValueSet="False" />
+          <Top>5</Top>
+          <Left>10</Left>
+          <Height>
+            <Calculate>
+              <Expression>{0} - {1}*2 - 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="PhotoEditButton">
+                    <Property Name="Top" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="PhotoPictureBox">
+                    <Property Name="Top" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Height>
+          <Width>
+            <Calculate>
+              <Expression>{0} - {1}*2</Expression>
+              <Items>
+                <Item>
+                  <Object Name="PhotoPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="PhotoPictureBox">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <TabIndex>1</TabIndex>
+          <Image>
+            <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+              <Fields>
+                <Field Name="PhotoGuidPath" />
+              </Fields>
+            </DataConnection>
+          </Image>
+          <SizeMode>Zoom</SizeMode>
+          <NullImage>Images\no_photo.png</NullImage>
+          <ErrorImage>Images\no_photo.png</ErrorImage>
+        </MyObject>
+
+        <MyObject Name="PhotoEditButton" Type="Button" Assembly="BaseControls">
+          <Bottom>
+            <Calculate>
+              <Expression>{0} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="PhotoPanel">
+                    <Property Name="Height" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Bottom>
+          <Left>10</Left>
+          <Height>22</Height>
+          <Width>
+            <Calculate>
+              <Expression>Ceiling(({0} - {1}*2 - 5)/2)</Expression>
+              <Items>
+                <Item>
+                  <Object Name="PhotoPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="PhotoEditButton">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <TabIndex>2</TabIndex>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <BackgroundImage>Images\16x16\pencil.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <Hint>Редактировать фотографию</Hint>
+          <Commands>
+            <Command Name="PhotoFileDialogShowCommand" />
+          </Commands>
+        </MyObject>
+
+        <MyObject Name="PhotoDeleteButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Object Name="PhotoEditButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="PhotoEditButton">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Height>
+            <Object Name="PhotoEditButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <Width>
+            <Object Name="PhotoEditButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <TabIndex>3</TabIndex>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <BackgroundImage>Images\16x16\close.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <Hint>Удалить фотографию</Hint>
+          <Enabled>
+            <Condition Name="PhotoPictureBoxIsNotEmptyCondition" />
+          </Enabled>
+          <Commands>
+            <Command Name="PhotoPictureBoxNullValueSetCommand" />
+            <Command Name="DeletePhotoVariableValueSetCommand">True</Command>
+          </Commands>
+        </MyObject>
+      </MyObject>
+
+    </MyObject>
+
+    <MyObject Name="FootSeparatePanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="ContentPanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>5</Left>
+      <Height>1</Height>
+      <Width>
+        <Calculate>
+          <Expression>{0} - 10</Expression>
+          <Items>
+            <Item>
+              <Form>
+                <Property Name="Width" />
+              </Form>
+            </Item>
+          </Items>
+        </Calculate>
+      </Width>
+      <BackColor>ThemeSeparateBackgroundColor</BackColor>
+    </MyObject>
+
+    <MyObject Name="FootPanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="FootSeparatePanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>0</Left>
+      <Height>40</Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>2</TabIndex>
+      <BackColor>ThemeBackgroundColor</BackColor>
+
+      <MyObject Name="SaveButton" Type="Button" Assembly="BaseControls">
+        <Top>5</Top>
+        <Right>
+          <Formula>
+            <Minus DataType="IntegerDataType">
+              <Item>
+                <Object Name="FootPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>5</Item>
+            </Minus>
+          </Formula>
+        </Right>
+        <Height>30</Height>
+        <Width>200</Width>
+        <TextAlign>MiddleCenter</TextAlign>
+        <FontStyle>ButtonFontStyle</FontStyle>
+        <ImageAlign>MiddleLeft</ImageAlign>
+        <Image>Images\24x24\content-save.png</Image>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Text>Сохранить</Text>
+        <TabIndex>1</TabIndex>
+        <Enabled>
+          <Condition Name="MandatoryFieldsAreFilledEqualCondition" />
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>Одно или несколько полей заполнены некорректно.</DisabledText>
+        <Commands>
+          <Command Name="SaveSequentialCommand" />
+        </Commands>
+      </MyObject>
+    </MyObject>
+  </MyObjects>
+</Form>

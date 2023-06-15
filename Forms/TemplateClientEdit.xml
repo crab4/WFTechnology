@@ -193,16 +193,6 @@
             <Object Name="EmailTextBox" />
           </Value>
         </Parameter>
-        <Parameter NativeName="EditPhoto">
-          <Value>
-            <Object Name="EditPhotoVariable" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="DeletePhoto">
-          <Value>
-            <Object Name="DeletePhotoVariable" />
-          </Value>
-        </Parameter>
         <Parameter NativeName="PhotoGuid">
           <Value>
             <Switch>
@@ -436,7 +426,7 @@
     </Command>
 
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
-      <Commands>
+      <Commands Lock="True">
         <If>
           <When>
             <And>

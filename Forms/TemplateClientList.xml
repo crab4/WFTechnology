@@ -37,6 +37,16 @@
   </Appearance>
 
   <DataConnections>
+    <DataConnection Name="AccessPointDataConnection" Type="AccessPointDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <AccessPoints>
+        <AccessPoint Name="ClientAddAccessPoint" />
+        <AccessPoint Name="ClientEditAccessPoint" />
+        <AccessPoint Name="ClientDeleteAccessPoint" />
+        <AccessPoint Name="ClientArchiveAccessPoint" />
+      </AccessPoints>
+    </DataConnection>
+
     <DataConnection Name="ClientPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <SqlQuery Name="ClientSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
@@ -209,7 +219,6 @@
     </Condition>
 
     <Condition Name="ItemsPerPageComboBoxIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
-      <AlwaysChange Value="True" />
       <Items>
         <Item>
           <Object Name="ItemsPerPageComboBox" />
@@ -266,8 +275,6 @@
       <DataType Type="IntegerDataType" />
     </Condition>
   </Conditions>
-
-
 
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
@@ -459,18 +466,14 @@
       </Object>
     </Command>
 
-    <Command Name="TestMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+    <Command Name="WarningMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
       <Caption>
-        <Object Name="NumberOfClientsVariable" />
+        <Input Name="Caption" />
       </Caption>
       <Text>
-        <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
-          <Fields>
-            <Field Name="Count" />
-          </Fields>
-        </DataConnection>
+        <Input Name="Text" />
       </Text>
-      <Icon Type="Information" />
+      <Icon Type="Warning" />
       <Buttons Type="Ok" />
     </Command>
   </Commands>
@@ -497,6 +500,19 @@
           <Then>
             <Command Name="SelectClientSequentialCommand" />
           </Then>
+          <ElseIf>
+            <When>
+              <Not>
+                <AccessPoint Name="ClientEditAccessPoint" />
+              </Not>
+            </When>
+            <Then>
+              <Command Name="WarningMessageBoxCommand">
+                <Input Name="Caption">Редактирование</Input>
+                <Input Name="Text">У вас недостаточно прав для выполнения команды.</Input>
+              </Command>
+            </Then>
+          </ElseIf>
           <ElseIf>
             <When>
               <Condition Name="SelectedClientIsArchiveCondition" />
@@ -598,60 +614,6 @@
   </Executions>
 
   <MyObjects>
-    <MyObject Name="VarPanel" Type="Panel" Assembly="BaseControls">
-      <Visible>False</Visible>
-      <MyObject Name="NumberOfClientsVariable" Type="Variable" Assembly="SimpleControls">
-        <Value>
-          <Switch>
-            <Case>
-              <When>
-                <Condition Name="NumberOfClientsEqual0Condition" />
-              </When>
-              <Then>0</Then>
-            </Case>
-            <Case>
-              <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
-                <Fields>
-                  <Field Name="Count" />
-                </Fields>
-              </DataConnection>
-            </Case>
-          </Switch>
-        </Value>
-      </MyObject>
-
-
-      <MyObject Name="CurrentPageVariable" Type="Variable" Assembly="SimpleControls">
-        <Value>1</Value>
-      </MyObject>
-
-      <MyObject Name="TotalPagesVariable" Type="Variable" Assembly="SimpleControls">
-        <Value>
-          <Switch>
-            <Case>
-              <When>
-                <Condition Name="ItemsPerPageComboBoxIsNullCondition" />
-              </When>
-              <Then>1</Then>
-            </Case>
-            <Case>
-              <Calculate>
-                <Expression>Ceiling({0}/{1})</Expression>
-                <Items>
-                  <Item>
-                    <Object Name="NumberOfClientsVariable" />
-                  </Item>
-                  <Item>
-                    <Object Name="ItemsPerPageComboBox" />
-                  </Item>
-                </Items>
-              </Calculate>
-            </Case>
-          </Switch>
-        </Value>
-      </MyObject>
-    </MyObject>
-
     <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
       <Top>0</Top>
       <Left>0</Left>
@@ -950,7 +912,7 @@
         <Left>10</Left>
         <Height>
           <Calculate>
-            <Expression>{0} - {1} - 10 - {2}</Expression>
+            <Expression>{0} - {1} - {2} - 5</Expression>
             <Items>
               <Item>
                 <Object Name="ContentPanel">
@@ -1047,6 +1009,302 @@
         </Formatting>
       </MyObject>
 
+      <MyObject Name="ClientAddButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Object Name="ClientDatabaseTable">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Left>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="ClientDatabaseTable">
+                  <Property Name="Right" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Left>
+        <Width>40</Width>
+        <Height>40</Height>
+        <Hint>Добавить запись...</Hint>
+        <BackgroundImage>Images\24x24\plus.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Commands>
+          <Command Name="ClientEditFormShowCommand" />
+        </Commands>
+        <Enabled>
+          <AccessPoint Name="ClientAddAccessPoint" />
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>У вас недостаточно прав для выполнения команды.</DisabledText>
+      </MyObject>
+
+      <MyObject Name="ClientEditButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="ClientAddButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="ClientAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="ClientAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="ClientAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Hint>Редактировать запись...</Hint>
+        <BackgroundImage>Images\24x24\pencil.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <And>
+            <AccessPoint Name="ClientEditAccessPoint" />
+            <Condition Name="ClientSelectedCondition" />
+            <Not>
+              <Condition Name="SelectedClientIsArchiveCondition" />
+            </Not>
+          </And>
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="ClientEditAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="ClientSelectedCondition" />
+                </Not>
+              </When>
+              <Then>Выберите запись для редактирования.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="SelectedClientIsArchiveCondition" />
+              </When>
+              <Then>Для редактирования восстановите запись из архива.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+        <Commands>
+          <Command Name="ClientEditSequentialCommand" />
+        </Commands>
+      </MyObject>
+
+      <MyObject Name="ClientDeleteButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="ClientEditButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="ClientAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="ClientAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="ClientAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Hint>Удалить запись</Hint>
+        <BackgroundImage>Images\24x24\delete.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <And>
+            <AccessPoint Name="ClientDeleteAccessPoint" />
+            <Condition Name="ClientSelectedCondition" />
+            <Not>
+              <Condition Name="SelectedClientIsArchiveCondition" />
+            </Not>
+          </And>
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="ClientDeleteAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="ClientSelectedCondition" />
+                </Not>
+              </When>
+              <Then>Выберите запись для удаления.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="SelectedClientIsArchiveCondition" />
+              </When>
+              <Then>Нельзя удалить архивную запись.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+        <Commands>
+          <Command Name="ClientDeleteMessageBoxCommand" />
+        </Commands>
+      </MyObject>
+
+      <MyObject Name="ClientArchiveButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="ClientDeleteButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="ClientAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="ClientAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="ClientAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Hint>
+          <Switch>
+            <Case>
+              <When>
+                <Or>
+                  <Condition Name="SelectedClientIsArchiveCondition" />
+                  <Object Name="ArchiveFilterComboBox" />
+                </Or>
+              </When>
+              <Then>Восстановить из архива</Then>
+            </Case>
+            <Case>Перенести в архив</Case>
+          </Switch>
+        </Hint>
+        <BackgroundImage>
+          <Switch>
+            <Case>
+              <When>
+                <Or>
+                  <Condition Name="SelectedClientIsArchiveCondition" />
+                  <Object Name="ArchiveFilterComboBox" />
+                </Or>
+              </When>
+              <Then>Images\24x24\unarchive.png</Then>
+            </Case>
+            <Case>Images\24x24\archive.png</Case>
+          </Switch>
+        </BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <And>
+            <AccessPoint Name="ClientArchiveAccessPoint" />
+            <Condition Name="ClientSelectedCondition" />
+          </And>
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="ClientArchiveAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="ClientSelectedCondition" />
+                </Not>
+              </When>
+              <Then>
+                <Switch>
+                  <Case>
+                    <When>
+                      <Object Name="ArchiveFilterComboBox" />
+                    </When>
+                    <Then>Для восстановления из архива выберите запись.</Then>
+                  </Case>
+                  <Case>Для переноса в архив выберите запись.</Case>
+                </Switch>
+              </Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+        <Commands>
+          <Command Name="ClientArchiveMessageBoxCommand" />
+        </Commands>
+      </MyObject>
+
       <MyObject Name="PagePanel" Type="Panel" Assembly="BaseControls">
         <Top>
           <Object Name="ClientDatabaseTable">
@@ -1076,6 +1334,56 @@
             <Property Name="Right" />
           </Object>
         </Width>
+
+        <MyObject Name="NumberOfClientsVariable" Type="Variable" Assembly="SimpleControls" ChangeForm="False">
+          <Value>
+            <Switch>
+              <Case>
+                <When>
+                  <Condition Name="NumberOfClientsEqual0Condition" />
+                </When>
+                <Then>0</Then>
+              </Case>
+              <Case>
+                <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+                  <Fields>
+                    <Field Name="Count" />
+                  </Fields>
+                </DataConnection>
+              </Case>
+            </Switch>
+          </Value>
+        </MyObject>
+
+        <MyObject Name="CurrentPageVariable" Type="Variable" Assembly="SimpleControls" ChangeForm="False">
+          <Value>1</Value>
+        </MyObject>
+
+        <MyObject Name="TotalPagesVariable" Type="Variable" Assembly="SimpleControls" ChangeForm="False">
+          <Value>
+            <Switch>
+              <Case>
+                <When>
+                  <Condition Name="ItemsPerPageComboBoxIsNullCondition" />
+                </When>
+                <Then>1</Then>
+              </Case>
+              <Case>
+                <Calculate>
+                  <Expression>Ceiling({0}/{1})</Expression>
+                  <Items>
+                    <Item>
+                      <Object Name="NumberOfClientsVariable" />
+                    </Item>
+                    <Item>
+                      <Object Name="ItemsPerPageComboBox" />
+                    </Item>
+                  </Items>
+                </Calculate>
+              </Case>
+            </Switch>
+          </Value>
+        </MyObject>
 
         <MyObject Name="FirstPageButton" Type="Button" Assembly="BaseControls">
           <Top>5</Top>
@@ -1409,7 +1717,7 @@
             </Calculate>
           </Left>
           <Height>20</Height>
-          <Width>60</Width>
+          <Width>80</Width>
           <TextAlign>MiddleLeft</TextAlign>
           <Text>
             <String>
@@ -1433,257 +1741,6 @@
           </Text>
         </MyObject>
 
-      </MyObject>
-
-      <MyObject Name="ClientAddButton" Type="Button" Assembly="BaseControls">
-        <Top>
-          <Object Name="ClientDatabaseTable">
-            <Property Name="Top" />
-          </Object>
-        </Top>
-        <Left>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="ClientDatabaseTable">
-                  <Property Name="Right" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Left>
-        <Width>40</Width>
-        <Height>40</Height>
-        <Hint>Добавить запись...</Hint>
-        <BackgroundImage>Images\24x24\plus.png</BackgroundImage>
-        <BackgroundImageLayout>Center</BackgroundImageLayout>
-        <FlatStyle>Flat</FlatStyle>
-        <FlatBorderSize>1</FlatBorderSize>
-        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
-        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Commands>
-          <Command Name="ClientEditFormShowCommand" />
-        </Commands>
-      </MyObject>
-
-      <MyObject Name="ClientEditButton" Type="Button" Assembly="BaseControls">
-        <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="ClientAddButton">
-                  <Property Name="Bottom" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Top>
-        <Left>
-          <Object Name="ClientAddButton">
-            <Property Name="Left" />
-          </Object>
-        </Left>
-        <Width>
-          <Object Name="ClientAddButton">
-            <Property Name="Width" />
-          </Object>
-        </Width>
-        <Height>
-          <Object Name="ClientAddButton">
-            <Property Name="Height" />
-          </Object>
-        </Height>
-        <Hint>Редактировать запись...</Hint>
-        <BackgroundImage>Images\24x24\pencil.png</BackgroundImage>
-        <BackgroundImageLayout>Center</BackgroundImageLayout>
-        <FlatStyle>Flat</FlatStyle>
-        <FlatBorderSize>1</FlatBorderSize>
-        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
-        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Enabled>
-          <And>
-            <Condition Name="ClientSelectedCondition" />
-            <Not>
-              <Condition Name="SelectedClientIsArchiveCondition" />
-            </Not>
-          </And>
-        </Enabled>
-        <DisabledMode>True</DisabledMode>
-        <DisabledText>
-          <Switch>
-            <Case>
-              <When>
-                <Not>
-                  <Condition Name="ClientSelectedCondition" />
-                </Not>
-              </When>
-              <Then>Выберите запись для редактирования.</Then>
-            </Case>
-            <Case>
-              <When>
-                <Condition Name="SelectedClientIsArchiveCondition" />
-              </When>
-              <Then>Для редактирования восстановите запись из архива.</Then>
-            </Case>
-          </Switch>
-        </DisabledText>
-        <Commands>
-          <Command Name="ClientEditSequentialCommand" />
-        </Commands>
-      </MyObject>
-
-      <MyObject Name="ClientDeleteButton" Type="Button" Assembly="BaseControls">
-        <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="ClientEditButton">
-                  <Property Name="Bottom" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Top>
-        <Left>
-          <Object Name="ClientAddButton">
-            <Property Name="Left" />
-          </Object>
-        </Left>
-        <Width>
-          <Object Name="ClientAddButton">
-            <Property Name="Width" />
-          </Object>
-        </Width>
-        <Height>
-          <Object Name="ClientAddButton">
-            <Property Name="Height" />
-          </Object>
-        </Height>
-        <Hint>Удалить запись</Hint>
-        <BackgroundImage>Images\24x24\delete.png</BackgroundImage>
-        <BackgroundImageLayout>Center</BackgroundImageLayout>
-        <FlatStyle>Flat</FlatStyle>
-        <FlatBorderSize>1</FlatBorderSize>
-        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
-        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Enabled>
-          <And>
-            <Condition Name="ClientSelectedCondition" />
-            <Not>
-              <Condition Name="SelectedClientIsArchiveCondition" />
-            </Not>
-          </And>
-        </Enabled>
-        <DisabledMode>True</DisabledMode>
-        <DisabledText>
-          <Switch>
-            <Case>
-              <When>
-                <Not>
-                  <Condition Name="ClientSelectedCondition" />
-                </Not>
-              </When>
-              <Then>Выберите запись для удаления.</Then>
-            </Case>
-            <Case>
-              <When>
-                <Condition Name="SelectedClientIsArchiveCondition" />
-              </When>
-              <Then>Нельзя удалить архивную запись.</Then>
-            </Case>
-          </Switch>
-        </DisabledText>
-        <Commands>
-          <Command Name="ClientDeleteMessageBoxCommand" />
-        </Commands>
-      </MyObject>
-
-      <MyObject Name="ClientArchiveButton" Type="Button" Assembly="BaseControls">
-        <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
-              <Item>
-                <Object Name="ClientDeleteButton">
-                  <Property Name="Bottom" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
-        </Top>
-        <Left>
-          <Object Name="ClientAddButton">
-            <Property Name="Left" />
-          </Object>
-        </Left>
-        <Width>
-          <Object Name="ClientAddButton">
-            <Property Name="Width" />
-          </Object>
-        </Width>
-        <Height>
-          <Object Name="ClientAddButton">
-            <Property Name="Height" />
-          </Object>
-        </Height>
-        <Hint>
-          <Switch>
-            <Case>
-              <When>
-                <Or>
-                  <Condition Name="SelectedClientIsArchiveCondition" />
-                  <Object Name="ArchiveFilterComboBox" />
-                </Or>
-              </When>
-              <Then>Восстановить из архива</Then>
-            </Case>
-            <Case>Перенести в архив</Case>
-          </Switch>
-        </Hint>
-        <BackgroundImage>
-          <Switch>
-            <Case>
-              <When>
-                <Or>
-                  <Condition Name="SelectedClientIsArchiveCondition" />
-                  <Object Name="ArchiveFilterComboBox" />
-                </Or>
-              </When>
-              <Then>Images\24x24\unarchive.png</Then>
-            </Case>
-            <Case>Images\24x24\archive.png</Case>
-          </Switch>
-        </BackgroundImage>
-        <BackgroundImageLayout>Center</BackgroundImageLayout>
-        <FlatStyle>Flat</FlatStyle>
-        <FlatBorderSize>1</FlatBorderSize>
-        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
-        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-        <Enabled>
-          <Condition Name="ClientSelectedCondition" />
-        </Enabled>
-        <DisabledMode>True</DisabledMode>
-        <DisabledText>
-          <Switch>
-            <Case>
-              <When>
-                <Object Name="ArchiveFilterComboBox" />
-              </When>
-              <Then>Для восстановления из архива выберите запись.</Then>
-            </Case>
-            <Case>Для переноса в архив выберите запись.</Case>
-          </Switch>
-        </DisabledText>
-        <Commands>
-          <Command Name="ClientArchiveMessageBoxCommand" />
-        </Commands>
       </MyObject>
 
     </MyObject>

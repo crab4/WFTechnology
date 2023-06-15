@@ -1,0 +1,2963 @@
+<?xml version="1.0"?>
+<Form Name="TemplateOrderEditForm" Width="1000" Height="550" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+  <Parameters>
+    <Parameter Name="Edit">False</Parameter>
+    <Parameter Name="Title">
+      <Switch>
+        <Case>
+          <When>
+            <Parameter Name="Edit" />
+          </When>
+          <Then>Редактирование заказа</Then>
+        </Case>
+        <Case>Добавление заказа</Case>
+      </Switch>
+    </Parameter>
+    <Parameter Name="OrderId" />
+    <Parameter Name="Updated">False</Parameter>
+  </Parameters>
+
+  <Appearance>
+    <Colors>
+      <Color Name="ThemeForeColor" Red="0" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeBackgroundColor" Red="255" Green="255" Blue="255" Alpha="255" />
+      <Color Name="ThemeFlatColor" Red="255" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeSeparateBackgroundColor" Red="225" Green="225" Blue="225" Alpha="255" />
+
+      <Color Name="HeadBackgroundColor" Red="221" Green="232" Blue="246" Alpha="255" />
+      <Color Name="HeadForeColor" Red="70" Green="70" Blue="70" Alpha="255" />
+
+      <Color Name="LabelForeColor" Red="100" Green="100" Blue="100" Alpha="255" />
+      <Color Name="TableBackgroundColor" Red="200" Green="200" Blue="200" Alpha="255" />
+      <Color Name="TableArchiveColor" Red="230" Green="230" Blue="230" Alpha="255" />
+
+      <!-- Стили кнопок -->
+      <Color Name="ButtonFlatBorderColor" Red="225" Green="225" Blue="225" Alpha="255" />
+      <Color Name="ButtonFlatMouseDownBackColor" Red="201" Green="219" Blue="241" Alpha="255" />
+      <Color Name="ButtonFlatMouseOverBackColor" Red="228" Green="237" Blue="248" Alpha="255" />
+    </Colors>
+
+    <FontStyles>
+      <FontStyle Name="ThemeFontStyle" Font="Segoe UI" Size="9" />
+      <FontStyle Name="HeadFontStyle" Font="Segoe UI" Size="15" />
+      <FontStyle Name="LabelFontStyle" Font="Segoe UI" Size="9" Italic="True" />
+      <FontStyle Name="ButtonFontStyle" Font="Segoe UI" Size="10" />
+    </FontStyles>
+  </Appearance>
+
+  <DataConnections>
+    <DataConnection Name="SettingsPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="SettingsSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="SmtpServerAddress" />
+          <Field Name="SmtpServerPort" />
+          <Field Name="SSL" />
+          <Field Name="Email" />
+          <Field Name="EmailPassword" />
+          <Field Name="SmtpSettingsAreCorrect" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="MaterialPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="MaterialSimpleSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="MaterialId" />
+          <Field Name="Title" />
+          <Field Name="MaterialCategoryTitle" />
+          <Field Name="UnitShortTitle" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="ClientPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="ClientShortSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="ClientId" />
+          <Field Name="ClientTitle" />
+          <Field Name="CityTitle" />
+          <Field Name="Phone" />
+          <Field Name="Email" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="ClientId">
+            <Value>
+              <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="ClientId" />
+                </Fields>
+              </DataConnection>
+            </Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="ClientSecondaryGetDataConnection" Type="SecondaryGetDataConnection" Assembly="DataConnections">
+      <SourceDataConnection Name="ClientPrimaryGetDataConnection" />
+      <Filter>
+        <Field NativeName="ClientId" />
+        <Value>
+          <Object Name="ClientComboBox" />
+        </Value>
+        <DataType Type="IntegerDataType" />
+      </Filter>
+    </DataConnection>
+
+    <DataConnection Name="OrderPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <ManualLoad>
+        <Not>
+          <Parameter Name="Edit" />
+        </Not>
+      </ManualLoad>
+      <SqlQuery Name="OrderByIdSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="OrderId" />
+          <Field Name="ClientId" />
+          <Field Name="OrderNumber" />
+          <Field Name="OrderDate" />
+          <Field Name="Description" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="OrderId">
+            <Value>
+              <Parameter Name="OrderId" />
+            </Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="OrderUpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="OrderUpdateSqlQuery" Type="Update" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="OrderId">
+          <Value>
+            <Parameter Name="OrderId" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="OrderNumber">
+          <Value>
+            <Object Name="OrderNumberTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="OrderDate">
+          <Value>
+            <Object Name="OrderDateDateTimePicker" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="ClientId">
+          <Value>
+            <Object Name="ClientComboBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Description">
+          <Value>
+            <Object Name="DescriptionTextBox" />
+          </Value>
+        </Parameter>
+      </Parameters>
+    </DataConnection>
+
+    <DataConnection Name="OrderPositionPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="OrderPositionByOrderIdSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="OrderPositionId" />
+          <Field Name="MaterialId" />
+          <Field Name="Quantity" />
+          <Field Name="UnitPrice" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="OrderId">
+            <Value>
+              <Parameter Name="OrderId" />
+            </Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="OrderPositionDeleteDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="OrderPositionDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="OrderPositionId">
+          <Value>
+            <Object Name="OrderPositionDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">OrderPositionId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <Refresh>
+        <DataConnection Name="OrderPositionPrimaryGetDataConnection" />
+      </Refresh>
+    </DataConnection>
+
+    <DataConnection Name="EmptyOrderDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <Parameters>
+        <Parameter NativeName="OrderId">
+          <Value>
+            <Parameter Name="OrderId" />
+          </Value>
+        </Parameter>
+      </Parameters>
+      <SqlQueries>
+        <SqlQuery Name="EmptyOrderDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
+    </DataConnection>
+
+    <DataConnection Name="OrderPaymentPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="OrderPaymentSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="OrderPaymentId" />
+          <Field Name="CashId" />
+          <Field Name="Date" />
+          <Field Name="AccountId" />
+          <Field Name="Summ" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="OrderId">
+            <Value>
+              <Parameter Name="OrderId" />
+            </Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="OrderPaymentDeleteDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="OrderPaymentDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="OrderPaymentId">
+          <Value>
+            <Object Name="OrderPaymentDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">OrderPaymentId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <Refresh>
+        <DataConnection Name="OrderPaymentPrimaryGetDataConnection" />
+      </Refresh>
+    </DataConnection>
+
+    <DataConnection Name="AccountShortPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="AccountShortWithArchiveSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="AccountId" />
+          <Field Name="Title" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+  </DataConnections>
+
+  <Conditions>
+    <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
+
+    <Condition Name="EscapeKeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
+      <Key Value="Escape" />
+    </Condition>
+
+    <Condition Name="FormChangedEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Form>
+            <Property Name="FormChanged" />
+          </Form>
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="OrderNumberTextBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OrderNumberTextBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="ClientComboBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="ClientComboBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="OrderPositionSelectedCondition" Type="NotEqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OrderPositionDatabaseTable">
+            <Property Name="SelectedRowsCount" />
+          </Object>
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="OrderPositionDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
+      <Table Name="OrderPositionDatabaseTable" />
+    </Condition>
+
+    <Condition Name="OrderEmailSentSuccessfullyEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Command Name="OrderEmailSendCommand" />
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="OrderPositionDatabaseTableIsEmptyEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OrderPositionDatabaseTable">
+            <Property Name="RowsCount" />
+          </Object>
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="MandatoryFieldsAllowedSavingNestedCondition" Type="NestedCondition" Assembly="Conditions">
+      <ConditionExpression>
+        <Not>
+          <Form>
+            <Property Name="CheckingFired">Saving</Property>
+          </Form>
+        </Not>
+      </ConditionExpression>
+    </Condition>
+
+    <Condition Name="MandatoryFieldsAllowedPrintingNestedCondition" Type="NestedCondition" Assembly="Conditions">
+      <ConditionExpression>
+        <Not>
+          <Form>
+            <Property Name="CheckingFired">Printing</Property>
+          </Form>
+        </Not>
+      </ConditionExpression>
+    </Condition>
+
+    <Condition Name="ClientEmailIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
+            <Fields>
+              <Field Name="Email" />
+            </Fields>
+          </DataConnection>
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="SmtpSettingsAreCorrectEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <DataConnection SourceDataConnection="SettingsPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="SmtpSettingsAreCorrect" />
+            </Fields>
+          </DataConnection>
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="OrderPaymentSelectedCondition" Type="NotEqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OrderPaymentDatabaseTable">
+            <Property Name="SelectedRowsCount" />
+          </Object>
+        </Item>
+        <Item>0</Item>
+      </Items>
+
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="OrderPaymentDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
+      <Table Name="OrderPaymentDatabaseTable" />
+    </Condition>
+  </Conditions>
+
+  <Commands>
+    <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
+
+    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Updated">True</Parameter>
+    </Command>
+
+    <Command Name="SaveOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Сохранение</Caption>
+      <Text>Форма содержит несохраненные изменения.\rСохранить их перед закрытием?</Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNoCancel" />
+    </Command>
+
+    <Command Name="CloseOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Закрытие</Caption>
+      <Text>При закрытии все несохраненные изменения будут утеряны.\rВы уверены, что хотите закрыть форму?</Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNo" />
+    </Command>
+
+    <Command Name="OrderUpdateSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OrderUpdateSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="FormChangedFalseValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Form>
+        <Property Name="FormChanged">False</Property>
+      </Form>
+    </Command>
+
+    <Command Name="EditTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Edit">True</Parameter>
+    </Command>
+
+    <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
+      <Commands>
+        <Command Name="OrderUpdateSaveCommand" />
+        <Command Name="UpdatedTrueValueSetCommand" />
+        <Command Name="EditTrueValueSetCommand" />
+        <Command Name="FormChangedFalseValueSetCommand" />
+      </Commands>
+    </Command>
+
+    <Command Name="ClientDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="ClientPrimaryGetDataConnection" Packet="True" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="ClientComboBoxValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="ClientComboBox">
+        <Input />
+      </Object>
+    </Command>
+
+    <Command Name="ClientAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateClientEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="ClientTitle">
+          <Object Name="ClientComboBox">
+            <Property Name="Text" />
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="ClientEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateClientEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="ClientId">
+          <Object Name="ClientComboBox" />
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="ClientListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateClientList.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="SelectionMode">True</Parameter>
+        <Parameter Name="SelectedClientId">
+          <Object Name="ClientComboBox" />
+        </Parameter>
+        <Parameter Name="ClientTitle">
+          <Object Name="ClientComboBox">
+            <Property Name="Text" />
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="OrderPositionDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OrderPositionPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="OrderPositionAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateOrderPositionEdit.xml</Xml>
+      <Show Type="Modal" />
+      <Parameters>
+        <Parameter Name="OrderId">
+          <Parameter Name="OrderId" />
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="OrderPositionEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateOrderPositionEdit.xml</Xml>
+      <Show Type="Modal" />
+      <Parameters>
+        <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="OrderPositionId">
+          <Object Name="OrderPositionDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">OrderPositionId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="OrderPositionSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="OrderPositionDatabaseTable">
+        <Property Name="SelectRowByFieldValue">
+          <Parameters>
+            <Parameter Name="ColumnName">OrderPositionId</Parameter>
+            <Parameter Name="Value">
+              <Input />
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+
+    <Command Name="OrderPositionDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Вы действительно хотите удалить выбранную запись?</Text>
+      <Buttons Type="YesNo" />
+      <Icon Type="Question" />
+    </Command>
+
+    <Command Name="OrderPositionDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OrderPositionDeleteDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="EmptyOrderDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="EmptyOrderDeleteSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="OrderExportToDocxCommand" Type="ExportToDocxCommand" Assembly="Commands">
+      <TemplateFileName>Templates\TemplateOrder.docx</TemplateFileName>
+      <Open>
+        <Input Name="Open">True</Input>
+      </Open>
+      <Parameters>
+        <!-- Скалярные переменные -->
+        <Parameter Name="OrderNumber">
+          <Object Name="OrderNumberTextBox" />
+        </Parameter>
+        <Parameter Name="OrderDateDay">
+          <DataTypeFormat Type="DateTimeDataType" Format="dd.MM.yyyy">
+            <Object Name="OrderDateDateTimePicker" />
+          </DataTypeFormat>
+        </Parameter>
+        <Parameter Name="OrderDescription">
+          <Object Name="DescriptionTextBox" />
+        </Parameter>
+
+        <Parameter Name="ClientName">
+          <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
+            <Fields>
+              <Field Name="ClientTitle" />
+            </Fields>
+          </DataConnection>
+        </Parameter>
+        <Parameter Name="ClientCity">
+          <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
+            <Fields>
+              <Field Name="CityTitle" />
+            </Fields>
+          </DataConnection>
+        </Parameter>
+        <Parameter Name="ClientPhone">
+          <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
+            <Fields>
+              <Field Name="Phone" />
+            </Fields>
+          </DataConnection>
+        </Parameter>
+        <Parameter Name="ClientEmail">
+          <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
+            <Fields>
+              <Field Name="Email" />
+            </Fields>
+          </DataConnection>
+        </Parameter>
+
+        <!-- Переменные массивов -->
+        <Parameter Name="OrderPositionRowNumber">
+          <Object Name="OrderPositionDatabaseTable">
+            <Property Name="Column">
+              <Parameters>
+                <Parameter Name="ColumnName">RowNumber</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+        <Parameter Name="OrderPositionTitle">
+          <Object Name="OrderPositionDatabaseTable">
+            <Property Name="Column">
+              <Parameters>
+                <Parameter Name="ColumnName">Title</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+        <Parameter Name="OrderPositionQuantity">
+          <DataTypeFormat Type="DecimalDataType" Format="N2">
+            <Object Name="OrderPositionDatabaseTable">
+              <Property Name="Column">
+                <Parameters>
+                  <Parameter Name="ColumnName">Quantity</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </DataTypeFormat>
+        </Parameter>
+        <Parameter Name="OrderPositionUnitPrice">
+          <DataTypeFormat Type="DecimalDataType" Format="N2">
+            <Object Name="OrderPositionDatabaseTable">
+              <Property Name="Column">
+                <Parameters>
+                  <Parameter Name="ColumnName">UnitPrice</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </DataTypeFormat>
+        </Parameter>
+        <Parameter Name="OrderPositionTotalPrice">
+          <DataTypeFormat Type="DecimalDataType" Format="N2">
+            <Object Name="OrderPositionDatabaseTable">
+              <Property Name="Column">
+                <Parameters>
+                  <Parameter Name="ColumnName">TotalPrice</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </DataTypeFormat>
+        </Parameter>
+
+        <Parameter Name="OrderTotalPrice">
+          <DataTypeFormat Type="DecimalDataType" Format="N2">
+            <Object Name="TotalSumToPayVariable" />
+          </DataTypeFormat>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="SaveOnPrintMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Сохранение</Caption>
+      <Text>Форма содержит несохраненные изменения.\rХотите сохранить и продолжить?</Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNo" />
+    </Command>
+
+    <Command Name="OrderEmailSendCommand" Type="EmailSendCommand" Assembly="Commands">
+      <!-- Настройки почтового агента -->
+      <AuthorSmtpServerAddress>
+        <DataConnection SourceDataConnection="SettingsPrimaryGetDataConnection">
+          <Fields>
+            <Field Name="SmtpServerAddress" />
+          </Fields>
+        </DataConnection>
+      </AuthorSmtpServerAddress>
+      <AuthorSmtpServerPort>
+        <DataConnection SourceDataConnection="SettingsPrimaryGetDataConnection">
+          <Fields>
+            <Field Name="SmtpServerPort" />
+          </Fields>
+        </DataConnection>
+      </AuthorSmtpServerPort>
+      <EnableSSL>
+        <DataConnection SourceDataConnection="SettingsPrimaryGetDataConnection">
+          <Fields>
+            <Field Name="SSL" />
+          </Fields>
+        </DataConnection>
+      </EnableSSL>
+      <AuthorEmailAddress>
+        <DataConnection SourceDataConnection="SettingsPrimaryGetDataConnection">
+          <Fields>
+            <Field Name="Email" />
+          </Fields>
+        </DataConnection>
+      </AuthorEmailAddress>
+      <AuthorEmailPassword>
+        <DataConnection SourceDataConnection="SettingsPrimaryGetDataConnection">
+          <Fields>
+            <Field Name="EmailPassword" />
+          </Fields>
+        </DataConnection>
+      </AuthorEmailPassword>
+
+      <!-- Дополнительные настройки -->
+      <Timeout>20000</Timeout>
+
+      <!-- Параметры письма -->
+      <Subject>
+        <String>
+          <Format>Счет заказа №{0} от {1}</Format>
+          <Items>
+            <Item>
+              <Object Name="OrderNumberTextBox" />
+            </Item>
+            <Item>
+              <DataTypeFormat Type="DateTimeDataType" Format="dd.MM.yyyy">
+                <Object Name="OrderDateDateTimePicker" />
+              </DataTypeFormat>
+            </Item>
+          </Items>
+        </String>
+      </Subject>
+      <Text>
+        <String>
+          <Format>По заказу №{0} от {1} сформирован счет.</Format>
+          <Items>
+            <Item>
+              <Object Name="OrderNumberTextBox" />
+            </Item>
+            <Item>
+              <DataTypeFormat Type="DateTimeDataType" Format="dd.MM.yyyy">
+                <Object Name="OrderDateDateTimePicker" />
+              </DataTypeFormat>
+            </Item>
+          </Items>
+        </String>
+      </Text>
+      <Addressees>
+        <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
+          <Fields>
+            <Field Name="Email" />
+          </Fields>
+        </DataConnection>
+      </Addressees>
+      <Files>
+        <Command Name="OrderExportToDocxCommand" />
+      </Files>
+    </Command>
+
+    <Command Name="OrderEmailSentSuccessfullyMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption />
+      <Text>Письмо успешно отправлено.</Text>
+      <Icon Type="Information" />
+      <Buttons Type="Ok" />
+    </Command>
+
+    <Command Name="EmailSendSequentialCommand" Type="SequentialCommand" Assembly="Commands">
+      <Commands>
+        <Command Name="OrderExportToDocxCommand">
+          <Input Name="Open">False</Input>
+        </Command>
+        <Command Name="OrderEmailSendCommand" />
+        <If>
+          <When>
+            <Condition Name="OrderEmailSentSuccessfullyEqualCondition" />
+          </When>
+          <Then>
+            <!-- Письмо успешно отправлено -->
+            <Command Name="OrderEmailSentSuccessfullyMessageBoxCommand" />
+          </Then>
+        </If>
+      </Commands>
+    </Command>
+
+    <Command Name="ShowAsteriskHintValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="ShowAsteriskHintVariable">True</Object>
+    </Command>
+
+    <Command Name="PrintingMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Внимание!</Caption>
+      <Text>
+        <Input />
+      </Text>
+      <Icon Type="Information" />
+      <Buttons Type="Ok" />
+    </Command>
+
+    <Command Name="OrderPaymentDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OrderPaymentPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+    <Command Name="OrderPaymentDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OrderPaymentDeleteDataConnection" />
+      </DataConnections>
+    </Command>
+    <Command Name="OrderPaymentAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateOrderPaymentEdit.xml</Xml>
+      <Parameters>
+        <Parameter Name="OrderId">
+          <Parameter Name="OrderId" />
+        </Parameter>
+        <Parameter Name="TotalDebtSumm">
+          <Object Name="TotalDebtVariable" />
+        </Parameter>
+      </Parameters>
+      <Show Type="None" />
+    </Command>
+
+
+    <Command Name="OrderPaymentEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateOrderPaymentEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="OrderPaymentId">
+          <Object Name="OrderPaymentDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">OrderPaymentId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+        <Parameter Name="OrderId">
+          <Parameter Name="OrderId" />
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="OrderPaymentSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="OrderPaymentDatabaseTable">
+        <Property Name="SelectRowByFieldValue">
+          <Parameters>
+            <Parameter Name="ColumnName">OrderPaymentId</Parameter>
+            <Parameter Name="Value">
+              <Input />
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+    <Command Name="OrderPaymentDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Вы действительно хотите удалить выбранную запись?</Text>
+      <Buttons Type="YesNo" />
+      <Icon Type="Question" />
+    </Command>
+  </Commands>
+
+  <Executions>
+    <Execution>
+      <ConditionExpression>
+        <Or>
+          <And>
+            <Or>
+              <Condition Name="FormClosingCondition" />
+              <Condition Name="EscapeKeyDownCondition" />
+            </Or>
+            <Not>
+              <Condition Name="FormChangedEqualCondition" />
+            </Not>
+          </And>
+          <Command Name="SaveOnCloseMessageBoxCommand" Parameter="No" />
+          <Command Name="CloseOnCloseMessageBoxCommand" Parameter="Yes" />
+        </Or>
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <Not>
+              <Parameter Name="Edit" />
+            </Not>
+          </When>
+          <Then>
+            <Command Name="EmptyOrderDeleteSaveCommand" />
+          </Then>
+        </If>
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <And>
+          <Or>
+            <Condition Name="FormClosingCondition" />
+            <Condition Name="EscapeKeyDownCondition" />
+          </Or>
+          <Condition Name="FormChangedEqualCondition" />
+        </And>
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <Condition Name="MandatoryFieldsAllowedSavingNestedCondition" />
+          </When>
+          <Then>
+            <Command Name="SaveOnCloseMessageBoxCommand" />
+          </Then>
+          <Else>
+            <Command Name="CloseOnCloseMessageBoxCommand" />
+          </Else>
+        </If>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="SaveOnCloseMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="SaveSequentialCommand" />
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="ClientAddFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="ClientDataConnectionRefreshCommand" />
+        <Command Name="ClientComboBoxValueSetCommand">
+          <Command Name="ClientAddFormShowCommand" Parameter="ClientId" />
+        </Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="ClientEditFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="ClientDataConnectionRefreshCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="ClientListFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="ClientDataConnectionRefreshCommand" />
+        <Command Name="ClientComboBoxValueSetCommand">
+          <Command Name="ClientListFormShowCommand" Parameter="SelectedClientId" />
+        </Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="OrderPositionDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderPositionEditFormShowCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="OrderPositionAddFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderPositionDataConnectionRefreshCommand" />
+        <Command Name="OrderPositionSelectInTableValueSetCommand">
+          <Command Name="OrderPositionAddFormShowCommand" Parameter="OrderPositionId" />
+        </Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="OrderPositionEditFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderPositionDataConnectionRefreshCommand" />
+        <Command Name="OrderPositionSelectInTableValueSetCommand">
+          <Command Name="OrderPositionEditFormShowCommand" Parameter="OrderPositionId" />
+        </Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="OrderPositionDeleteMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderPositionDeleteSaveCommand" />
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="OrderPaymentDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderPaymentEditFormShowCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="OrderPaymentAddFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderPaymentDataConnectionRefreshCommand" />
+        <Command Name="OrderPaymentSelectInTableValueSetCommand">
+          <Command Name="OrderPaymentAddFormShowCommand" Parameter="OrderPaymentId" />
+        </Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="OrderPaymentEditFormShowCommand" Parameter="Updated" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderPaymentDataConnectionRefreshCommand" />
+        <Command Name="OrderPaymentSelectInTableValueSetCommand">
+          <Command Name="OrderPaymentEditFormShowCommand" Parameter="OrderPaymentId" />
+        </Command>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="OrderPaymentDeleteMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OrderPaymentDeleteSaveCommand" />
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+  </Executions>
+
+  <Checkings>
+    <Checking>
+      <Object Name="OrderNumberTextBox" />
+      <Group Name="Saving" />
+      <ConditionExpression>
+        <Condition Name="OrderNumberTextBoxIsNullOrEmptyCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
+    </Checking>
+
+    <Checking>
+      <Object Name="ClientComboBox" />
+      <Group Name="Saving" />
+      <ConditionExpression>
+        <Condition Name="ClientComboBoxIsNullOrEmptyCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
+    </Checking>
+
+    <Checking>
+      <Object Name="OrderPositionDatabaseTable" />
+      <Group Name="Printing" />
+      <ConditionExpression>
+        <And>
+          <Condition Name="OrderPositionDatabaseTableIsEmptyEqualCondition" />
+          <Object Name="ShowAsteriskHintVariable" />
+        </And>
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, заполните таблицу</AsteriskHint>
+    </Checking>
+  </Checkings>
+
+  <MyObjects>
+    <MyObject Name="ShowAsteriskHintVariable" Type="Variable" Assembly="SimpleControls" ChangeForm="False">
+      <Value>False</Value>
+    </MyObject>
+
+    <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
+      <Top>0</Top>
+      <Left>0</Left>
+      <Height>50</Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <BackColor>HeadBackgroundColor</BackColor>
+
+      <MyObject Name="HeadLabel" Type="Label" Assembly="BaseControls" ChangeForm="False">
+        <Top>0</Top>
+        <Left>10</Left>
+        <Height>
+          <Object Name="HeadPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="HeadLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <FontStyle>HeadFontStyle</FontStyle>
+        <ForeColor>HeadForeColor</ForeColor>
+        <TextAlign>MiddleLeft</TextAlign>
+        <Text>
+          <Parameter Name="Title" />
+        </Text>
+      </MyObject>
+    </MyObject>
+
+    <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="HeadPanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>0</Left>
+      <Height>
+        <Calculate>
+          <Expression>{0} - {1} - {2} - {3}</Expression>
+          <Items>
+            <Item>
+              <Form>
+                <Property Name="Height" />
+              </Form>
+            </Item>
+            <Item>
+              <Object Name="ContentPanel">
+                <Property Name="Top" />
+              </Object>
+            </Item>
+            <Item>
+              <Object Name="FootSeparatePanel">
+                <Property Name="Height" />
+              </Object>
+            </Item>
+            <Item>
+              <Object Name="FootPanel">
+                <Property Name="Height" />
+              </Object>
+            </Item>
+          </Items>
+        </Calculate>
+      </Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>1</TabIndex>
+      <BackColor>ThemeBackgroundColor</BackColor>
+
+      <MyObject Name="CommonPanel" Type="Panel" Assembly="BaseControls">
+        <Top>0</Top>
+        <Left>0</Left>
+        <Height>
+          <Object Name="ContentPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>350</Width>
+        <TabIndex>1</TabIndex>
+
+        <MyObject Name="ClientPanel" Type="Panel" Assembly="BaseControls">
+          <Top>0</Top>
+          <Left>0</Left>
+          <Height>200</Height>
+          <Width>
+            <Object Name="CommonPanel">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <TabIndex>1</TabIndex>
+
+          <MyObject Name="ClientLabel" Type="Label" Assembly="BaseControls">
+            <Top>5</Top>
+            <Left>10</Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="ClientPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="ClientLabel">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleLeft</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Клиент</Text>
+          </MyObject>
+
+          <MyObject Name="ClientComboBox" Type="ComboBox" Assembly="BaseControls">
+            <Top>
+              <Object Name="ClientLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="ClientLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1}*2 - {2} - {3} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="ClientPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="ClientComboBox">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="ClientAddEditButton">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="ClientListButton">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <NullValue Show="True" />
+            <NullValueTitle>[Не выбрано]</NullValueTitle>
+            <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
+            <ValueList>
+              <DataConnection SourceDataConnection="ClientPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="ClientId" />
+                  <Field Name="ClientTitle" />
+                </Fields>
+              </DataConnection>
+            </ValueList>
+            <Value>
+              <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="ClientId" />
+                </Fields>
+              </DataConnection>
+            </Value>
+            <TabIndex>1</TabIndex>
+          </MyObject>
+
+          <MyObject Name="ClientAddEditButton" Type="Button" Assembly="BaseControls">
+            <Top>
+              <Object Name="ClientComboBox">
+                <Property Name="Top" />
+              </Object>
+            </Top>
+            <Left>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="ClientComboBox">
+                      <Property Name="Right" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Left>
+            <Height>22</Height>
+            <Width>22</Width>
+            <BackgroundImage>
+              <Switch>
+                <Case>
+                  <When>
+                    <Condition Name="ClientComboBoxIsNullOrEmptyCondition" />
+                  </When>
+                  <Then>Images\16x16\plus.png</Then>
+                </Case>
+                <Case>Images\16x16\pencil.png</Case>
+              </Switch>
+            </BackgroundImage>
+            <BackgroundImageLayout>Center</BackgroundImageLayout>
+            <Hint>
+              <Switch>
+                <Case>
+                  <When>
+                    <Condition Name="ClientComboBoxIsNullOrEmptyCondition" />
+                  </When>
+                  <Then>Добавить запись...</Then>
+                </Case>
+                <Case>Редактировать запись...</Case>
+              </Switch>
+            </Hint>
+            <FlatStyle>Flat</FlatStyle>
+            <FlatBorderSize>1</FlatBorderSize>
+            <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+            <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+            <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+            <Commands>
+              <If>
+                <When>
+                  <Condition Name="ClientComboBoxIsNullOrEmptyCondition" />
+                </When>
+                <Then>
+                  <Command Name="ClientAddFormShowCommand" />
+                </Then>
+                <Else>
+                  <Command Name="ClientEditFormShowCommand" />
+                </Else>
+              </If>
+            </Commands>
+          </MyObject>
+
+          <MyObject Name="ClientListButton" Type="Button" Assembly="BaseControls">
+            <Top>
+              <Object Name="ClientComboBox">
+                <Property Name="Top" />
+              </Object>
+            </Top>
+            <Left>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="ClientAddEditButton">
+                      <Property Name="Right" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Left>
+            <Height>
+              <Object Name="ClientAddEditButton">
+                <Property Name="Height" />
+              </Object>
+            </Height>
+            <Width>
+              <Object Name="ClientAddEditButton">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <BackgroundImage>Images\16x16\list.png</BackgroundImage>
+            <BackgroundImageLayout>Center</BackgroundImageLayout>
+            <Hint>Клиенты...</Hint>
+            <FlatStyle>Flat</FlatStyle>
+            <FlatBorderSize>1</FlatBorderSize>
+            <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+            <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+            <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+            <Commands>
+              <Command Name="ClientListFormShowCommand" />
+            </Commands>
+          </MyObject>
+
+          <MyObject Name="CityLabel" Type="Label" Assembly="BaseControls">
+            <Top>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="ClientComboBox">
+                      <Property Name="Bottom" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Top>
+            <Left>
+              <Object Name="ClientLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Object Name="ClientLabel">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleLeft</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Город</Text>
+          </MyObject>
+
+          <MyObject Name="CityTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
+            <Top>
+              <Object Name="CityLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="CityLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Object Name="ClientLabel">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <Text>
+              <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
+                <Fields>
+                  <Field Name="CityTitle" />
+                </Fields>
+              </DataConnection>
+            </Text>
+            <ReadOnly>True</ReadOnly>
+          </MyObject>
+
+          <MyObject Name="PhoneLabel" Type="Label" Assembly="BaseControls">
+            <Top>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="CityTextBox">
+                      <Property Name="Bottom" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Top>
+            <Left>
+              <Object Name="CityLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Object Name="ClientLabel">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleLeft</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Телефон клиента</Text>
+          </MyObject>
+
+          <MyObject Name="PhoneTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
+            <Top>
+              <Object Name="PhoneLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="PhoneLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Object Name="ClientLabel">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <Mask>PHONE</Mask>
+            <Text>
+              <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
+                <Fields>
+                  <Field Name="Phone" />
+                </Fields>
+              </DataConnection>
+            </Text>
+            <ReadOnly>True</ReadOnly>
+          </MyObject>
+
+          <MyObject Name="EmailLabel" Type="Label" Assembly="BaseControls">
+            <Top>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="PhoneTextBox">
+                      <Property Name="Bottom" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Top>
+            <Left>
+              <Object Name="CityLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="ClientPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="EmailLabel">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleLeft</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>E-mail клиента</Text>
+          </MyObject>
+
+          <MyObject Name="EmailTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
+            <Top>
+              <Object Name="EmailLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="EmailLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="ClientPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="EmailTextBox">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Text>
+              <DataConnection SourceDataConnection="ClientSecondaryGetDataConnection">
+                <Fields>
+                  <Field Name="Email" />
+                </Fields>
+              </DataConnection>
+            </Text>
+            <ReadOnly>True</ReadOnly>
+          </MyObject>
+
+        </MyObject>
+
+        <MyObject Name="ClientSeparatePanel" Type="Panel" Assembly="BaseControls">
+          <Top>
+            <Object Name="ClientPanel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>5</Left>
+          <Height>1</Height>
+          <Width>
+            <Calculate>
+              <Expression>{0} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="CommonPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <BackColor>ThemeSeparateBackgroundColor</BackColor>
+        </MyObject>
+
+        <MyObject Name="OrderPanel" Type="Panel" Assembly="BaseControls">
+          <Top>
+            <Object Name="ClientSeparatePanel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="ClientPanel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Height>
+            <Calculate>
+              <Expression>{0} - {1} - {2}</Expression>
+              <Items>
+                <Item>
+                  <Object Name="CommonPanel">
+                    <Property Name="Height" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="OrderPanel">
+                    <Property Name="Top" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="TotalPanel">
+                    <Property Name="Height" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Height>
+          <Width>
+            <Object Name="CommonPanel">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <TabIndex>2</TabIndex>
+
+          <MyObject Name="OrderNumberLabel" Type="Label" Assembly="BaseControls">
+            <Top>5</Top>
+            <Left>10</Left>
+            <Width>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="OrderPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="OrderNumberLabel">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleLeft</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Номер заказа</Text>
+          </MyObject>
+
+          <MyObject Name="OrderNumberTextBox" Type="TextBox" Assembly="BaseControls">
+            <Top>
+              <Object Name="OrderNumberLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="OrderNumberLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Object Name="OrderNumberLabel">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <Text>
+              <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="OrderNumber" />
+                </Fields>
+              </DataConnection>
+            </Text>
+          </MyObject>
+
+          <MyObject Name="OrderDateLabel" Type="Label" Assembly="BaseControls">
+            <Top>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="OrderNumberTextBox">
+                      <Property Name="Bottom" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Top>
+            <Left>
+              <Object Name="OrderNumberTextBox">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Object Name="OrderNumberLabel">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleLeft</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Дата и время заказа</Text>
+          </MyObject>
+
+          <MyObject Name="OrderDateDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
+            <Top>
+              <Object Name="OrderDateLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="OrderDateLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Object Name="OrderNumberLabel">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <Format>dd MMMM yyyy HH:mm</Format>
+            <ShowCalendar>True</ShowCalendar>
+            <NullValue Show="False" />
+            <Value>
+              <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="OrderDate" />
+                </Fields>
+              </DataConnection>
+            </Value>
+          </MyObject>
+
+          <MyObject Name="DescriptionLabel" Type="Label" Assembly="BaseControls">
+            <Top>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="OrderDateDateTimePicker">
+                      <Property Name="Bottom" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Top>
+            <Left>
+              <Object Name="OrderNumberLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Object Name="OrderNumberLabel">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleLeft</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Комментарий к заказу</Text>
+          </MyObject>
+
+          <MyObject Name="DescriptionTextBox" Type="TextBox" Assembly="BaseControls">
+            <Top>
+              <Object Name="DescriptionLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="DescriptionLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Object Name="OrderNumberLabel">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <Height>
+              <Calculate>
+                <Expression>{0} - {1} - 10</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="OrderPanel">
+                      <Property Name="Height" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="DescriptionTextBox">
+                      <Property Name="Top" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Height>
+            <Multiline>True</Multiline>
+            <Text>
+              <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
+                <Fields>
+                  <Field Name="Description" />
+                </Fields>
+              </DataConnection>
+            </Text>
+          </MyObject>
+
+        </MyObject>
+
+        <MyObject Name="OrderSeparatePanel" Type="Panel" Assembly="BaseControls">
+          <Top>
+            <Object Name="OrderPanel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>5</Left>
+          <Height>1</Height>
+          <Width>
+            <Calculate>
+              <Expression>{0} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="CommonPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <BackColor>ThemeSeparateBackgroundColor</BackColor>
+        </MyObject>
+
+        <MyObject Name="TotalPanel" Type="Panel" Assembly="BaseControls">
+          <Top>
+            <Object Name="OrderSeparatePanel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="ClientPanel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Height>60</Height>
+          <Width>
+            <Object Name="ClientPanel">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <TabIndex>3</TabIndex>
+
+          <MyObject Name="TotalSumToPayVariable" Type="Variable" Assembly="SimpleControls" ChangeForm="False">
+            <Value>
+              <Object Name="OrderPositionDatabaseTable">
+                <Property Name="ColumnSum">
+                  <Parameters>
+                    <Parameter Name="ColumnName">TotalPrice</Parameter>
+                  </Parameters>
+                </Property>
+              </Object>
+            </Value>
+          </MyObject>
+
+          <MyObject Name="TotalPaidSumVariable" Type="Variable" Assembly="SimpleControls">
+            <Value>
+              <Object Name="OrderPaymentDatabaseTable">
+                <Property Name="ColumnSum">
+                  <Parameters>
+                    <Parameter Name="ColumnName">Summ</Parameter>
+                  </Parameters>
+                </Property>
+              </Object>
+            </Value>
+          </MyObject>
+
+          <MyObject Name="TotalDebtVariable" Type="Variable" Assembly="SimpleControls">
+            <Value>
+              <Calculate>
+                <Expression>{0} - {1}</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="TotalSumToPayVariable" />
+                  </Item>
+                  <Item>
+                    <Object Name="TotalPaidSumVariable" />
+                  </Item>
+                </Items>
+              </Calculate>
+            </Value>
+          </MyObject>
+
+
+          <MyObject Name="TotalSumToPayLabel" Type="Label" Assembly="BaseControls">
+            <Top>5</Top>
+            <Left>10</Left>
+            <Width>
+              <Calculate>
+                <Expression>Ceiling({0} /3) - 15</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="TotalPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="TotalSumToPayLabel">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleCenter</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Всего к оплате</Text>
+          </MyObject>
+
+          <MyObject Name="TotalSumToPayTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
+            <Top>
+              <Object Name="TotalSumToPayLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="TotalSumToPayLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Object Name="TotalSumToPayLabel">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <TabIndex>1</TabIndex>
+            <TextAlign>Right</TextAlign>
+            <ReadOnly>True</ReadOnly>
+            <Text>
+              <DataTypeFormat Type="DecimalDataType" Format="N2">
+                <Object Name="TotalSumToPayVariable" />
+              </DataTypeFormat>
+            </Text>
+          </MyObject>
+
+          <MyObject Name="TotalPaidSumLabel" Type="Label" Assembly="BaseControls">
+            <Top>5</Top>
+            <Left>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="TotalSumToPayLabel">
+                      <Property Name="Right" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Left>
+            <Width>
+              <Calculate>
+                <Expression>Ceiling({0} /3) - 15</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="TotalPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="TotalSumToPayLabel">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleCenter</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Сумма оплат</Text>
+          </MyObject>
+
+          <MyObject Name="TotalPaidSumTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
+            <Top>
+              <Object Name="TotalSumToPayLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="TotalPaidSumLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Object Name="TotalSumToPayLabel">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <TabIndex>1</TabIndex>
+            <TextAlign>Right</TextAlign>
+            <ReadOnly>True</ReadOnly>
+            <Text>
+              <DataTypeFormat Type="DecimalDataType" Format="N2">
+                <Object Name="TotalPaidSumVariable" />
+              </DataTypeFormat>
+            </Text>
+          </MyObject>
+
+          <MyObject Name="TotalDebtLabel" Type="Label" Assembly="BaseControls">
+            <Top>5</Top>
+            <Left>
+              <Calculate>
+                <Expression>{0} + 5</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="TotalPaidSumLabel">
+                      <Property Name="Right" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Left>
+            <Width>
+              <Calculate>
+                <Expression>Ceiling({0} /3) - 15</Expression>
+                <Items>
+                  <Item>
+                    <Object Name="TotalPanel">
+                      <Property Name="Width" />
+                    </Object>
+                  </Item>
+                  <Item>
+                    <Object Name="TotalSumToPayLabel">
+                      <Property Name="Left" />
+                    </Object>
+                  </Item>
+                </Items>
+              </Calculate>
+            </Width>
+            <Height>20</Height>
+            <TextAlign>MiddleCenter</TextAlign>
+            <FontStyle>LabelFontStyle</FontStyle>
+            <ForeColor>LabelForeColor</ForeColor>
+            <Text>Задолженность</Text>
+          </MyObject>
+
+          <MyObject Name="TotalDebtTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
+            <Top>
+              <Object Name="TotalSumToPayLabel">
+                <Property Name="Bottom" />
+              </Object>
+            </Top>
+            <Left>
+              <Object Name="TotalDebtLabel">
+                <Property Name="Left" />
+              </Object>
+            </Left>
+            <Width>
+              <Object Name="TotalSumToPayLabel">
+                <Property Name="Width" />
+              </Object>
+            </Width>
+            <TabIndex>1</TabIndex>
+            <TextAlign>Right</TextAlign>
+            <ReadOnly>True</ReadOnly>
+            <Text>
+              <DataTypeFormat Type="DecimalDataType" Format="N2">
+                <Object Name="TotalDebtVariable" />
+              </DataTypeFormat>
+            </Text>
+          </MyObject>
+
+        </MyObject>
+
+      </MyObject>
+
+      <MyObject Name="OrderPositionPanel" Type="Panel" Assembly="BaseControls">
+        <Top>
+          <Object Name="CommonPanel">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Left>
+          <Object Name="CommonPanel">
+            <Property Name="Right" />
+          </Object>
+        </Left>
+        <Height>
+          <Calculate>
+            <Expression>Ceiling({0} * 2 / 3)</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1}</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="OrderPositionPanel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <TabIndex>2</TabIndex>
+        <BackColor>ThemeBackgroundColor</BackColor>
+
+        <MyObject Name="OrderPositionLabel" Type="Label" Assembly="BaseControls">
+          <Top>5</Top>
+          <Left>10</Left>
+          <Width>
+            <Calculate>
+              <Expression>{0} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPositionPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <Height>20</Height>
+          <TextAlign>MiddleLeft</TextAlign>
+          <FontStyle>LabelFontStyle</FontStyle>
+          <ForeColor>LabelForeColor</ForeColor>
+          <Text>Позиции заказа</Text>
+        </MyObject>
+
+        <MyObject Name="OrderPositionDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
+          <Top>
+            <Object Name="OrderPositionLabel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="OrderPositionLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Height>
+            <Calculate>
+              <Expression>{0} - {1} - 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPositionPanel">
+                    <Property Name="Height" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="OrderPositionDatabaseTable">
+                    <Property Name="Top" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Height>
+          <Width>
+            <Calculate>
+              <Expression>{0} - {1}*2 - {2} - 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPositionPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="OrderPositionDatabaseTable">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="OrderPositionAddButton">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <AllowResizeColumns Value="False" />
+          <AllowResizeRows Value="False" />
+          <AllowInsert>False</AllowInsert>
+          <AllowUpdate>False</AllowUpdate>
+          <AllowDelete>False</AllowDelete>
+          <AutoSizeColumnsMode Value="Fill" />
+          <ColumnHeadersHeight Value="50" />
+          <SourceDataConnection Name="OrderPositionPrimaryGetDataConnection" />
+          <Columns>
+            <Column Name="OrderPositionId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+            </Column>
+            <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>№</Title>
+              <Width>30</Width>
+              <AutoFill Type="RowNumber" />
+              <Alignment Value="MiddleCenter" />
+              <AutoSizeMode Value="None" />
+            </Column>
+            <Column Name="Title" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Наименование</Title>
+              <Width>300</Width>
+              <MinimumWidth>100</MinimumWidth>
+              <AutoSizeMode Value="Fill" />
+              <Substitution SourceColumn="MaterialId">
+                <DataConnection SourceDataConnection="MaterialPrimaryGetDataConnection">
+                  <Fields>
+                    <Field Name="MaterialId" />
+                    <Field Name="Title" />
+                  </Fields>
+                </DataConnection>
+              </Substitution>
+            </Column>
+            <Column Name="MaterialId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+            </Column>
+            <Column Name="Quantity" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Кол-во</Title>
+              <Width>60</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" />
+              <Alignment Value="MiddleRight" />
+            </Column>
+            <Column Name="UnitPrice" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Цена за единицу</Title>
+              <Width>80</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" Format="N2" />
+              <Alignment Value="MiddleRight" />
+            </Column>
+            <Column Name="TotalPrice" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Стоимость</Title>
+              <Width>100</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" Format="N2" />
+              <Alignment Value="MiddleRight" />
+              <Calculate>
+                <Expression>Quantity * UnitPrice</Expression>
+              </Calculate>
+            </Column>
+          </Columns>
+        </MyObject>
+
+        <MyObject Name="OrderPositionAddButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Object Name="OrderPositionDatabaseTable">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPositionDatabaseTable">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Width>40</Width>
+          <Height>40</Height>
+          <TabIndex>3</TabIndex>
+          <Hint>Добавить запись...</Hint>
+          <BackgroundImage>Images\24x24\plus.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Commands>
+            <Command Name="OrderPositionAddFormShowCommand" />
+          </Commands>
+        </MyObject>
+
+        <MyObject Name="OrderPositionEditButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPositionAddButton">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="OrderPositionAddButton">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Object Name="OrderPositionAddButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>
+            <Object Name="OrderPositionAddButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <TabIndex>4</TabIndex>
+          <Hint>Редактировать запись...</Hint>
+          <BackgroundImage>Images\24x24\pencil.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Enabled>
+            <Condition Name="OrderPositionSelectedCondition" />
+          </Enabled>
+          <Commands>
+            <Command Name="OrderPositionEditFormShowCommand" />
+          </Commands>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>Выберите запись для редактирования.</DisabledText>
+        </MyObject>
+
+        <MyObject Name="OrderPositionDeleteButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPositionEditButton">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="OrderPositionAddButton">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Object Name="OrderPositionAddButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>
+            <Object Name="OrderPositionAddButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <TabIndex>5</TabIndex>
+          <Hint>Удалить запись</Hint>
+          <BackgroundImage>Images\24x24\delete.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Enabled>
+            <Condition Name="OrderPositionSelectedCondition" />
+          </Enabled>
+          <Commands>
+            <Command Name="OrderPositionDeleteMessageBoxCommand" />
+          </Commands>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>Выберите запись для удаления.</DisabledText>
+        </MyObject>
+
+      </MyObject>
+
+      <MyObject Name="OrderPaymentPanel" Type="Panel" Assembly="BaseControls">
+        <Top>
+          <Object Name="OrderPositionPanel">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Object Name="OrderPositionPanel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Height>
+          <Calculate>
+            <Expression>Ceiling({0} / 3)</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Height>
+        <Width>
+          <Object Name="OrderPositionPanel">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+
+
+        <MyObject Name="OrderPaymentLabel" Type="Label" Assembly="BaseControls">
+          <Top>5</Top>
+          <Left>10</Left>
+          <Width>
+            <Calculate>
+              <Expression>{0} - 10</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPaymentPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <Height>20</Height>
+          <TextAlign>MiddleLeft</TextAlign>
+          <FontStyle>LabelFontStyle</FontStyle>
+          <ForeColor>LabelForeColor</ForeColor>
+          <Text>Оплаты</Text>
+        </MyObject>
+
+        <MyObject Name="OrderPaymentDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
+          <Top>
+            <Object Name="OrderPaymentLabel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="OrderPaymentLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Height>
+            <Calculate>
+              <Expression>{0} - {1} - 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPaymentPanel">
+                    <Property Name="Height" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="OrderPaymentDatabaseTable">
+                    <Property Name="Top" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Height>
+          <Width>
+            <Calculate>
+              <Expression>{0} - {1}*2 - {2} - 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPaymentPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="OrderPaymentDatabaseTable">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="OrderPaymentAddButton">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Width>
+          <AllowResizeColumns Value="False" />
+          <AllowResizeRows Value="False" />
+          <AllowInsert>False</AllowInsert>
+          <AllowUpdate>False</AllowUpdate>
+          <AllowDelete>False</AllowDelete>
+          <AutoSizeColumnsMode Value="Fill" />
+          <SourceDataConnection Name="OrderPaymentPrimaryGetDataConnection" />
+          <Columns>
+            <Column Name="OrderPaymentId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+            </Column>
+            <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>№</Title>
+              <Width>30</Width>
+              <AutoFill Type="RowNumber" />
+              <Alignment Value="MiddleCenter" />
+              <AutoSizeMode Value="None" />
+            </Column>
+            <Column Name="Date" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Дата оплаты</Title>
+              <Width>100</Width>
+              <DataType Type="DateTimeDataType" Format="dd.MM.yyyy" />
+            </Column>
+            <Column Name="CashId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+            </Column>
+            <Column Name="AccountId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+            </Column>
+            <Column Name="AccountTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Счёт</Title>
+              <Width>200</Width>
+              <AutoSizeMode Value="Fill" />
+              <Substitution SourceColumn="AccountId">
+                <DataConnection SourceDataConnection="AccountShortPrimaryGetDataConnection">
+                  <Fields>
+                    <Field Name="AccountId" />
+                    <Field Name="Title" />
+                  </Fields>
+                </DataConnection>
+              </Substitution>
+            </Column>
+            <Column Name="Summ" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Сумма</Title>
+              <Width>200</Width>
+            </Column>
+
+
+          </Columns>
+        </MyObject>
+
+        <MyObject Name="OrderPaymentAddButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Object Name="OrderPaymentDatabaseTable">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPaymentDatabaseTable">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Width>40</Width>
+          <Height>40</Height>
+          <TabIndex>3</TabIndex>
+          <Hint>Добавить запись...</Hint>
+          <BackgroundImage>Images\24x24\plus.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Commands>
+            <Command Name="OrderPaymentAddFormShowCommand" />
+          </Commands>
+        </MyObject>
+
+        <MyObject Name="OrderPaymentEditButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPaymentAddButton">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="OrderPaymentAddButton">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Object Name="OrderPaymentAddButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>
+            <Object Name="OrderPaymentAddButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <TabIndex>4</TabIndex>
+          <Hint>Редактировать запись...</Hint>
+          <BackgroundImage>Images\24x24\pencil.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Enabled>
+            <Condition Name="OrderPaymentSelectedCondition" />
+          </Enabled>
+          <Commands>
+            <Command Name="OrderPaymentEditFormShowCommand" />
+          </Commands>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>Выберите запись для редактирования.</DisabledText>
+        </MyObject>
+
+        <MyObject Name="OrderPaymentDeleteButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Calculate>
+              <Expression>{0} + 5</Expression>
+              <Items>
+                <Item>
+                  <Object Name="OrderPaymentEditButton">
+                    <Property Name="Bottom" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Top>
+          <Left>
+            <Object Name="OrderPaymentAddButton">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Object Name="OrderPaymentAddButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>
+            <Object Name="OrderPaymentAddButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <TabIndex>5</TabIndex>
+          <Hint>Удалить запись</Hint>
+          <BackgroundImage>Images\24x24\delete.png</BackgroundImage>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>1</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <Enabled>
+            <Condition Name="OrderPaymentSelectedCondition" />
+          </Enabled>
+          <Commands>
+            <Command Name="OrderPaymentDeleteMessageBoxCommand" />
+          </Commands>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>Выберите запись для удаления.</DisabledText>
+        </MyObject>
+      </MyObject>
+
+
+
+
+
+    </MyObject>
+
+    <MyObject Name="FootSeparatePanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="ContentPanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>5</Left>
+      <Height>1</Height>
+      <Width>
+        <Calculate>
+          <Expression>{0} - 10</Expression>
+          <Items>
+            <Item>
+              <Form>
+                <Property Name="Width" />
+              </Form>
+            </Item>
+          </Items>
+        </Calculate>
+      </Width>
+      <BackColor>ThemeSeparateBackgroundColor</BackColor>
+    </MyObject>
+
+    <MyObject Name="FootPanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="FootSeparatePanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>0</Left>
+      <Height>40</Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>2</TabIndex>
+      <BackColor>ThemeBackgroundColor</BackColor>
+
+      <MyObject Name="SaveButton" Type="Button" Assembly="BaseControls">
+        <Top>5</Top>
+        <Right>
+          <Formula>
+            <Minus DataType="IntegerDataType">
+              <Item>
+                <Object Name="FootPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>5</Item>
+            </Minus>
+          </Formula>
+        </Right>
+        <Height>30</Height>
+        <Width>200</Width>
+        <TextAlign>MiddleCenter</TextAlign>
+        <FontStyle>ButtonFontStyle</FontStyle>
+        <ImageAlign>MiddleLeft</ImageAlign>
+        <Image>Images\24x24\content-save.png</Image>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Text>Сохранить</Text>
+        <TabIndex>1</TabIndex>
+        <Enabled>
+          <And>
+            <Condition Name="MandatoryFieldsAllowedSavingNestedCondition" />
+            <Condition Name="FormChangedEqualCondition" />
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="SaveSequentialCommand" />
+        </Commands>
+        <DisabledMode>
+          <Condition Name="FormChangedEqualCondition" />
+        </DisabledMode>
+        <DisabledText>Одно или несколько полей заполнены некорректно.</DisabledText>
+      </MyObject>
+
+      <MyObject Name="PrintButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Object Name="SaveButton">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Left>10</Left>
+        <Height>
+          <Object Name="SaveButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Object Name="SaveButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <TextAlign>MiddleCenter</TextAlign>
+        <FontStyle>ButtonFontStyle</FontStyle>
+        <ImageAlign>MiddleLeft</ImageAlign>
+        <Image>Images\24x24\printer.png</Image>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Text>Печать</Text>
+        <TabIndex>2</TabIndex>
+        <Commands>
+          <Command Name="ShowAsteriskHintValueSetCommand" />
+          <If>
+            <When>
+              <And>
+                <Condition Name="MandatoryFieldsAllowedSavingNestedCondition" />
+                <Condition Name="MandatoryFieldsAllowedPrintingNestedCondition" />
+              </And>
+            </When>
+            <Then>
+              <If>
+                <When>
+                  <Condition Name="FormChangedEqualCondition" />
+                </When>
+                <Then>
+                  <Command Name="SaveOnPrintMessageBoxCommand" />
+                  <If>
+                    <When>
+                      <Command Name="SaveOnPrintMessageBoxCommand" Parameter="Yes" />
+                    </When>
+                    <Then>
+                      <Command Name="SaveSequentialCommand" />
+                      <Command Name="OrderExportToDocxCommand" />
+                    </Then>
+                  </If>
+                </Then>
+                <Else>
+                  <Command Name="OrderExportToDocxCommand" />
+                </Else>
+              </If>
+            </Then>
+            <Else>
+              <Command Name="PrintingMessageBoxCommand">Для печати счета необходимо заполнить обязательные поля</Command>
+            </Else>
+          </If>
+        </Commands>
+      </MyObject>
+
+      <MyObject Name="EmailSendButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Object Name="SaveButton">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Left>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="PrintButton">
+                  <Property Name="Right" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Left>
+        <Height>
+          <Object Name="SaveButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Object Name="SaveButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <TextAlign>MiddleCenter</TextAlign>
+        <FontStyle>ButtonFontStyle</FontStyle>
+        <ImageAlign>MiddleLeft</ImageAlign>
+        <Image>Images\24x24\email-send.png</Image>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Text>Отправить клиенту</Text>
+        <TabIndex>3</TabIndex>
+        <Enabled>
+          <And>
+            <Condition Name="SmtpSettingsAreCorrectEqualCondition" />
+            <Not>
+              <Condition Name="ClientEmailIsNullOrEmptyCondition" />
+            </Not>
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="ShowAsteriskHintValueSetCommand" />
+          <If>
+            <When>
+              <And>
+                <Condition Name="MandatoryFieldsAllowedSavingNestedCondition" />
+                <Condition Name="MandatoryFieldsAllowedPrintingNestedCondition" />
+              </And>
+            </When>
+            <Then>
+              <If>
+                <When>
+                  <Condition Name="FormChangedEqualCondition" />
+                </When>
+                <Then>
+                  <Command Name="SaveOnPrintMessageBoxCommand" />
+                  <If>
+                    <When>
+                      <Command Name="SaveOnPrintMessageBoxCommand" Parameter="Yes" />
+                    </When>
+                    <Then>
+                      <Command Name="SaveSequentialCommand" />
+                      <Command Name="EmailSendSequentialCommand" />
+                    </Then>
+                  </If>
+                </Then>
+                <Else>
+                  <Command Name="EmailSendSequentialCommand" />
+                </Else>
+              </If>
+            </Then>
+            <Else>
+              <Command Name="PrintingMessageBoxCommand">Для отправки счета клиенту на почту необходимо заполнить обязательные поля</Command>
+            </Else>
+          </If>
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="SmtpSettingsAreCorrectEqualCondition" />
+                </Not>
+              </When>
+              <Then>Проверьте корректность настроек SMTP-сервера для отправки электронной почты.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="ClientEmailIsNullOrEmptyCondition" />
+              </When>
+              <Then>Электронная почта клиента указана неверно.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+      </MyObject>
+
+    </MyObject>
+  </MyObjects>
+</Form>

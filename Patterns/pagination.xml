@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Snippet>
+  <Name>Paginaton</Name>
+  <ShortName>page</ShortName>
+  <Description>Постраничный просмотр для большого списка.
+
+Начальные условия.
+Курсор должен стоять после таблицы с большим списком.
+
+Применение.
+В текущий файл будут добавлена панель с объектами для постраничного просмотра, а также вспогательные условия, команды и действие.</Description>
+  <FileTypes>
+    <FileType Value="Form" />
+  </FileTypes>
+  <ContextCheckings>
+    <Checking Type="ObjectsContextChecker" />
+  </ContextCheckings>
+  <Actions>
+    <VariableCollector Type="WorkflowNameCollector" />
+    <Input Type="Wizard">
+      <Page>
+        <Title>Настройки паттерна Paginaton</Title>
+        <Description>Постраничный просмотр для большого списка.</Description>
+        <FieldDescription>
+          <Text>Начальные условия. Курсор должен стоять после таблицы с большим списком.</Text>
+        </FieldDescription>
+        <FieldDescription>
+          <Text>Применение. В текущий файл будут добавлена панель с объектами для постраничного просмотра, а также вспогательные условия, команды и действие.</Text>
+        </FieldDescription>
+        
+        <Variable Name="ParentObjectName">
+          <Type Value="Text" />
+          <Text>Родительский объект-контейнер (например, "ContentPanel")</Text>
+          <Default>[ContentPanel]</Default>
+        </Variable>
+        <Variable Name="ItemName">
+          <Type Value="Text" />
+          <Text>Имя сущности (например, "Client")</Text>
+        </Variable>
+      </Page>
+    </Input>
+    <Insert Place="Caret">
+      <Xml Path="Pagination\PaginationCaret.xml" />
+    </Insert>
+    <Insert Place="Conditions">
+      <Xml Path="Pagination\PaginationConditions.xml" />
+    </Insert>
+    <Insert Place="Commands">
+      <Xml Path="Pagination\PaginationCommands.xml" />
+    </Insert>
+    <Insert Place="Executions">
+      <Xml Path="Pagination\PaginationExecutions.xml" />
+    </Insert>
+    <CopyFile>
+      <Source>Pagination\16x16\arrow-collapse-left.png</Source>
+      <Destination>Images\16x16\arrow-collapse-left.png</Destination>
+    </CopyFile>
+    <CopyFile>
+      <Source>Pagination\16x16\arrow-collapse-right.png</Source>
+      <Destination>Images\16x16\arrow-collapse-right.png</Destination>
+    </CopyFile>
+    <CopyFile>
+      <Source>Pagination\16x16\arrow-left.png</Source>
+      <Destination>Images\16x16\arrow-left.png</Destination>
+    </CopyFile>
+    <CopyFile>
+      <Source>Pagination\16x16\arrow-right.png</Source>
+      <Destination>Images\16x16\arrow-right.png</Destination>
+    </CopyFile>
+    <ToDo>
+      <Text>Доработка после применения паттерна Pagination.
+1. Добавить ManualLoad = True для DataConnection, если это главная форма и она стартует как WS_GUEST
+2. В DataConnection добавить поле Count
+3. В DataConnection добавить 2 параметра:
+      Limit - со значением из {ItemName}ItemsPerPageComboBox (и признаком RefreshQuery = False, если это главная форма и она стартует как WS_GUEST),
+      Page - со значением {ItemName}CurrentPageVariable
+4. В SelectSqlQuery добавить поле:
+      COUNT(*) OVER() AS "Count"
+   А так же в конец запроса добавить строки:
+       LIMIT \{Limit}
+       OFFSET GREATEST((\{Page} - 1) * \{Limit}, 0)</Text>
+    </ToDo>
+  </Actions>
+</Snippet>

@@ -1,0 +1,5 @@
+<Command Name="ActiveTabValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+  <Object Name="ActiveTabVariable">
+    <Input />
+  </Object>
+</Command>

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateUserForm" Width="450" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateUserForm" Width="450" Height="250" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
@@ -13,9 +13,7 @@
         <Case>Добавление пользователя</Case>
       </Switch>
     </Parameter>
-    <Parameter Name="UserId" />
-    <Parameter Name="EditedUserId" />
-    <Parameter Name="Updated">False</Parameter>
+
     <Parameter Name="Height">
       <Switch>
         <Case>
@@ -27,6 +25,9 @@
         <Case>290</Case>
       </Switch>
     </Parameter>
+
+    <Parameter Name="EditedUserId" />
+    <Parameter Name="Updated">False</Parameter>
   </Parameters>
 
   <Appearance>
@@ -70,14 +71,10 @@
           <Field Name="UserName" />
           <Field Name="UserFullName" />
           <Field Name="GroupId" />
+          <Field Name="IsCurrent" />
         </Fields>
         <Parameters>
-          <Parameter NativeName="UserId">
-            <Value>
-              <Parameter Name="UserId" />
-            </Value>
-          </Parameter>
-          <Parameter NativeName="EditedUserId">
+          <Parameter NativeName="EditedUserId" RefreshQuery="False">
             <Value>
               <Parameter Name="EditedUserId" />
             </Value>
@@ -86,71 +83,7 @@
       </SqlQuery>
     </DataConnection>
 
-
-    <DataConnection Name="UserInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
-      <Workflow Name="Template" />
-      <SqlQueries>
-        <SqlQuery Name="UserInsertSqlQuery" Type="Insert" />
-      </SqlQueries>
-      <Parameters>
-        <Parameter NativeName="Name">
-          <Value>
-            <Object Name="NameTextBox" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="FullName">
-          <Value>
-            <Object Name="TitleTextBox" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="Password">
-          <Value>
-            <Command Name="PasswordComputeHashCommand" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="GroupId">
-          <Value>
-            <Object Name="GroupComboBox" />
-          </Value>
-        </Parameter>
-      </Parameters>
-    </DataConnection>
-
-    <DataConnection Name="UserUpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
-      <Workflow Name="Template" />
-      <SqlQueries>
-        <SqlQuery Name="UserUpdateSqlQuery" Type="Update" />
-      </SqlQueries>
-      <Parameters>
-        <Parameter NativeName="Name">
-          <Value>
-            <Object Name="NameTextBox" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="FullName">
-          <Value>
-            <Object Name="TitleTextBox" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="UserId">
-          <Value>
-            <Parameter Name="UserId" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="EditedUserId">
-          <Value>
-            <Parameter Name="EditedUserId" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="GroupId">
-          <Value>
-            <Object Name="GroupComboBox" />
-          </Value>
-        </Parameter>
-      </Parameters>
-    </DataConnection>
-
-    <DataConnection Name="GroupShortPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+    <DataConnection Name="GroupPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <SqlQuery Name="GroupSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
@@ -181,6 +114,64 @@
       </SqlQuery>
     </DataConnection>
 
+    <DataConnection Name="UserInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="UserInsertSqlQuery" Type="Insert" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="FullName">
+          <Value>
+            <Object Name="FullNameTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="GroupId">
+          <Value>
+            <Object Name="GroupComboBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Name">
+          <Value>
+            <Object Name="NameTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Password">
+          <Value>
+            <Command Name="PasswordComputeHashCommand" />
+          </Value>
+        </Parameter>
+      </Parameters>
+    </DataConnection>
+
+    <DataConnection Name="UserUpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="UserUpdateSqlQuery" Type="Update" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="EditedUserId">
+          <Value>
+            <Parameter Name="EditedUserId" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="FullName">
+          <Value>
+            <Object Name="FullNameTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="GroupId">
+          <Value>
+            <Object Name="GroupComboBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Name">
+          <Value>
+            <Object Name="NameTextBox" />
+          </Value>
+        </Parameter>
+      </Parameters>
+    </DataConnection>
+
     <DataConnection Name="UserExistsPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <ManualLoad>True</ManualLoad>
       <SqlQuery Name="UserExistsSelectSqlQuery" Type="Select">
@@ -194,7 +185,7 @@
               <Object Name="NameTextBox" />
             </Value>
           </Parameter>
-          <Parameter NativeName="EditedUserId">
+          <Parameter NativeName="EditedUserId" RefreshQuery="False">
             <Value>
               <Parameter Name="EditedUserId" />
             </Value>
@@ -235,15 +226,53 @@
       <DataType Type="BooleanDataType" />
     </Condition>
 
-    <Condition Name="TitleIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+    <Condition Name="FullNameIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
       <Items>
         <Item>
-          <Object Name="TitleTextBox" />
+          <Object Name="FullNameTextBox" />
         </Item>
       </Items>
     </Condition>
 
-    <Condition Name="UserNotExistsNotEqualCondition" Type="NotEqualCondition" Assembly="Conditions">
+    <Condition Name="GroupComboBoxIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="GroupComboBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="NameTextBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="NameTextBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PasswordTextBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="PasswordTextBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="IsUserCurrentCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <DataConnection SourceDataConnection="UserPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="IsCurrent" />
+            </Fields>
+          </DataConnection>
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="UserNotExistsCondition" Type="NotEqualCondition" Assembly="Conditions">
       <Items>
         <Item>
           <DataConnection SourceDataConnection="UserExistsPrimaryGetDataConnection">
@@ -290,34 +319,31 @@
       </DataConnections>
     </Command>
 
-    <Command Name="UserIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Parameter Name="UserId">
+    <Command Name="EditedUserIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="EditedUserId">
         <Command Name="UserInsertSaveCommand" />
       </Parameter>
     </Command>
 
-    <Command Name="TestMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
-      <Caption>!!!</Caption>
-      <Text>
-        <String>
-          <Format>Condition exists: {0}</Format>
-          <Items>
-            <Item>
-              <Condition Name="UserNotExistsNotEqualCondition" />
-            </Item>
-          </Items>
-        </String>
-      </Text>
-      <Icon Type="Information" />
+    <Command Name="UserExistsDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="UserExistsPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="UserExistsMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Сохранение</Caption>
+      <Text>Пользователь с таким именем уже существует.</Text>
+      <Icon Type="Warning" />
       <Buttons Type="Ok" />
     </Command>
 
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
       <Commands Lock="True">
-        <Command Name="DataConnectionRefreshCommand" />
+        <Command Name="UserExistsDataConnectionRefreshCommand" />
         <If>
           <When>
-            <Condition Name="UserNotExistsNotEqualCondition" />
+            <Condition Name="UserNotExistsCondition" />
           </When>
           <Then>
             <If>
@@ -330,7 +356,7 @@
               <Else>
                 <Command Name="PasswordComputeHashCommand" />
                 <Command Name="UserInsertSaveCommand" />
-                <Command Name="UserIdValueSetCommand" />
+                <Command Name="EditedUserIdValueSetCommand" />
               </Else>
             </If>
             <Command Name="UpdatedTrueValueSetCommand" />
@@ -343,23 +369,23 @@
       </Commands>
     </Command>
 
+    <Command Name="NameInformationMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Изменение логина пользователя</Caption>
+      <Text>После изменения логина текущего пользователя потребуется повторная авторизация.</Text>
+      <Icon Type="Information" />
+      <Buttons Type="Ok" />
+    </Command>
+
+    <Command Name="NameButtonVisibleValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="NameButton">
+        <Property Name="Visible">False</Property>
+      </Object>
+    </Command>
+
     <Command Name="PasswordComputeHashCommand" Type="ComputeHashCommand" Assembly="Commands">
       <Source>
-        <Object Name="UserPasswordTextBox" />
+        <Object Name="PasswordTextBox" />
       </Source>
-    </Command>
-
-    <Command Name="DataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="UserExistsPrimaryGetDataConnection" Packet="True" />
-      </DataConnections>
-    </Command>
-
-    <Command Name="UserExistsMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
-      <Caption>Сохранение</Caption>
-      <Text>Пользователь с таким имекнем уже существует.</Text>
-      <Icon Type="Warning" />
-      <Buttons Type="Ok" />
     </Command>
   </Commands>
 
@@ -422,9 +448,38 @@
 
   <Checkings>
     <Checking>
-      <Object Name="TitleTextBox" />
+      <Object Name="FullNameTextBox" />
       <ConditionExpression>
-        <Condition Name="TitleIsNullOrEmptyCondition" />
+        <Condition Name="FullNameIsNullOrEmptyCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
+    </Checking>
+
+    <Checking>
+      <Object Name="GroupComboBox" />
+      <ConditionExpression>
+        <Condition Name="GroupComboBoxIsNullCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
+    </Checking>
+
+    <Checking>
+      <Object Name="NameTextBox" />
+      <ConditionExpression>
+        <Condition Name="NameTextBoxIsNullOrEmptyCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
+    </Checking>
+
+    <Checking>
+      <Object Name="PasswordTextBox" />
+      <ConditionExpression>
+        <And>
+          <Condition Name="PasswordTextBoxIsNullOrEmptyCondition" />
+          <Not>
+            <Parameter Name="Edit" />
+          </Not>
+        </And>
       </ConditionExpression>
       <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
     </Checking>
@@ -518,7 +573,7 @@
       <TabIndex>1</TabIndex>
       <BackColor>ThemeBackgroundColor</BackColor>
 
-      <MyObject Name="TitleLabel" Type="Label" Assembly="BaseControls">
+      <MyObject Name="FullNameLabel" Type="Label" Assembly="BaseControls">
         <Top>5</Top>
         <Left>10</Left>
         <Width>
@@ -531,7 +586,7 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="TitleLabel">
+                <Object Name="FullNameLabel">
                   <Property Name="Left" />
                 </Object>
               </Item>
@@ -545,14 +600,14 @@
         <Text>Фамилия И.О.</Text>
       </MyObject>
 
-      <MyObject Name="TitleTextBox" Type="TextBox" Assembly="BaseControls">
+      <MyObject Name="FullNameTextBox" Type="TextBox" Assembly="BaseControls">
         <Top>
-          <Object Name="TitleLabel">
+          <Object Name="FullNameLabel">
             <Property Name="Bottom" />
           </Object>
         </Top>
         <Left>
-          <Object Name="TitleLabel">
+          <Object Name="FullNameLabel">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -566,13 +621,14 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="TitleTextBox">
+                <Object Name="FullNameTextBox">
                   <Property Name="Left" />
                 </Object>
               </Item>
             </Items>
           </Calculate>
         </Width>
+        <TabIndex>1</TabIndex>
         <Text>
           <DataConnection SourceDataConnection="UserPrimaryGetDataConnection">
             <Fields>
@@ -580,43 +636,30 @@
             </Fields>
           </DataConnection>
         </Text>
-        <TabIndex>1</TabIndex>
       </MyObject>
 
       <MyObject Name="GroupLabel" Type="Label" Assembly="BaseControls">
         <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
+          <Formula>
+            <Plus DataType="IntegerDataType">
               <Item>
-                <Object Name="TitleTextBox">
+                <Object Name="FullNameTextBox">
                   <Property Name="Bottom" />
                 </Object>
               </Item>
-            </Items>
-          </Calculate>
+              <Item>5</Item>
+            </Plus>
+          </Formula>
         </Top>
         <Left>
-          <Object Name="TitleTextBox">
+          <Object Name="FullNameLabel">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="GroupLabel">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="FullNameLabel">
+            <Property Name="Width" />
+          </Object>
         </Width>
         <Height>20</Height>
         <TextAlign>MiddleLeft</TextAlign>
@@ -632,32 +675,20 @@
           </Object>
         </Top>
         <Left>
-          <Object Name="GroupLabel">
+          <Object Name="FullNameTextBox">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="GroupComboBox">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="FullNameTextBox">
+            <Property Name="Width" />
+          </Object>
         </Width>
-        <NullValue Show="True" />
-        <NullValueTitle>[Не выбрано]</NullValueTitle>
+        <TabIndex>2</TabIndex>
+        <NullValue Show="True" Title="[Не выбрано]" />
         <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
         <ValueList>
-          <DataConnection SourceDataConnection="GroupShortPrimaryGetDataConnection">
+          <DataConnection SourceDataConnection="GroupPrimaryGetDataConnection">
             <Fields>
               <Field Name="GroupId" />
               <Field Name="Title" />
@@ -675,38 +706,26 @@
 
       <MyObject Name="NameLabel" Type="Label" Assembly="BaseControls">
         <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
+          <Formula>
+            <Plus DataType="IntegerDataType">
               <Item>
                 <Object Name="GroupComboBox">
                   <Property Name="Bottom" />
                 </Object>
               </Item>
-            </Items>
-          </Calculate>
+              <Item>5</Item>
+            </Plus>
+          </Formula>
         </Top>
         <Left>
-          <Object Name="GroupComboBox">
+          <Object Name="FullNameLabel">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="NameLabel">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="FullNameLabel">
+            <Property Name="Width" />
+          </Object>
         </Width>
         <Height>20</Height>
         <TextAlign>MiddleLeft</TextAlign>
@@ -722,27 +741,46 @@
           </Object>
         </Top>
         <Left>
-          <Object Name="NameLabel">
+          <Object Name="FullNameTextBox">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
+          <Formula>
+            <Minus DataType="IntegerDataType">
               <Item>
-                <Object Name="ContentPanel">
+                <Object Name="FullNameTextBox">
                   <Property Name="Width" />
                 </Object>
               </Item>
               <Item>
-                <Object Name="NameTextBox">
-                  <Property Name="Left" />
-                </Object>
+                <Switch>
+                  <Case>
+                    <When>
+                      <Object Name="NameButton">
+                        <Property Name="Visible" />
+                      </Object>
+                    </When>
+                    <Then>
+                      <Formula>
+                        <Plus DataType="IntegerDataType">
+                          <Item>
+                            <Object Name="NameButton">
+                              <Property Name="Width" />
+                            </Object>
+                          </Item>
+                          <Item>5</Item>
+                        </Plus>
+                      </Formula>
+                    </Then>
+                  </Case>
+                  <Case>0</Case>
+                </Switch>
               </Item>
-            </Items>
-          </Calculate>
+            </Minus>
+          </Formula>
         </Width>
+        <TabIndex>3</TabIndex>
         <Text>
           <DataConnection SourceDataConnection="UserPrimaryGetDataConnection">
             <Fields>
@@ -750,90 +788,121 @@
             </Fields>
           </DataConnection>
         </Text>
+        <ReadOnly>
+          <Object Name="NameButton">
+            <Property Name="Visible" />
+          </Object>
+        </ReadOnly>
       </MyObject>
 
-      <MyObject Name="UserPasswordLabel" Type="Label" Assembly="BaseControls">
+      <MyObject Name="NameButton" Type="Button" Assembly="BaseControls">
         <Top>
-          <Calculate>
-            <Expression>{0} + 5</Expression>
-            <Items>
+          <Object Name="NameTextBox">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Left>
+          <Formula>
+            <Plus DataType="IntegerDataType">
+              <Item>
+                <Object Name="NameTextBox">
+                  <Property Name="Right" />
+                </Object>
+              </Item>
+              <Item>5</Item>
+            </Plus>
+          </Formula>
+        </Left>
+        <Height>
+          <Object Name="NameTextBox">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Object Name="NameButton">
+            <Property Name="Height" />
+          </Object>
+        </Width>
+        <TabIndex>4</TabIndex>
+        <Hint>Редактировать логин</Hint>
+        <BackgroundImage>Images\16x16\pencil.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Commands>
+          <Command Name="NameInformationMessageBoxCommand" />
+          <Command Name="NameButtonVisibleValueSetCommand" />
+        </Commands>
+        <Visible>
+          <And>
+            <Parameter Name="Edit" />
+            <Condition Name="IsUserCurrentCondition" />
+          </And>
+        </Visible>
+      </MyObject>
+
+      <MyObject Name="PasswordLabel" Type="Label" Assembly="BaseControls">
+        <Top>
+          <Formula>
+            <Plus DataType="IntegerDataType">
               <Item>
                 <Object Name="NameTextBox">
                   <Property Name="Bottom" />
                 </Object>
               </Item>
-            </Items>
-          </Calculate>
+              <Item>5</Item>
+            </Plus>
+          </Formula>
         </Top>
         <Left>
-          <Object Name="NameTextBox">
+          <Object Name="FullNameLabel">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="UserPasswordLabel">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="FullNameLabel">
+            <Property Name="Width" />
+          </Object>
         </Width>
         <Height>20</Height>
         <TextAlign>MiddleLeft</TextAlign>
         <FontStyle>LabelFontStyle</FontStyle>
         <ForeColor>LabelForeColor</ForeColor>
         <Text>Пароль</Text>
+        <Visible>
+          <Not>
+            <Parameter Name="Edit" />
+          </Not>
+        </Visible>
       </MyObject>
 
-      <MyObject Name="UserPasswordTextBox" Type="TextBox" Assembly="BaseControls">
+      <MyObject Name="PasswordTextBox" Type="TextBox" Assembly="BaseControls">
         <Top>
-          <Object Name="UserPasswordLabel">
+          <Object Name="PasswordLabel">
             <Property Name="Bottom" />
           </Object>
         </Top>
         <Left>
-          <Object Name="UserPasswordLabel">
+          <Object Name="FullNameTextBox">
             <Property Name="Left" />
           </Object>
         </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} - 10</Expression>
-            <Items>
-              <Item>
-                <Object Name="ContentPanel">
-                  <Property Name="Width" />
-                </Object>
-              </Item>
-              <Item>
-                <Object Name="UserPasswordTextBox">
-                  <Property Name="Left" />
-                </Object>
-              </Item>
-            </Items>
-          </Calculate>
+          <Object Name="FullNameTextBox">
+            <Property Name="Width" />
+          </Object>
         </Width>
+        <TabIndex>5</TabIndex>
         <Password>True</Password>
         <Visible>
           <Not>
             <Parameter Name="Edit" />
           </Not>
         </Visible>
-        <Text />
       </MyObject>
-
-
-
-
 
 
     </MyObject>

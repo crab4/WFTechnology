@@ -1,0 +1,1200 @@
+<?xml version="1.0"?>
+<Form Name="TemplateCashListForm" Width="1200" Height="600" FormBorderStyle="Sizable" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" BackColor="ThemeBackgroundColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True">
+  <Parameters>
+    <Parameter Name="Title">Касса</Parameter>
+    <Parameter Name="Updated">False</Parameter>
+  </Parameters>
+
+  <Appearance>
+    <Colors>
+      <Color Name="ThemeForeColor" Red="0" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeBackgroundColor" Red="255" Green="255" Blue="255" Alpha="255" />
+      <Color Name="ThemeFlatColor" Red="255" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeSeparateBackgroundColor" Red="225" Green="225" Blue="225" Alpha="255" />
+
+      <Color Name="HeadBackgroundColor" Red="221" Green="232" Blue="246" Alpha="255" />
+      <Color Name="HeadForeColor" Red="70" Green="70" Blue="70" Alpha="255" />
+
+      <Color Name="LabelForeColor" Red="100" Green="100" Blue="100" Alpha="255" />
+      <Color Name="TableBackgroundColor" Red="200" Green="200" Blue="200" Alpha="255" />
+      <Color Name="TableArchiveColor" Red="230" Green="230" Blue="230" Alpha="255" />
+
+      <!-- Стили кнопок -->
+      <Color Name="ButtonFlatBorderColor" Red="225" Green="225" Blue="225" Alpha="255" />
+      <Color Name="ButtonFlatMouseDownBackColor" Red="201" Green="219" Blue="241" Alpha="255" />
+      <Color Name="ButtonFlatMouseOverBackColor" Red="228" Green="237" Blue="248" Alpha="255" />
+    </Colors>
+
+    <FontStyles>
+      <FontStyle Name="ThemeFontStyle" Font="Segoe UI" Size="9" />
+      <FontStyle Name="HeadFontStyle" Font="Segoe UI" Size="15" />
+      <FontStyle Name="LabelFontStyle" Font="Segoe UI" Size="9" Italic="True" />
+      <FontStyle Name="ButtonFontStyle" Font="Segoe UI" Size="10" />
+      <FontStyle Name="TitleSmallFont" Font="Segoe UI" Size="8" />
+    </FontStyles>
+  </Appearance>
+
+  <DataConnections>
+    <DataConnection Name="AccessPointDataConnection" Type="AccessPointDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <AccessPoints>
+        <AccessPoint Name="CashAddAccessPoint" />
+        <AccessPoint Name="CashEditAccessPoint" />
+        <AccessPoint Name="CashDeleteAccessPoint" />
+        <AccessPoint Name="CashExportToExcelAccessPoint" />
+      </AccessPoints>
+    </DataConnection>
+
+    <DataConnection Name="CashPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="CashSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="CashId" />
+          <Field Name="OrderId" />
+          <Field Name="Date" />
+          <Field Name="AccountTitle" />
+          <Field Name="OperationTitle" />
+          <Field Name="Income" />
+          <Field Name="Expense" />
+          <Field Name="ClientTitle" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="DateStart" RefreshQuery="False">
+            <Value>
+              <Object Name="StartDateVariable" />
+            </Value>
+          </Parameter>
+          <Parameter NativeName="DateFinish" RefreshQuery="False">
+            <Value>
+              <Object Name="EndDateVariable" />
+            </Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="CashDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="CashDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="CashId">
+          <Value>
+            <Object Name="CashDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">CashId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <Refresh>
+        <DataConnection Name="CashPrimaryGetDataConnection" />
+      </Refresh>
+    </DataConnection>
+  </DataConnections>
+
+  <Conditions>
+    <Condition Name="FormLoadedCondition" Type="FormLoadedCondition" Assembly="Conditions" />
+
+    <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
+
+    <Condition Name="EscapeKeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
+      <Key Value="Escape" />
+    </Condition>
+
+    <Condition Name="F5KeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
+      <Key Value="F5" />
+    </Condition>
+
+    <Condition Name="CashSelectedCondition" Type="GreaterCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="CashDatabaseTable">
+            <Property Name="SelectedRowsCount" />
+          </Object>
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="CashCellDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
+      <Table Name="CashDatabaseTable" />
+    </Condition>
+
+    <Condition Name="CashAddFormUpdatedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="CashAddFormShowCommand" Parameter="Updated" />
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="CashEditFormUpdatedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="CashEditFormShowCommand" Parameter="Updated" />
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <!--сравнение значения поля даты/времени "Дата окончания" со значением поля даты/времени "Дата начала" на "не больше"-->
+    <Condition Name="EndDateDateTimePickerStartDateDateTimePickerNotGreaterCondition" Type="GreaterCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="StartDateDateTimePicker" />
+        </Item>
+        <Item>
+          <Object Name="EndDateDateTimePicker" />
+        </Item>
+      </Items>
+      <DataType Type="DateTimeDataType" />
+    </Condition>
+
+    <Condition Name="CashOrderIdIsNotNullCondition" Type="IsNotNullCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="CashDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">OrderId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Item>
+      </Items>
+    </Condition>
+  </Conditions>
+
+  <Commands>
+    <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
+
+    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Updated">True</Parameter>
+    </Command>
+
+    <Command Name="CashDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="CashPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="CashAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateCashEdit.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="CashEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateCashEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="CashId">
+          <Object Name="CashDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">CashId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="OrderEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateOrderEdit.xml</Xml>
+      <Show Type="None" />
+      <Multiple Allow="True" />
+      <Parameters>
+        <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="OrderId">
+          <Object Name="CashDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">OrderId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+        <Parameter Name="CashId">
+          <Object Name="CashDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">CashId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="CashEditSequentialCommand" Type="SequentialCommand" Assembly="Commands">
+      <Commands>
+        <If>
+          <When>
+            <Condition Name="CashOrderIdIsNotNullCondition" />
+          </When>
+          <Then>
+            <Command Name="OrderEditFormShowCommand" />
+          </Then>
+          <Else>
+            <Command Name="CashEditFormShowCommand" />
+          </Else>
+        </If>
+      </Commands>
+    </Command>
+
+    <Command Name="CashDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="CashDeleteSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="CashDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Вы действительно хотите удалить выбранную запись?</Text>
+      <Buttons Type="YesNo" />
+      <Icon Type="Question" />
+    </Command>
+
+    <Command Name="CashSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="CashDatabaseTable">
+        <Property Name="SelectRowByFieldValue">
+          <Parameters>
+            <Parameter Name="ColumnName">CashId</Parameter>
+            <Parameter Name="Value">
+              <Input />
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+
+    <Command Name="StartDateValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="StartDateVariable">
+        <Object Name="StartDateDateTimePicker" />
+      </Object>
+    </Command>
+
+    <Command Name="EndDateValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="EndDateVariable">
+        <Object Name="EndDateDateTimePicker" />
+      </Object>
+    </Command>
+
+    <Command Name="CashExportToExcelCommand" Type="ExportToExcelCommand" Assembly="Commands">
+      <TemplateFileName>Templates\Cash.xlsx</TemplateFileName>
+      <Parameters>
+        <Parameter Name="StartDate">
+          <DataTypeFormat Type="DateTimeDataType" Format="dd.MM.yyyy">
+            <Object Name="StartDateVariable" />
+          </DataTypeFormat>
+        </Parameter>
+        <Parameter Name="EndDate">
+          <DataTypeFormat Type="DateTimeDataType" Format="dd.MM.yyyy">
+            <Object Name="EndDateVariable" />
+          </DataTypeFormat>
+        </Parameter>
+        <Parameter Name="RowNumber">
+          <Object Name="CashDatabaseTable">
+            <Property Name="Column">
+              <Parameters>
+                <Parameter Name="ColumnName">RowNumber</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+        <Parameter Name="Date">
+          <DataTypeFormat Type="DateTimeDataType" Format="dd.MM.yyyy HH:mm">
+            <Object Name="CashDatabaseTable">
+              <Property Name="Column">
+                <Parameters>
+                  <Parameter Name="ColumnName">Date</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </DataTypeFormat>
+        </Parameter>
+        <Parameter Name="AccountTitle">
+          <Object Name="CashDatabaseTable">
+            <Property Name="Column">
+              <Parameters>
+                <Parameter Name="ColumnName">AccountTitle</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+        <Parameter Name="OperationTitle">
+          <Object Name="CashDatabaseTable">
+            <Property Name="Column">
+              <Parameters>
+                <Parameter Name="ColumnName">OperationTitle</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+        <Parameter Name="Income">
+          <Object Name="CashDatabaseTable">
+            <Property Name="Column">
+              <Parameters>
+                <Parameter Name="ColumnName">Income</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+        <Parameter Name="Expense">
+          <Object Name="CashDatabaseTable">
+            <Property Name="Column">
+              <Parameters>
+                <Parameter Name="ColumnName">Expense</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+        <Parameter Name="ClientTitle">
+          <Object Name="CashDatabaseTable">
+            <Property Name="Column">
+              <Parameters>
+                <Parameter Name="ColumnName">ClientTitle</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="WarningMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>
+        <Input Name="Caption" />
+      </Caption>
+      <Text>
+        <Input Name="Text" />
+      </Text>
+      <Icon Type="Warning" />
+      <Buttons Type="Ok" />
+    </Command>
+  </Commands>
+
+  <Executions>
+    <Execution>
+      <ConditionExpression>
+        <Or>
+          <Condition Name="FormClosingCondition" />
+          <Condition Name="EscapeKeyDownCondition" />
+        </Or>
+      </ConditionExpression>
+      <Commands>
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="CashAddFormUpdatedTrueEqualCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="CashDataConnectionRefreshCommand" />
+        <Command Name="CashSelectInTableValueSetCommand">
+          <Command Name="CashAddFormShowCommand" Parameter="CashId" />
+        </Command>
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="CashEditFormUpdatedTrueEqualCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="CashDataConnectionRefreshCommand" />
+        <Command Name="CashSelectInTableValueSetCommand">
+          <Command Name="CashEditFormShowCommand" Parameter="CashId" />
+        </Command>
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="OrderEditFormShowCommand" Parameter="FormClosed" />
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <Or>
+              <Command Name="OrderEditFormShowCommand" Parameter="Updated" />
+              <Command Name="OrderEditFormShowCommand" Parameter="ClientUpdated" />
+            </Or>
+          </When>
+          <Then>
+            <Command Name="CashDataConnectionRefreshCommand" />
+            <!-- <Command Name="CashSelectInTableCommand">
+              <Command Name="OrderEditFormShowCommand" Parameter="CashId" />
+              </Command>-->
+            <Command Name="UpdatedTrueValueSetCommand" />
+          </Then>
+        </If>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="CashDeleteMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="CashDeleteSaveCommand" />
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="CashCellDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <Not>
+              <AccessPoint Name="CashEditAccessPoint" />
+            </Not>
+          </When>
+          <Then>
+            <Command Name="WarningMessageBoxCommand">
+              <Input Name="Caption">Редактирование</Input>
+              <Input Name="Text">У вас недостаточно прав для выполнения команды.</Input>
+            </Command>
+          </Then>
+          <Else>
+            <Command Name="CashEditSequentialCommand" />
+          </Else>
+        </If>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="F5KeyDownCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="CashDataConnectionRefreshCommand" />
+      </Commands>
+    </Execution>
+  </Executions>
+
+  <MyObjects>
+    <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
+      <Top>0</Top>
+      <Left>0</Left>
+      <Height>60</Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>2</TabIndex>
+      <BackColor>HeadBackgroundColor</BackColor>
+
+      <MyObject Name="HeadLabel" Type="Label" Assembly="BaseControls">
+        <Top>0</Top>
+        <Left>10</Left>
+        <Height>
+          <Object Name="HeadPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>200</Width>
+        <FontStyle>HeadFontStyle</FontStyle>
+        <ForeColor>HeadForeColor</ForeColor>
+        <TextAlign>MiddleLeft</TextAlign>
+        <Text>
+          <Parameter Name="Title" />
+        </Text>
+      </MyObject>
+
+      <MyObject Name="StartDateVariable" Type="Variable" Assembly="SimpleControls">
+        <Value>
+          <DateTime Variable="FirstDayOfCurrMonth" />
+        </Value>
+      </MyObject>
+
+      <MyObject Name="EndDateVariable" Type="Variable" Assembly="SimpleControls">
+        <Value>
+          <DateTime Variable="LastDayOfCurrMonth" />
+        </Value>
+      </MyObject>
+
+      <!--поле даты/времени "Дата начала"-->
+      <MyObject Name="StartDateDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
+        <Top>
+          <Object Name="EndDateDateTimePicker">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Right>
+          <Object Name="ToLabel">
+            <Property Name="Left" />
+          </Object>
+        </Right>
+        <Width>145</Width>
+        <TabIndex>2</TabIndex>
+        <Format>d MMMM yyyy</Format>
+        <NullValue Show="False" />
+        <Value>
+          <Object Name="StartDateVariable" />
+        </Value>
+      </MyObject>
+
+      <MyObject Name="ToLabel" Type="Label" Assembly="BaseControls">
+        <Top>
+          <Object Name="EndDateDateTimePicker">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Right>
+          <Object Name="EndDateDateTimePicker">
+            <Property Name="Left" />
+          </Object>
+        </Right>
+        <Height>20</Height>
+        <Width>30</Width>
+        <TextAlign>MiddleCenter</TextAlign>
+        <FontStyle>ThemeFontStyle</FontStyle>
+        <ForeColor>HeadForeColor</ForeColor>
+        <Text>—</Text>
+      </MyObject>
+
+      <!--поле даты/времени "Дата окончания"-->
+      <MyObject Name="EndDateDateTimePicker" Type="DateTimePicker" Assembly="BaseControls">
+        <Top>5</Top>
+        <Right>
+          <Calculate>
+            <Expression>{0} - 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Right>
+        <Width>145</Width>
+        <TabIndex>3</TabIndex>
+        <Format>d MMMM yyyy</Format>
+        <NullValue Show="False" />
+        <Value>
+          <Object Name="EndDateVariable" />
+        </Value>
+      </MyObject>
+
+      <MyObject Name="ApplyButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 2</Expression>
+            <Items>
+              <Item>
+                <Object Name="EndDateDateTimePicker">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Right>
+          <Calculate>
+            <Expression>{0} - 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Right>
+        <Width>145</Width>
+        <Height>25</Height>
+        <TextAlign>MiddleCenter</TextAlign>
+        <FontStyle>ThemeFontStyle</FontStyle>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <BackColor>ThemeBackgroundColor</BackColor>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Text>Применить</Text>
+        <Commands>
+          <Command Name="StartDateValueSetCommand" />
+          <Command Name="EndDateValueSetCommand" />
+          <Command Name="CashDataConnectionRefreshCommand" />
+        </Commands>
+        <Enabled>
+          <Not>
+            <Condition Name="EndDateDateTimePickerStartDateDateTimePickerNotGreaterCondition" />
+          </Not>
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>Дата окончания периода должна быть больше даты начала.</DisabledText>
+      </MyObject>
+
+
+    </MyObject>
+
+    <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="HeadPanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>0</Left>
+      <Height>
+        <Calculate>
+          <Expression>{0} - {1}</Expression>
+          <Items>
+            <Item>
+              <Form>
+                <Property Name="Height" />
+              </Form>
+            </Item>
+            <Item>
+              <Object Name="ContentPanel">
+                <Property Name="Top" />
+              </Object>
+            </Item>
+          </Items>
+        </Calculate>
+      </Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>1</TabIndex>
+      <BackColor>ThemeBackgroundColor</BackColor>
+
+      <MyObject Name="CashDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
+        <Top>5</Top>
+        <Left>10</Left>
+        <Height>
+          <Calculate>
+            <Expression>{0} - {1}*2 - {2}</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="CashDatabaseTable">
+                  <Property Name="Top" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="ExpenseTotalTextBox">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1}*2 - {2} - 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="CashDatabaseTable">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="CashAddButton">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <AllowResizeColumns Value="False" />
+        <AllowResizeRows Value="False" />
+        <AllowInsert>False</AllowInsert>
+        <AllowUpdate>False</AllowUpdate>
+        <AllowDelete>False</AllowDelete>
+        <AutoSizeColumnsMode Value="Fill" />
+        <ShowCellHints Value="True" />
+        <MultiSelect Value="True" />
+        <TabIndex>2</TabIndex>
+        <SourceDataConnection Name="CashPrimaryGetDataConnection" />
+        <Columns>
+          <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>№</Title>
+            <Width>30</Width>
+            <AutoSizeMode Value="None" />
+            <AutoFill Type="RowNumber" />
+            <Alignment Value="MiddleCenter" />
+          </Column>
+          <Column Name="CashId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="OrderId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="Date" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Дата операции</Title>
+            <Width>130</Width>
+            <AutoSizeMode Value="None" />
+            <DataType Type="DateTimeDataType" Format="dd.MM.yyyy HH:mm" />
+            <Alignment Value="MiddleCenter" />
+          </Column>
+          <Column Name="AccountTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Счет</Title>
+            <Width>150</Width>
+            <AutoSizeMode Value="None" />
+          </Column>
+          <Column Name="OperationTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Назначение платежа</Title>
+            <Width>150</Width>
+            <AutoSizeMode Value="None" />
+          </Column>
+          <Column Name="Income" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Приход</Title>
+            <Width>110</Width>
+            <AutoSizeMode Value="None" />
+            <Alignment Value="MiddleRight" />
+            <DataType Type="DecimalDataType" Format="N2" />
+          </Column>
+          <Column Name="Expense" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Расход</Title>
+            <Width>110</Width>
+            <AutoSizeMode Value="None" />
+            <Alignment Value="MiddleRight" />
+            <DataType Type="DecimalDataType" Format="N2" />
+          </Column>
+          <Column Name="ClientTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Клиент</Title>
+            <Width>150</Width>
+            <AutoSizeMode Value="Fill" />
+          </Column>
+        </Columns>
+      </MyObject>
+
+      <MyObject Name="IncomeTotalTextBox" Type="TextBox" Assembly="BaseControls">
+        <Top>
+          <Object Name="CashDatabaseTable">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Calculate>
+            <Expression>{0} - {1}</Expression>
+            <Items>
+              <Item>
+                <Object Name="CashDatabaseTable">
+                  <Property Name="ColumnLeft">
+                    <Parameters>
+                      <Parameter Name="ColumnName">Income</Parameter>
+                    </Parameters>
+                  </Property>
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="CashDatabaseTable">
+                  <Property Name="HorizontalScrollOffset" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Left>
+        <Height>35</Height>
+        <Width>
+          <Object Name="CashDatabaseTable">
+            <Property Name="ColumnWidth">
+              <Parameters>
+                <Parameter Name="ColumnName">Income</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Width>
+        <TabStop>False</TabStop>
+        <FontStyle>TitleSmallFont</FontStyle>
+        <Text>
+          <String>
+            <Format>{0} /
+{1}</Format>
+            <Items>
+              <Item>
+                <DataTypeFormat Type="DecimalDataType" Format="N2">
+                  <Object Name="CashDatabaseTable">
+                    <Property Name="SelectedCellsSumByColumnName">
+                      <Parameters>
+                        <Parameter Name="ColumnName">Income</Parameter>
+                      </Parameters>
+                    </Property>
+                  </Object>
+                </DataTypeFormat>
+              </Item>
+              <Item>
+                <DataTypeFormat Type="DecimalDataType" Format="N2">
+                  <Object Name="CashDatabaseTable">
+                    <Property Name="ColumnSum">
+                      <Parameters>
+                        <Parameter Name="ColumnName">Income</Parameter>
+                      </Parameters>
+                    </Property>
+                  </Object>
+                </DataTypeFormat>
+              </Item>
+            </Items>
+          </String>
+        </Text>
+        <Multiline>True</Multiline>
+        <ReadOnly>True</ReadOnly>
+        <TextAlign>Right</TextAlign>
+        <Visible>
+          <Object Name="CashDatabaseTable">
+            <Property Name="ColumnVisible">
+              <Parameters>
+                <Parameter Name="ColumnName">Income</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Visible>
+      </MyObject>
+
+      <MyObject Name="ExpenseTotalTextBox" Type="TextBox" Assembly="BaseControls">
+        <Top>
+          <Object Name="IncomeTotalTextBox">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Left>
+          <Calculate>
+            <Expression>{0} - {1}</Expression>
+            <Items>
+              <Item>
+                <Object Name="CashDatabaseTable">
+                  <Property Name="ColumnLeft">
+                    <Parameters>
+                      <Parameter Name="ColumnName">Expense</Parameter>
+                    </Parameters>
+                  </Property>
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="CashDatabaseTable">
+                  <Property Name="HorizontalScrollOffset" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Left>
+        <Height>
+          <Object Name="IncomeTotalTextBox">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Object Name="CashDatabaseTable">
+            <Property Name="ColumnWidth">
+              <Parameters>
+                <Parameter Name="ColumnName">Expense</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Width>
+        <TabStop>False</TabStop>
+        <FontStyle>TitleSmallFont</FontStyle>
+        <Text>
+          <String>
+            <Format>{0} /
+{1}</Format>
+            <Items>
+              <Item>
+                <DataTypeFormat Type="DecimalDataType" Format="N2">
+                  <Object Name="CashDatabaseTable">
+                    <Property Name="SelectedCellsSumByColumnName">
+                      <Parameters>
+                        <Parameter Name="ColumnName">Expense</Parameter>
+                      </Parameters>
+                    </Property>
+                  </Object>
+                </DataTypeFormat>
+              </Item>
+              <Item>
+                <DataTypeFormat Type="DecimalDataType" Format="N2">
+                  <Object Name="CashDatabaseTable">
+                    <Property Name="ColumnSum">
+                      <Parameters>
+                        <Parameter Name="ColumnName">Expense</Parameter>
+                      </Parameters>
+                    </Property>
+                  </Object>
+                </DataTypeFormat>
+              </Item>
+            </Items>
+          </String>
+        </Text>
+        <Multiline>True</Multiline>
+        <ReadOnly>True</ReadOnly>
+        <TextAlign>Right</TextAlign>
+        <Visible>
+          <Object Name="CashDatabaseTable">
+            <Property Name="ColumnVisible">
+              <Parameters>
+                <Parameter Name="ColumnName">Expense</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Visible>
+      </MyObject>
+
+      <MyObject Name="CashAddButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Object Name="CashDatabaseTable">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Left>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="CashDatabaseTable">
+                  <Property Name="Right" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Left>
+        <Width>200</Width>
+        <Height>35</Height>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <TabIndex>3</TabIndex>
+        <Image>Images\24x24\plus.png</Image>
+        <ImageAlign>MiddleLeft</ImageAlign>
+        <FontStyle>ButtonFontStyle</FontStyle>
+        <TextAlign>MiddleLeft</TextAlign>
+        <Text>        Добавить...</Text>
+        <Commands>
+          <Command Name="CashAddFormShowCommand" />
+        </Commands>
+        <Enabled>
+          <AccessPoint Name="CashAddAccessPoint" />
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>У вас недостаточно прав для выполнения команды.</DisabledText>
+      </MyObject>
+
+      <MyObject Name="CashEditButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="CashAddButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="CashAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="CashAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="CashAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <TabIndex>4</TabIndex>
+        <Image>Images\24x24\pencil.png</Image>
+        <ImageAlign>MiddleLeft</ImageAlign>
+        <FontStyle>ButtonFontStyle</FontStyle>
+        <TextAlign>MiddleLeft</TextAlign>
+        <Text>        Редактировать...</Text>
+        <Enabled>
+          <And>
+            <AccessPoint Name="CashEditAccessPoint" />
+            <Condition Name="CashSelectedCondition" />
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="CashEditSequentialCommand" />
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="CashEditAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="CashSelectedCondition" />
+                </Not>
+              </When>
+              <Then>Выберите запись для редактирования.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+      </MyObject>
+
+      <MyObject Name="CashDeleteButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="CashEditButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="CashAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="CashAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="CashAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <TabIndex>5</TabIndex>
+        <Image>Images\24x24\delete.png</Image>
+        <ImageAlign>MiddleLeft</ImageAlign>
+        <FontStyle>ButtonFontStyle</FontStyle>
+        <TextAlign>MiddleLeft</TextAlign>
+        <Text>        Удалить...</Text>
+        <Enabled>
+          <And>
+            <AccessPoint Name="CashDeleteAccessPoint" />
+            <Condition Name="CashSelectedCondition" />
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="CashDeleteMessageBoxCommand" />
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="CashDeleteAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="CashSelectedCondition" />
+                </Not>
+              </When>
+              <Then>Выберите запись для удаления.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+      </MyObject>
+
+      <MyObject Name="CashExportToExcelButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 15</Expression>
+            <Items>
+              <Item>
+                <Object Name="CashDeleteButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="CashAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Height>
+          <Object Name="CashAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Object Name="CashAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <TabIndex>5</TabIndex>
+        <Image>Images\24x24\file-excel.png</Image>
+        <ImageAlign>MiddleLeft</ImageAlign>
+        <FontStyle>ButtonFontStyle</FontStyle>
+        <TextAlign>MiddleLeft</TextAlign>
+        <Text>        Экспорт в Excel...</Text>
+        <Commands>
+          <Command Name="CashExportToExcelCommand" />
+        </Commands>
+        <Enabled>
+          <AccessPoint Name="CashExportToExcelAccessPoint" />
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>У вас недостаточно прав для выполнения команды.</DisabledText>
+      </MyObject>
+
+    </MyObject>
+
+  </MyObjects>
+</Form>

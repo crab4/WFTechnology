@@ -67,7 +67,7 @@
         </Parameters>
       </SqlQuery>
     </DataConnection>
-    
+
     <DataConnection Name="MaterialCategoryPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <ManualLoad>
         <Not>
@@ -214,7 +214,7 @@
     </Command>
 
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
-      <Commands>
+      <Commands Lock="True">
         <If>
           <When>
             <Parameter Name="Edit" />

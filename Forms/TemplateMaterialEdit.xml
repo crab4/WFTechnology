@@ -48,6 +48,15 @@
   </Appearance>
 
   <DataConnections>
+    <DataConnection Name="AccessPointDataConnection" Type="AccessPointDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <AccessPoints>
+        <AccessPoint Name="UnitViewAccessPoint" />
+        <AccessPoint Name="UnitAddAccessPoint" />
+        <AccessPoint Name="UnitEditAccessPoint" />
+      </AccessPoints>
+    </DataConnection>
+
     <DataConnection Name="UnitPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <SqlQuery Name="UnitSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
@@ -295,7 +304,7 @@
     </Command>
 
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
-      <Commands>
+      <Commands Lock="True">
         <If>
           <When>
             <Parameter Name="Edit" />
@@ -778,28 +787,69 @@
           </Object>
         </Left>
         <Width>
-          <Formula>
-            <Minus DataType="IntegerDataType">
+          <Calculate>
+            <Expression>{0} - {1}*2 - {2} - {3}</Expression>
+            <Items>
               <Item>
-                <Object Name="MaterialCategoryComboBox">
+                <Object Name="ContentPanel">
                   <Property Name="Width" />
                 </Object>
               </Item>
               <Item>
-                <Formula>
-                  <Multiply DataType="IntegerDataType">
-                    <Item>
-                      <Object Name="UnitAddEditButton">
-                        <Property Name="Width" />
-                      </Object>
-                    </Item>
-                    <Item>2</Item>
-                  </Multiply>
-                </Formula>
+                <Object Name="UnitComboBox">
+                  <Property Name="Left" />
+                </Object>
               </Item>
-              <Item>10</Item>
-            </Minus>
-          </Formula>
+              <Item>
+                <Switch>
+                  <Case>
+                    <When>
+                      <Object Name="UnitAddEditButton">
+                        <Property Name="Visible" />
+                      </Object>
+                    </When>
+                    <Then>
+                      <Formula>
+                        <Plus DataType="IntegerDataType">
+                          <Item>
+                            <Object Name="UnitAddEditButton">
+                              <Property Name="Width" />
+                            </Object>
+                          </Item>
+                          <Item>5</Item>
+                        </Plus>
+                      </Formula>
+                    </Then>
+                  </Case>
+                  <Case>0</Case>
+                </Switch>
+              </Item>
+              <Item>
+                <Switch>
+                  <Case>
+                    <When>
+                      <Object Name="UnitListButton">
+                        <Property Name="Visible" />
+                      </Object>
+                    </When>
+                    <Then>
+                      <Formula>
+                        <Plus DataType="IntegerDataType">
+                          <Item>
+                            <Object Name="UnitListButton">
+                              <Property Name="Width" />
+                            </Object>
+                          </Item>
+                          <Item>5</Item>
+                        </Plus>
+                      </Formula>
+                    </Then>
+                  </Case>
+                  <Case>0</Case>
+                </Switch>
+              </Item>
+            </Items>
+          </Calculate>
         </Width>
         <TabIndex>3</TabIndex>
         <NullValue Show="True" Title="[Не выбрано]" />
@@ -872,25 +922,47 @@
             </Else>
           </If>
         </Commands>
+        <Visible>
+          <And>
+            <AccessPoint Name="UnitAddAccessPoint" />
+            <AccessPoint Name="UnitEditAccessPoint" />
+          </And>
+        </Visible>
       </MyObject>
 
-      <MyObject Name="UnitSelectButton" Type="Button" Assembly="BaseControls">
+      <MyObject Name="UnitListButton" Type="Button" Assembly="BaseControls">
         <Top>
           <Object Name="UnitComboBox">
             <Property Name="Top" />
           </Object>
         </Top>
         <Left>
-          <Formula>
-            <Plus DataType="IntegerDataType">
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
               <Item>
-                <Object Name="UnitAddEditButton">
-                  <Property Name="Right" />
-                </Object>
+                <Switch>
+                  <Case>
+                    <When>
+                      <Object Name="UnitAddEditButton">
+                        <Property Name="Visible" />
+                      </Object>
+                    </When>
+                    <Then>
+                      <Object Name="UnitAddEditButton">
+                        <Property Name="Right" />
+                      </Object>
+                    </Then>
+                  </Case>
+                  <Case>
+                    <Object Name="UnitComboBox">
+                      <Property Name="Right" />
+                    </Object>
+                  </Case>
+                </Switch>
               </Item>
-              <Item>5</Item>
-            </Plus>
-          </Formula>
+            </Items>
+          </Calculate>
         </Left>
         <Height>
           <Object Name="UnitAddEditButton">
@@ -913,6 +985,9 @@
         <Commands>
           <Command Name="UnitSelectFormShowCommand" />
         </Commands>
+        <Visible>
+          <AccessPoint Name="UnitViewAccessPoint" />
+        </Visible>
       </MyObject>
 
       <MyObject Name="PriceLabel" Type="Label" Assembly="BaseControls">

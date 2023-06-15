@@ -47,6 +47,15 @@
   </Appearance>
 
   <DataConnections>
+    <DataConnection Name="AccessPointDataConnection" Type="AccessPointDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <AccessPoints>
+        <AccessPoint Name="MaterialViewAccessPoint" />
+        <AccessPoint Name="MaterialAddAccessPoint" />
+        <AccessPoint Name="MaterialEditAccessPoint" />
+      </AccessPoints>
+    </DataConnection>
+
     <DataConnection Name="OrderPositionPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <ManualLoad>
         <Not>
@@ -269,7 +278,7 @@
     </Command>
 
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
-      <Commands>
+      <Commands Lock="True">
         <If>
           <When>
             <Parameter Name="Edit" />
@@ -605,7 +614,7 @@
         </Left>
         <Width>
           <Calculate>
-            <Expression>{0} - {1}*2 - {2} - {3} - 10</Expression>
+            <Expression>{0} - {1}*2 - {2} - {3}</Expression>
             <Items>
               <Item>
                 <Object Name="ContentPanel">
@@ -618,14 +627,52 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="MaterialAddEditButton">
-                  <Property Name="Width" />
-                </Object>
+                <Switch>
+                  <Case>
+                    <When>
+                      <Object Name="MaterialAddEditButton">
+                        <Property Name="Visible" />
+                      </Object>
+                    </When>
+                    <Then>
+                      <Formula>
+                        <Plus DataType="IntegerDataType">
+                          <Item>
+                            <Object Name="MaterialAddEditButton">
+                              <Property Name="Width" />
+                            </Object>
+                          </Item>
+                          <Item>5</Item>
+                        </Plus>
+                      </Formula>
+                    </Then>
+                  </Case>
+                  <Case>0</Case>
+                </Switch>
               </Item>
               <Item>
-                <Object Name="MaterialListButton">
-                  <Property Name="Width" />
-                </Object>
+                <Switch>
+                  <Case>
+                    <When>
+                      <Object Name="MaterialListButton">
+                        <Property Name="Visible" />
+                      </Object>
+                    </When>
+                    <Then>
+                      <Formula>
+                        <Plus DataType="IntegerDataType">
+                          <Item>
+                            <Object Name="MaterialListButton">
+                              <Property Name="Width" />
+                            </Object>
+                          </Item>
+                          <Item>5</Item>
+                        </Plus>
+                      </Formula>
+                    </Then>
+                  </Case>
+                  <Case>0</Case>
+                </Switch>
               </Item>
             </Items>
           </Calculate>
@@ -721,6 +768,12 @@
             </Else>
           </If>
         </Commands>
+        <Visible>
+          <And>
+            <AccessPoint Name="MaterialAddAccessPoint" />
+            <AccessPoint Name="MaterialEditAccessPoint" />
+          </And>
+        </Visible>
       </MyObject>
 
       <MyObject Name="MaterialListButton" Type="Button" Assembly="BaseControls">
@@ -734,9 +787,25 @@
             <Expression>{0} + 5</Expression>
             <Items>
               <Item>
-                <Object Name="MaterialAddEditButton">
-                  <Property Name="Right" />
-                </Object>
+                <Switch>
+                  <Case>
+                    <When>
+                      <Object Name="MaterialAddEditButton">
+                        <Property Name="Visible" />
+                      </Object>
+                    </When>
+                    <Then>
+                      <Object Name="MaterialAddEditButton">
+                        <Property Name="Right" />
+                      </Object>
+                    </Then>
+                  </Case>
+                  <Case>
+                    <Object Name="MaterialComboBox">
+                      <Property Name="Right" />
+                    </Object>
+                  </Case>
+                </Switch>
               </Item>
             </Items>
           </Calculate>
@@ -761,6 +830,9 @@
         <Commands>
           <Command Name="MaterialListFormShowCommand" />
         </Commands>
+        <Visible>
+          <AccessPoint Name="MaterialViewAccessPoint" />
+        </Visible>
       </MyObject>
 
       <MyObject Name="QuantityLabel" Type="Label" Assembly="BaseControls">

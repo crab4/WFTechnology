@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateAccountForm" Width="450" Height="250" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateAccountForm" Width="400" Height="195" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
@@ -8,7 +8,7 @@
           <When>
             <Parameter Name="Edit" />
           </When>
-          <Then>Редактирование счёта</Then>
+          <Then>Редактирование  счета</Then>
         </Case>
         <Case>Добавление счета</Case>
       </Switch>
@@ -55,8 +55,8 @@
       <SqlQuery Name="AccountByIdSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
-          <Field Name="Cash" />
           <Field Name="Title" />
+          <Field Name="AccountType" />
         </Fields>
         <Parameters>
           <Parameter NativeName="AccountId">
@@ -79,7 +79,7 @@
             <Object Name="TitleTextBox" />
           </Value>
         </Parameter>
-        <Parameter NativeName="Cash">
+        <Parameter NativeName="AccountType">
           <Value>
             <Object Name="AccountTypeComboBox" />
           </Value>
@@ -103,7 +103,7 @@
             <Object Name="TitleTextBox" />
           </Value>
         </Parameter>
-        <Parameter NativeName="Cash">
+        <Parameter NativeName="AccountType">
           <Value>
             <Object Name="AccountTypeComboBox" />
           </Value>
@@ -131,6 +131,18 @@
       <DataType Type="BooleanDataType" />
     </Condition>
 
+    <Condition Name="MandatoryFieldsAreFilledEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Form>
+            <Property Name="CheckingFired" />
+          </Form>
+        </Item>
+        <Item>False</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
     <Condition Name="TitleIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
       <Items>
         <Item>
@@ -139,22 +151,12 @@
       </Items>
     </Condition>
 
-    <Condition Name="AccountTypeIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+    <Condition Name="AccountTypeIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
       <Items>
         <Item>
           <Object Name="AccountTypeComboBox" />
         </Item>
       </Items>
-    </Condition>
-
-    <Condition Name="MandatoryFieldsAllowedCheckNestedCondition" Type="NestedCondition" Assembly="Conditions">
-      <ConditionExpression>
-        <Not>
-          <Form>
-            <Property Name="CheckingFired">Check</Property>
-          </Form>
-        </Not>
-      </ConditionExpression>
     </Condition>
   </Conditions>
 
@@ -198,7 +200,7 @@
     </Command>
 
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
-      <Commands>
+      <Commands Lock="True">
         <If>
           <When>
             <Parameter Name="Edit" />
@@ -214,12 +216,6 @@
         <Command Name="UpdatedTrueValueSetCommand" />
         <Command Name="FormCloseCommand" />
       </Commands>
-    </Command>
-
-    <Command Name="ShowAsteriskHintValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Object Name="ShowAsteriskCounterVariable">
-        <Input />
-      </Object>
     </Command>
   </Commands>
 
@@ -258,7 +254,7 @@
       <Commands>
         <If>
           <When>
-            <Condition Name="MandatoryFieldsAllowedCheckNestedCondition" />
+            <Condition Name="MandatoryFieldsAreFilledEqualCondition" />
           </When>
           <Then>
             <Command Name="SaveOnCloseMessageBoxCommand" />
@@ -283,36 +279,22 @@
   <Checkings>
     <Checking>
       <Object Name="TitleTextBox" />
-      <Group Name="Check" />
       <ConditionExpression>
-        <And>
-          <Object Name="ShowAsteriskCounterVariable" />
-          <Condition Name="TitleIsNullOrEmptyCondition" />
-        </And>
-
+        <Condition Name="TitleIsNullOrEmptyCondition" />
       </ConditionExpression>
       <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
     </Checking>
 
     <Checking>
       <Object Name="AccountTypeComboBox" />
-      <Group Name="Check" />
       <ConditionExpression>
-        <And>
-          <Object Name="ShowAsteriskCounterVariable" />
-          <Condition Name="AccountTypeIsNullOrEmptyCondition" />
-        </And>
+        <Condition Name="AccountTypeIsNullCondition" />
       </ConditionExpression>
-      <AsteriskHint>Пожалуйста, выберите тип платежа</AsteriskHint>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
     </Checking>
   </Checkings>
 
   <MyObjects>
-    <MyObject Name="ShowAsteriskCounterVariable" Type="Variable" Assembly="SimpleControls">
-      <Value>False</Value>
-    </MyObject>
-
-
     <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
       <Top>0</Top>
       <Left>0</Left>
@@ -529,7 +511,7 @@
         <Value>
           <DataConnection SourceDataConnection="AccountPrimaryGetDataConnection">
             <Fields>
-              <Field Name="Cash" />
+              <Field Name="AccountType" />
             </Fields>
           </DataConnection>
         </Value>
@@ -602,24 +584,14 @@
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Text>Сохранить</Text>
         <TabIndex>1</TabIndex>
+        <Enabled>
+          <And>
+            <Condition Name="MandatoryFieldsAreFilledEqualCondition" />
+            <Condition Name="FormChangedEqualCondition" />
+          </And>
+        </Enabled>
         <Commands>
-          <If>
-            <When>
-              <And>
-                <Condition Name="MandatoryFieldsAllowedCheckNestedCondition" />
-                <Condition Name="FormChangedEqualCondition" />
-              </And>
-            </When>
-            <Then>
-              <Command Name="SaveSequentialCommand" />
-            </Then>
-            <Else>
-              <Command Name="ShowAsteriskHintValueSetCommand">
-                True
-              </Command>
-            </Else>
-          </If>
-
+          <Command Name="SaveSequentialCommand" />
         </Commands>
         <DisabledMode>
           <Condition Name="FormChangedEqualCondition" />

@@ -1,0 +1,1242 @@
+<?xml version="1.0"?>
+<Form Name="TemplateOperationListForm" Width="700" Height="600" FormBorderStyle="Sizable" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" BackColor="ThemeBackgroundColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True">
+  <Parameters>
+    <Parameter Name="Title">Назначение платежей</Parameter>
+    <Parameter Name="Updated">False</Parameter>
+    <Parameter Name="SelectionMode">False</Parameter>
+    <Parameter Name="Selected" />
+  </Parameters>
+
+  <Appearance>
+    <Colors>
+      <Color Name="ThemeForeColor" Red="0" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeBackgroundColor" Red="255" Green="255" Blue="255" Alpha="255" />
+      <Color Name="ThemeFlatColor" Red="255" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeSeparateBackgroundColor" Red="225" Green="225" Blue="225" Alpha="255" />
+
+      <Color Name="HeadBackgroundColor" Red="221" Green="232" Blue="246" Alpha="255" />
+      <Color Name="HeadForeColor" Red="70" Green="70" Blue="70" Alpha="255" />
+
+      <Color Name="LabelForeColor" Red="100" Green="100" Blue="100" Alpha="255" />
+      <Color Name="TableBackgroundColor" Red="200" Green="200" Blue="200" Alpha="255" />
+      <Color Name="TableArchiveColor" Red="230" Green="230" Blue="230" Alpha="255" />
+
+      <Color Name="Yellow" Red="249" Green="242" Blue="165" Alpha="255" />
+      <Color Name="LightYellow" Red="255" Green="255" Blue="213" Alpha="255" />
+
+      <!-- Стили кнопок -->
+      <Color Name="ButtonFlatBorderColor" Red="225" Green="225" Blue="225" Alpha="255" />
+      <Color Name="ButtonFlatMouseDownBackColor" Red="201" Green="219" Blue="241" Alpha="255" />
+      <Color Name="ButtonFlatMouseOverBackColor" Red="228" Green="237" Blue="248" Alpha="255" />
+    </Colors>
+
+    <FontStyles>
+      <FontStyle Name="ThemeFontStyle" Font="Segoe UI" Size="9" />
+      <FontStyle Name="HeadFontStyle" Font="Segoe UI" Size="15" />
+      <FontStyle Name="LabelFontStyle" Font="Segoe UI" Size="9" Italic="True" />
+      <FontStyle Name="ButtonFontStyle" Font="Segoe UI" Size="10" />
+      <FontStyle Name="TitleBoldFont" Font="Segoe UI" Size="9" Bold="True" />
+    </FontStyles>
+  </Appearance>
+
+  <DataConnections>
+    <DataConnection Name="OperationPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="OperationSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="Expand" />
+          <Field Name="OperationId" />
+          <Field Name="OperationCategoryId" />
+          <Field Name="Title" />
+          <Field Name="System" />
+          <Field Name="Archive" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="OperationArchiveSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="OperationArchiveUpdateSqlQuery" Type="Update" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="OperationId">
+          <Value>
+            <Object Name="OperationDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">OperationId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+    </DataConnection>
+
+    <DataConnection Name="OperationDeleteSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="OperationDeleteSqlQuery" Type="Delete" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="OperationId">
+          <Value>
+            <Object Name="OperationDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">OperationId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+      <Refresh>
+        <DataConnection Name="OperationPrimaryGetDataConnection" />
+      </Refresh>
+    </DataConnection>
+
+
+    <DataConnection Name="OperationTreeGetDataConnection" Type="TreeGetDataConnection" Assembly="DataConnections">
+      <SourceDataConnection Name="OperationPrimaryGetDataConnection">
+        <Fields>
+          <Field Name="OperationId" />
+          <Field Name="Title" />
+          <Field Name="Expand" />
+          <Field Name="OperationCategoryId" />
+          <Field Name="System" />
+          <Field Name="Archive" />
+        </Fields>
+      </SourceDataConnection>
+      <RelationshipDataConnection Name="OperationPrimaryGetDataConnection">
+        <Fields>
+          <Field Name="OperationId" />
+          <Field Name="OperationCategoryId" />
+        </Fields>
+      </RelationshipDataConnection>
+      <AdditionalColumns>
+        <HasChildrenColumn Name="hasChildren" />
+        <StateColumn Name="State" CloseState="+" OpenState="-" />
+      </AdditionalColumns>
+      <Filter FilterByNullValue="False">
+        <Field NativeName="Archive" />
+        <Value>
+          <Object Name="ArchiveFilterComboBox" />
+        </Value>
+        <DataType Type="BooleanDataType" />
+      </Filter>
+    </DataConnection>
+  </DataConnections>
+
+  <Conditions>
+    <Condition Name="FormLoadedCondition" Type="FormLoadedCondition" Assembly="Conditions" />
+
+    <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
+
+    <Condition Name="EscapeKeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
+      <Key Value="Escape" />
+    </Condition>
+
+    <Condition Name="F5KeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
+      <Key Value="F5" />
+    </Condition>
+
+    <Condition Name="OperationSelectedCondition" Type="GreaterCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OperationDatabaseTable">
+            <Property Name="SelectedRowsCount" />
+          </Object>
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="SelectedOperationIsArchiveCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OperationDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">Archive</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="OperationCellDoubleClickCondition" Type="CellDoubleClickCondition" Assembly="Conditions">
+      <Table Name="OperationDatabaseTable" />
+    </Condition>
+
+    <Condition Name="OperationAddFormUpdatedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="OperationAddFormShowCommand" Parameter="Updated" />
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="OperationEditFormUpdatedTrueEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <Items>
+        <Item>
+          <Command Name="OperationEditFormShowCommand" Parameter="Updated" />
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="SelectedOperationIsNotSystemEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OperationDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">System</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Item>
+        <Item>False</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="SelectedOperationIdGreaterCondition" Type="GreaterCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OperationDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">OperationId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Item>
+        <Item>0</Item>
+      </Items>
+      <DataType Type="IntegerDataType" />
+    </Condition>
+
+    <Condition Name="OperationCellClickCondition" Type="CellClickCondition" Assembly="Conditions">
+      <Table Name="OperationDatabaseTable" />
+    </Condition>
+
+    <Condition Name="OperationLastCellClickedColumnNameStateEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OperationDatabaseTable">
+            <Property Name="LastCellClickedColumnName" />
+          </Object>
+        </Item>
+        <Item>State</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="SelectedOperationHasChildEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="OperationDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">HasChildren</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Item>
+        <Item>True</Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="OperationToggleFoldingNodeNestedCondition" Type="NestedCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
+      <ConditionExpression>
+        <And>
+          <Condition Name="OperationCellClickCondition" />
+          <Condition Name="OperationLastCellClickedColumnNameStateEqualCondition" />
+          <Condition Name="SelectedOperationHasChildEqualCondition" />
+        </And>
+      </ConditionExpression>
+    </Condition>
+
+    <Condition Name="OperationDeleteResultIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Command Name="OperationDeleteSaveCommand" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="OperationDeleteResultEqualParentCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Command Name="OperationDeleteSaveCommand" />
+        </Item>
+        <Item>parent</Item>
+      </Items>
+      <DataType Type="StringDataType" />
+    </Condition>
+
+    <Condition Name="OperationDeleteResultEqualUsedCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Command Name="OperationDeleteSaveCommand" />
+        </Item>
+        <Item>used</Item>
+      </Items>
+      <DataType Type="StringDataType" />
+    </Condition>
+  </Conditions>
+
+  <Commands>
+    <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
+
+    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Updated">True</Parameter>
+    </Command>
+
+    <Command Name="OperationDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OperationPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="OperationAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateOperationEdit.xml</Xml>
+      <Show Type="None" />
+      <Multiple Allow="True" />
+      <Parameters>
+        <Parameter Name="OperationCategoryId">
+          <Object Name="OperationDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">OperationId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="OperationEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateOperationEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="Edit">True</Parameter>
+        <Parameter Name="OperationId">
+          <Object Name="OperationDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">OperationId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="OperationArchiveSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OperationArchiveSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="OperationDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OperationDeleteSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="OperationDeleteMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Вы действительно хотите удалить выбранную запись?</Text>
+      <Buttons Type="YesNo" />
+      <Icon Type="Question" />
+    </Command>
+
+    <Command Name="OperationTryDeleteUsedMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Невозможно удалить запись, так как она используется в программе.\rЗапись перемещена в архив.</Text>
+      <Icon Type="Information" />
+      <Buttons Type="Ok" />
+    </Command>
+
+    <Command Name="OperationHasChildrenWarningMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Удаление</Caption>
+      <Text>Выбранное назначение платежа содержит дочерние элементы и не может быть удалено.</Text>
+      <Icon Type="Information" />
+      <Buttons Type="Ok" />
+    </Command>
+
+    <Command Name="OperationArchiveMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Архив</Caption>
+      <Text>
+        <Switch>
+          <Case>
+            <When>
+              <Condition Name="SelectedOperationIsArchiveCondition" />
+            </When>
+            <Then>Вы действительно хотите восстановить выбранную запись из архива?</Then>
+          </Case>
+          <Case>Вы действительно хотите перенести выбранную запись в архив?</Case>
+        </Switch>
+      </Text>
+      <Buttons Type="YesNo" />
+      <Icon Type="Question" />
+    </Command>
+
+    <Command Name="EditingArchiveOperationMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption />
+      <Text>Для редактирования восстановите запись из архива.</Text>
+      <Icon Type="Warning" />
+      <Buttons Type="Ok" />
+    </Command>
+
+    <Command Name="OperationSelectInTableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="OperationDatabaseTable">
+        <Property Name="SelectRowByFieldValue">
+          <Parameters>
+            <Parameter Name="ColumnName">OperationId</Parameter>
+            <Parameter Name="Value">
+              <Input />
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+
+    <Command Name="OperationToggleFoldingNodeValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <DataConnection Name="OperationTreeGetDataConnection">
+        <Property Name="ToggleFoldingNode">
+          <Parameters>
+            <Parameter Name="NodeId">
+              <Object Name="OperationDatabaseTable">
+                <Property Name="SelectedRowCellValueByColumnName">
+                  <Parameters>
+                    <Parameter Name="ColumnName">OperationId</Parameter>
+                  </Parameters>
+                </Property>
+              </Object>
+            </Parameter>
+          </Parameters>
+        </Property>
+      </DataConnection>
+    </Command>
+
+    <Command Name="BlockRefreshVariableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="BlockRefreshVariable">
+        <Input />
+      </Object>
+    </Command>
+
+    <Command Name="OperationTreeDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OperationTreeGetDataConnection" Packet="True" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="SelectedValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Selected">
+        <Object Name="OperationDatabaseTable">
+          <Property Name="SelectedRowCellValueByColumnName">
+            <Parameters>
+              <Parameter Name="ColumnName">OperationId</Parameter>
+            </Parameters>
+          </Property>
+        </Object>
+      </Parameter>
+    </Command>
+
+    <Command Name="SelectOperationSequentialCommand" Type="SequentialCommand" Assembly="Commands">
+      <Commands>
+        <Command Name="SelectedValueSetCommand" />
+        <Command Name="UpdatedTrueValueSetCommand" />
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Command>
+  </Commands>
+
+  <Executions>
+    <Execution>
+      <ConditionExpression>
+        <Or>
+          <Condition Name="FormClosingCondition" />
+          <Condition Name="EscapeKeyDownCondition" />
+        </Or>
+      </ConditionExpression>
+      <Commands>
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="OperationAddFormUpdatedTrueEqualCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OperationDataConnectionRefreshCommand" />
+        <Command Name="OperationSelectInTableValueSetCommand">
+          <Command Name="OperationAddFormShowCommand" Parameter="OperationId" />
+        </Command>
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="OperationEditFormUpdatedTrueEqualCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OperationDataConnectionRefreshCommand" />
+        <Command Name="OperationSelectInTableValueSetCommand">
+          <Command Name="OperationEditFormShowCommand" Parameter="OperationId" />
+        </Command>
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="OperationArchiveMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OperationArchiveSaveCommand" />
+        <Command Name="OperationDataConnectionRefreshCommand" />
+        <Command Name="UpdatedTrueValueSetCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="OperationDeleteMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OperationDeleteSaveCommand" />
+        <If>
+          <When>
+            <Condition Name="OperationDeleteResultIsNullCondition" />
+          </When>
+          <Then>
+            <Command Name="UpdatedTrueValueSetCommand" />
+          </Then>
+          <ElseIf>
+            <When>
+              <Condition Name="OperationDeleteResultEqualParentCondition" />
+            </When>
+            <Then>
+              <Command Name="OperationHasChildrenWarningMessageBoxCommand" />
+            </Then>
+          </ElseIf>
+          <ElseIf>
+            <When>
+              <Condition Name="OperationDeleteResultEqualUsedCondition" />
+            </When>
+            <Then>
+              <Command Name="OperationTryDeleteUsedMessageBoxCommand" />
+              <Command Name="UpdatedTrueValueSetCommand" />
+            </Then>
+          </ElseIf>
+        </If>
+      </Commands>
+    </Execution>
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="OperationCellDoubleClickCondition" />
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <Condition Name="SelectedOperationIsArchiveCondition" />
+          </When>
+          <Then>
+            <Command Name="EditingArchiveOperationMessageBoxCommand" />
+          </Then>
+          <Else>
+            <If>
+              <When>
+                <Not>
+                  <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
+                </Not>
+              </When>
+              <Then>
+                <Command Name="OperationEditFormShowCommand" />
+              </Then>
+            </If>
+          </Else>
+        </If>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="F5KeyDownCondition" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="OperationDataConnectionRefreshCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="OperationToggleFoldingNodeNestedCondition" />
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <Object Name="BlockRefreshVariable" />
+          </When>
+          <Then>
+            <Command Name="BlockRefreshVariableValueSetCommand">False</Command>
+            <Command Name="OperationToggleFoldingNodeValueSetCommand" />
+            <Command Name="OperationTreeDataConnectionRefreshCommand" />
+            <Command Name="BlockRefreshVariableValueSetCommand">True</Command>
+          </Then>
+        </If>
+      </Commands>
+    </Execution>
+  </Executions>
+
+  <MyObjects>
+    <MyObject Name="BlockRefreshVariable" Type="Variable" Assembly="SimpleControls">
+      <Value>True</Value>
+    </MyObject>
+
+
+    <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
+      <Top>0</Top>
+      <Left>0</Left>
+      <Height>50</Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>2</TabIndex>
+      <BackColor>HeadBackgroundColor</BackColor>
+
+      <MyObject Name="HeadLabel" Type="Label" Assembly="BaseControls">
+        <Top>0</Top>
+        <Left>10</Left>
+        <Height>
+          <Object Name="HeadPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ArchiveFilterComboBox">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="HeadLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <FontStyle>HeadFontStyle</FontStyle>
+        <ForeColor>HeadForeColor</ForeColor>
+        <TextAlign>MiddleLeft</TextAlign>
+        <Text>
+          <Parameter Name="Title" />
+        </Text>
+      </MyObject>
+
+      <MyObject Name="ArchiveFilterComboBox" Type="ComboBox" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>Ceiling(({0} - {1}) / 2)</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="ArchiveFilterComboBox">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Right>
+          <Calculate>
+            <Expression>{0} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Right>
+        <Width>100</Width>
+        <TabIndex>1</TabIndex>
+        <NullValue Show="True" Title="Все" />
+        <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
+        <ValueList>
+          <Structure Type="Table">
+            <Row>
+              <Item>False</Item>
+              <Item>Актуальные</Item>
+            </Row>
+            <Row>
+              <Item>True</Item>
+              <Item>Архивные</Item>
+            </Row>
+          </Structure>
+        </ValueList>
+        <Value>False</Value>
+      </MyObject>
+    </MyObject>
+
+    <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="HeadPanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>0</Left>
+      <Height>
+        <Calculate>
+          <Expression>{0} - {1}</Expression>
+          <Items>
+            <Item>
+              <Form>
+                <Property Name="Height" />
+              </Form>
+            </Item>
+            <Item>
+              <Object Name="ContentPanel">
+                <Property Name="Top" />
+              </Object>
+            </Item>
+          </Items>
+        </Calculate>
+      </Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>1</TabIndex>
+      <BackColor>ThemeBackgroundColor</BackColor>
+
+      <MyObject Name="OperationDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
+        <Top>5</Top>
+        <Left>10</Left>
+        <Height>
+          <Calculate>
+            <Expression>{0} - {1}*2 - {2}</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="OperationDatabaseTable">
+                  <Property Name="Top" />
+                </Object>
+              </Item>
+              <Item>
+                <Switch>
+                  <Case>
+                    <When>
+                      <Parameter Name="SelectionMode" />
+                    </When>
+                    <Then>50</Then>
+                  </Case>
+                  <Case>0</Case>
+                </Switch>
+              </Item>
+            </Items>
+          </Calculate>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1}*2 - {2} - 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="OperationDatabaseTable">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="OperationAddButton">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <AllowResizeColumns Value="False" />
+        <AllowResizeRows Value="False" />
+        <AllowInsert>False</AllowInsert>
+        <AllowUpdate>False</AllowUpdate>
+        <AllowDelete>False</AllowDelete>
+        <AutoSizeColumnsMode Value="Fill" />
+        <TabIndex>2</TabIndex>
+        <SourceDataConnection Name="OperationTreeGetDataConnection" />
+        <Columns>
+          <Column Name="OperationId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="OperationCategoryId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="State" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title />
+            <Width>30</Width>
+            <AutoSizeMode Value="None" />
+            <ManagementMode>NotAllowed</ManagementMode>
+            <Alignment Value="MiddleCenter" />
+            <AllowSort Value="False" />
+          </Column>
+          <Column Name="Title" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Наименование</Title>
+            <Width>100</Width>
+            <AutoSizeMode Value="Fill" />
+            <AllowSort Value="False" />
+          </Column>
+          <Column Name="System" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="Archive" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="Expand" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+          <Column Name="HasChildren" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Visible>False</Visible>
+          </Column>
+        </Columns>
+        <Formatting>
+
+          <BackColor Name="LightYellow">
+            <Expression>HasChildren AND OperationId <![CDATA[>]]> 0</Expression>
+          </BackColor>
+          <BackColor Name="Yellow">
+            <Expression>OperationId <![CDATA[<]]> 0</Expression>
+          </BackColor>
+          <FontStyle Name="TitleBoldFont">
+            <Expression>OperationId <![CDATA[<]]> 0</Expression>
+          </FontStyle>
+        </Formatting>
+      </MyObject>
+
+      <MyObject Name="SelectionButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="OperationDatabaseTable">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+              <Item />
+            </Items>
+          </Calculate>
+        </Top>
+        <Right>
+          <Calculate>
+            <Expression>{0} - 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Right" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Right>
+        <Height>30</Height>
+        <Width>200</Width>
+        <TextAlign>MiddleCenter</TextAlign>
+        <FontStyle>ButtonFontStyle</FontStyle>
+        <ImageAlign>MiddleLeft</ImageAlign>
+        <Image>Images\24x24\check.png</Image>
+        <Text>Выбрать</Text>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Visible>
+          <Parameter Name="SelectionMode" />
+        </Visible>
+        <Enabled>
+          <And>
+            <Condition Name="OperationSelectedCondition" />
+            <Not>
+              <Condition Name="SelectedOperationHasChildEqualCondition" />
+            </Not>
+            <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="SelectOperationSequentialCommand" />
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>Чтобы продолжить, необходимо выбрать запись в таблице без детей и не системную.</DisabledText>
+      </MyObject>
+
+
+      <MyObject Name="OperationAddButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Object Name="OperationDatabaseTable">
+            <Property Name="Top" />
+          </Object>
+        </Top>
+        <Left>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="OperationDatabaseTable">
+                  <Property Name="Right" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Left>
+        <Width>40</Width>
+        <Height>40</Height>
+        <TabIndex>3</TabIndex>
+        <Hint>Добавить запись...</Hint>
+        <BackgroundImage>Images\24x24\plus.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <Or>
+            <Not>
+              <Condition Name="OperationSelectedCondition" />
+            </Not>
+            <And>
+              <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
+              <Not>
+                <Condition Name="SelectedOperationIsArchiveCondition" />
+              </Not>
+            </And>
+          </Or>
+        </Enabled>
+        <Commands>
+          <Command Name="OperationAddFormShowCommand" />
+        </Commands>
+      </MyObject>
+
+      <MyObject Name="OperationEditButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="OperationAddButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="OperationAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="OperationAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="OperationAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <TabIndex>4</TabIndex>
+        <Hint>Редактировать запись...</Hint>
+        <BackgroundImage>Images\24x24\pencil.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <And>
+            <Condition Name="OperationSelectedCondition" />
+            <Not>
+              <Condition Name="SelectedOperationIsArchiveCondition" />
+            </Not>
+            <Condition Name="SelectedOperationIdGreaterCondition" />
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="OperationEditFormShowCommand" />
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="OperationSelectedCondition" />
+                </Not>
+              </When>
+              <Then>Выберите запись для редактирования.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="SelectedOperationIsArchiveCondition" />
+              </When>
+              <Then>Для редактирования восстановите запись из архива.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="SelectedOperationIdGreaterCondition" />
+                </Not>
+              </When>
+              <Then>Выбранная запись является служебной и не может быть отредактирована.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+      </MyObject>
+
+      <MyObject Name="OperationDeleteButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="OperationEditButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="OperationAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="OperationAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="OperationAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <TabIndex>5</TabIndex>
+        <Hint>Удалить запись</Hint>
+        <BackgroundImage>Images\24x24\delete.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <And>
+            <Condition Name="OperationSelectedCondition" />
+            <Not>
+              <Condition Name="SelectedOperationIsArchiveCondition" />
+            </Not>
+            <Condition Name="SelectedOperationIdGreaterCondition" />
+            <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
+            <Not>
+              <Condition Name="SelectedOperationHasChildEqualCondition" />
+            </Not>
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="OperationDeleteMessageBoxCommand" />
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="OperationSelectedCondition" />
+                </Not>
+              </When>
+              <Then>Выберите запись для удаления.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="SelectedOperationIsArchiveCondition" />
+              </When>
+              <Then>Нельзя удалить архивную запись.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="SelectedOperationIdGreaterCondition" />
+                </Not>
+              </When>
+              <Then>Выбранная запись является служебной и не может быть удалена.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
+                </Not>
+              </When>
+              <Then>Выбранное назначение платежа является системным и не может быть удалено.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="SelectedOperationHasChildEqualCondition" />
+              </When>
+              <Then>Выбранное назначение платежа содержит дочерние элементы и не может быть удалено.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+      </MyObject>
+
+      <MyObject Name="OperationArchiveButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="OperationDeleteButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="OperationAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="OperationAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>
+          <Object Name="OperationAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <TabIndex>6</TabIndex>
+        <Hint>
+          <Switch>
+            <Case>
+              <When>
+                <Condition Name="SelectedOperationIsArchiveCondition" />
+              </When>
+              <Then>Восстановить запись из архива</Then>
+            </Case>
+            <Case>Перенести запись в архив</Case>
+          </Switch>
+        </Hint>
+        <BackgroundImage>
+          <Switch>
+            <Case>
+              <When>
+                <Or>
+                  <Condition Name="SelectedOperationIsArchiveCondition" />
+                  <Object Name="ArchiveFilterComboBox" />
+                </Or>
+              </When>
+              <Then>Images\24x24\unarchive.png</Then>
+            </Case>
+            <Case>Images\24x24\archive.png</Case>
+          </Switch>
+        </BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Enabled>
+          <And>
+            <Condition Name="OperationSelectedCondition" />
+            <Condition Name="SelectedOperationIdGreaterCondition" />
+            <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="OperationArchiveMessageBoxCommand" />
+        </Commands>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="OperationSelectedCondition" />
+                </Not>
+              </When>
+              <Then>
+                <Switch>
+                  <Case>
+                    <When>
+                      <Object Name="ArchiveFilterComboBox" />
+                    </When>
+                    <Then>Для восстановления из архива выберите запись.</Then>
+                  </Case>
+                  <Case>Для переноса в архив выберите запись.</Case>
+                </Switch>
+              </Then>
+            </Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="SelectedOperationIdGreaterCondition" />
+                </Not>
+              </When>
+              <Then>Выбранная запись является служебной и не может быть перенесена в архив.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="SelectedOperationIsNotSystemEqualCondition" />
+                </Not>
+              </When>
+              <Then>Выбранное назначение платежа является системным и не может быть перенесено в архив.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+      </MyObject>
+    </MyObject>
+
+  </MyObjects>
+</Form>

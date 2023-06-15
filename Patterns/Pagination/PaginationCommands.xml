@@ -1,0 +1,31 @@
+<Command Name="{ItemName}CurrentPageVariableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+  <Object Name="{ItemName}CurrentPageVariable">
+    <Input />
+  </Object>
+</Command>
+
+<Command Name="{ItemName}CurrentPageVariableDecValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+  <Object Name="{ItemName}CurrentPageVariable">
+    <Formula>
+      <Minus DataType="IntegerDataType">
+        <Item>
+          <Object Name="{ItemName}CurrentPageVariable" />
+        </Item>
+        <Item>1</Item>
+      </Minus>
+    </Formula>
+  </Object>
+</Command>
+
+<Command Name="{ItemName}CurrentPageVariableIncValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+  <Object Name="{ItemName}CurrentPageVariable">
+    <Formula>
+      <Plus DataType="IntegerDataType">
+        <Item>
+          <Object Name="{ItemName}CurrentPageVariable" />
+        </Item>
+        <Item>1</Item>
+      </Plus>
+    </Formula>
+  </Object>
+</Command>

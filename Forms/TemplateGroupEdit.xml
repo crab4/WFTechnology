@@ -1,0 +1,991 @@
+<?xml version="1.0"?>
+<Form Name="TemplateGroupForm" Width="450" Height="195" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+  <Parameters>
+    <Parameter Name="Edit">False</Parameter>
+    <Parameter Name="Title">
+      <Switch>
+        <Case>
+          <When>
+            <Parameter Name="Edit" />
+          </When>
+          <Then>Редактирование группы</Then>
+        </Case>
+        <Case>Добавление группы</Case>
+      </Switch>
+    </Parameter>
+    <Parameter Name="System">False</Parameter>
+    <Parameter Name="Height">
+      <Switch>
+        <Case>
+          <When>
+            <Parameter Name="System" />
+          </When>
+          <Then>195</Then>
+        </Case>
+        <Case>650</Case>
+      </Switch>
+    </Parameter>
+    <Parameter Name="GroupId" />
+    <Parameter Name="Updated">False</Parameter>
+  </Parameters>
+
+  <Appearance>
+    <Colors>
+      <Color Name="ThemeForeColor" Red="0" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeBackgroundColor" Red="255" Green="255" Blue="255" Alpha="255" />
+      <Color Name="ThemeFlatColor" Red="255" Green="0" Blue="0" Alpha="255" />
+      <Color Name="ThemeSeparateBackgroundColor" Red="225" Green="225" Blue="225" Alpha="255" />
+
+      <Color Name="HeadBackgroundColor" Red="221" Green="232" Blue="246" Alpha="255" />
+      <Color Name="HeadForeColor" Red="70" Green="70" Blue="70" Alpha="255" />
+
+      <Color Name="LabelForeColor" Red="100" Green="100" Blue="100" Alpha="255" />
+      <Color Name="TableBackgroundColor" Red="200" Green="200" Blue="200" Alpha="255" />
+      <Color Name="TableArchiveColor" Red="230" Green="230" Blue="230" Alpha="255" />
+
+      <!-- Стили кнопок -->
+      <Color Name="ButtonFlatBorderColor" Red="225" Green="225" Blue="225" Alpha="255" />
+      <Color Name="ButtonFlatMouseDownBackColor" Red="201" Green="219" Blue="241" Alpha="255" />
+      <Color Name="ButtonFlatMouseOverBackColor" Red="228" Green="237" Blue="248" Alpha="255" />
+    </Colors>
+
+    <FontStyles>
+      <FontStyle Name="ThemeFontStyle" Font="Segoe UI" Size="9" />
+      <FontStyle Name="HeadFontStyle" Font="Segoe UI" Size="15" />
+      <FontStyle Name="LabelFontStyle" Font="Segoe UI" Size="9" Italic="True" />
+      <FontStyle Name="ButtonFontStyle" Font="Segoe UI" Size="10" />
+      <FontStyle Name="TitleBoldFont" Font="Segoe UI" Size="9" Bold="True" />
+    </FontStyles>
+  </Appearance>
+
+  <DataConnections>
+    <DataConnection Name="GroupPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <ManualLoad>
+        <Not>
+          <Parameter Name="Edit" />
+        </Not>
+      </ManualLoad>
+      <SqlQuery Name="GroupByIdSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="Title" />
+          <Field Name="Description" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="GroupId" RefreshQuery="False">
+            <Value>
+              <Parameter Name="GroupId" />
+            </Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="PermissionBlockItemPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <SqlQuery Name="PermissionBlockItemSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="PermissionBlockRowNumber" />
+          <Field Name="PermissionBlockItemRowNumber" />
+          <Field Name="PermissionBlockId" />
+          <Field Name="PermissionBlockItemId" />
+          <Field Name="Title" />
+          <Field Name="Checked" />
+        </Fields>
+        <Parameters>
+          <Parameter NativeName="GroupId" RefreshQuery="False">
+            <Value>
+              <Parameter Name="GroupId" />
+            </Value>
+          </Parameter>
+        </Parameters>
+      </SqlQuery>
+    </DataConnection>
+
+    <DataConnection Name="GroupInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="GroupInsertSqlQuery" Type="Insert" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="Title">
+          <Value>
+            <Object Name="TitleTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Description">
+          <Value>
+            <Object Name="DescriptionTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="PermissionBlockItemId" SendAsArray="True">
+          <Value>
+            <Object Name="PermissionDatabaseTable">
+              <Property Name="FilteredColumnValues">
+                <Parameters>
+                  <Parameter Name="ColumnName">PermissionBlockItemId</Parameter>
+                  <Parameter Name="Filter">Checked AND PermissionBlockItemId IS NOT NULL</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+    </DataConnection>
+
+    <DataConnection Name="GroupUpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="GroupUpdateSqlQuery" Type="Update" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="GroupId">
+          <Value>
+            <Parameter Name="GroupId" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Title">
+          <Value>
+            <Object Name="TitleTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Description">
+          <Value>
+            <Object Name="DescriptionTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="PermissionBlockItemId" SendAsArray="True">
+          <Value>
+            <Object Name="PermissionDatabaseTable">
+              <Property Name="FilteredColumnValues">
+                <Parameters>
+                  <Parameter Name="ColumnName">PermissionBlockItemId</Parameter>
+                  <Parameter Name="Filter">Checked AND PermissionBlockItemId IS NOT NULL</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
+      </Parameters>
+    </DataConnection>
+  </DataConnections>
+
+  <Conditions>
+    <Condition Name="FormLoadedCondition" Type="FormLoadedCondition" Assembly="Conditions" />
+
+    <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
+
+    <Condition Name="EscapeKeyDownCondition" Type="KeyDownCondition" Assembly="Conditions">
+      <Key Value="Escape" />
+    </Condition>
+
+    <Condition Name="FormChangedEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Form>
+            <Property Name="FormChanged" />
+          </Form>
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="MandatoryFieldsAreFilledEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Form>
+            <Property Name="CheckingFired" />
+          </Form>
+        </Item>
+        <Item>False</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
+
+    <Condition Name="TitleIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="TitleTextBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PermissionCheckedCellValueChangedCondition" Type="CellValueChangedCondition" Assembly="Conditions">
+      <Table Name="PermissionDatabaseTable" />
+      <ColumnName>Checked</ColumnName>
+    </Condition>
+
+    <Condition Name="PermissionBlockItemIdIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="PermissionDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">PermissionBlockItemId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PermissionCheckedAllCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Array>
+            <Source>
+              <Object Name="PermissionDatabaseTable">
+                <Property Name="DictionaryArrayData" />
+              </Object>
+            </Source>
+            <Select>
+              <Items>
+                <Item Type="Field">PermissionBlockId</Item>
+                <Item Type="Field">PermissionBlockItemId</Item>
+                <Item Type="Field">Checked</Item>
+              </Items>
+            </Select>
+            <Filter Type="Nested">
+              <And>
+                <Filter>
+                  <Index Value="0" />
+                  <DataType Type="IntegerDataType" />
+                  <Value>
+                    <Object Name="PermissionDatabaseTable">
+                      <Property Name="SelectedRowCellValueByColumnName">
+                        <Parameters>
+                          <Parameter Name="ColumnName">PermissionBlockId</Parameter>
+                        </Parameters>
+                      </Property>
+                    </Object>
+                  </Value>
+                </Filter>
+                <Filter Type="IsNotNull">
+                  <Index Value="1" />
+                  <DataType Type="IntegerDataType" />
+                  <Value />
+                </Filter>
+              </And>
+            </Filter>
+            <Distinct>
+              <On Index="2" />
+            </Distinct>
+            <Count />
+          </Array>
+        </Item>
+        <Item>1</Item>
+      </Items>
+    </Condition>
+  </Conditions>
+
+  <Commands>
+    <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
+
+    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Updated">True</Parameter>
+    </Command>
+
+    <Command Name="SaveOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Сохранение</Caption>
+      <Text>Форма содержит несохраненные изменения.\rСохранить их перед закрытием?</Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNoCancel" />
+    </Command>
+
+    <Command Name="CloseOnCloseMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>Закрытие</Caption>
+      <Text>При закрытии все несохраненные изменения будут утеряны.\rВы уверены, что хотите закрыть форму?</Text>
+      <Icon Type="Question" />
+      <Buttons Type="YesNo" />
+    </Command>
+
+    <Command Name="GroupInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="GroupInsertSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="GroupUpdateSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="GroupUpdateSetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="GroupIdValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="GroupId">
+        <Command Name="GroupInsertSaveCommand" />
+      </Parameter>
+    </Command>
+
+    <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
+      <Commands>
+        <If>
+          <When>
+            <Parameter Name="Edit" />
+          </When>
+          <Then>
+            <Command Name="GroupUpdateSaveCommand" />
+          </Then>
+          <Else>
+            <Command Name="GroupInsertSaveCommand" />
+            <Command Name="GroupIdValueSetCommand" />
+          </Else>
+        </If>
+        <Command Name="UpdatedTrueValueSetCommand" />
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Command>
+
+    <Command Name="PermissionCheckAllValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="PermissionDatabaseTable">
+        <Property Name="UpdateRows">
+          <Parameters>
+            <Parameter Name="RowIndices">
+              <Object Name="PermissionDatabaseTable">
+                <Property Name="RowsIndicesOf">
+                  <Parameters>
+                    <Parameter Name="ColumnNames">
+                      <Structure Type="List">
+                        <Item>PermissionBlockId</Item>
+                      </Structure>
+                    </Parameter>
+                    <Parameter Name="Values">
+                      <Object Name="PermissionDatabaseTable">
+                        <Property Name="SelectedRowCellValueByColumnName">
+                          <Parameters>
+                            <Parameter Name="ColumnName">PermissionBlockId</Parameter>
+                          </Parameters>
+                        </Property>
+                      </Object>
+                    </Parameter>
+                  </Parameters>
+                </Property>
+              </Object>
+            </Parameter>
+            <Parameter Name="ColumnNames">
+              <Structure Type="List">
+                <Item>Checked</Item>
+              </Structure>
+            </Parameter>
+            <Parameter Name="Values">
+              <Structure Type="List">
+                <Item>
+                  <Object Name="PermissionDatabaseTable">
+                    <Property Name="SelectedRowCellValueByColumnName">
+                      <Parameters>
+                        <Parameter Name="ColumnName">Checked</Parameter>
+                      </Parameters>
+                    </Property>
+                  </Object>
+                </Item>
+              </Structure>
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+
+    <Command Name="PermissionCheckValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Object Name="PermissionDatabaseTable">
+        <Property Name="UpdateRow">
+          <Parameters>
+            <Parameter Name="RowIndex">
+              <Array>
+                <Source>
+                  <Object Name="PermissionDatabaseTable">
+                    <Property Name="DictionaryArrayData" />
+                  </Object>
+                </Source>
+                <Select>
+                  <Items>
+                    <Item Type="Number" />
+                    <Item Type="Field">PermissionBlockId</Item>
+                    <Item Type="Field">PermissionBlockItemId</Item>
+                  </Items>
+                </Select>
+                <Filter Type="Nested">
+                  <And>
+                    <And>
+                      <Filter>
+                        <Index Value="1" />
+                        <DataType Type="IntegerDataType" />
+                        <Value>
+                          <Object Name="PermissionDatabaseTable">
+                            <Property Name="SelectedRowCellValueByColumnName">
+                              <Parameters>
+                                <Parameter Name="ColumnName">PermissionBlockId</Parameter>
+                              </Parameters>
+                            </Property>
+                          </Object>
+                        </Value>
+                      </Filter>
+                      <Filter Type="IsNull">
+                        <Index Value="2" />
+                        <DataType Type="IntegerDataType" />
+                        <Value />
+                      </Filter>
+                    </And>
+                  </And>
+                </Filter>
+              </Array>
+            </Parameter>
+            <Parameter Name="ColumnNames">
+              <Structure Type="List">
+                <Item>Checked</Item>
+              </Structure>
+            </Parameter>
+            <Parameter Name="Values">
+              <Structure Type="List">
+                <Item>False</Item>
+              </Structure>
+            </Parameter>
+          </Parameters>
+        </Property>
+      </Object>
+    </Command>
+  </Commands>
+
+  <Executions>
+    <Execution>
+      <ConditionExpression>
+        <Or>
+          <And>
+            <Or>
+              <Condition Name="FormClosingCondition" />
+              <Condition Name="EscapeKeyDownCondition" />
+            </Or>
+            <Not>
+              <Condition Name="FormChangedEqualCondition" />
+            </Not>
+          </And>
+          <Command Name="SaveOnCloseMessageBoxCommand" Parameter="No" />
+          <Command Name="CloseOnCloseMessageBoxCommand" Parameter="Yes" />
+        </Or>
+      </ConditionExpression>
+      <Commands>
+        <Command Name="FormCloseCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <And>
+          <Or>
+            <Condition Name="FormClosingCondition" />
+            <Condition Name="EscapeKeyDownCondition" />
+          </Or>
+          <Condition Name="FormChangedEqualCondition" />
+        </And>
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <Condition Name="MandatoryFieldsAreFilledEqualCondition" />
+          </When>
+          <Then>
+            <Command Name="SaveOnCloseMessageBoxCommand" />
+          </Then>
+          <Else>
+            <Command Name="CloseOnCloseMessageBoxCommand" />
+          </Else>
+        </If>
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Command Name="SaveOnCloseMessageBoxCommand" Parameter="Yes" />
+      </ConditionExpression>
+      <Commands>
+        <Command Name="SaveSequentialCommand" />
+      </Commands>
+    </Execution>
+
+    <Execution>
+      <ConditionExpression>
+        <Condition Name="PermissionCheckedCellValueChangedCondition" />
+      </ConditionExpression>
+      <Commands>
+        <If>
+          <When>
+            <Condition Name="PermissionBlockItemIdIsNullCondition" />
+          </When>
+          <Then>
+            <Command Name="PermissionCheckAllValueSetCommand" />
+          </Then>
+          <Else>
+            <If>
+              <When>
+                <Condition Name="PermissionCheckedAllCondition" />
+              </When>
+              <Then>
+                <Command Name="PermissionCheckAllValueSetCommand" />
+              </Then>
+              <Else>
+                <Command Name="PermissionCheckValueSetCommand" />
+              </Else>
+            </If>
+          </Else>
+        </If>
+      </Commands>
+    </Execution>
+  </Executions>
+
+  <Checkings>
+    <Checking>
+      <Object Name="TitleTextBox" />
+      <ConditionExpression>
+        <Condition Name="TitleIsNullOrEmptyCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
+    </Checking>
+  </Checkings>
+
+  <MyObjects>
+    <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
+      <Top>0</Top>
+      <Left>0</Left>
+      <Height>50</Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <BackColor>HeadBackgroundColor</BackColor>
+
+      <MyObject Name="HeadLabel" Type="Label" Assembly="BaseControls">
+        <Top>0</Top>
+        <Left>10</Left>
+        <Height>
+          <Object Name="HeadPanel">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="HeadPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="HeadLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <FontStyle>HeadFontStyle</FontStyle>
+        <ForeColor>HeadForeColor</ForeColor>
+        <TextAlign>MiddleLeft</TextAlign>
+        <Text>
+          <Parameter Name="Title" />
+        </Text>
+      </MyObject>
+    </MyObject>
+
+    <MyObject Name="ContentPanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="HeadPanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>0</Left>
+      <Height>
+        <Calculate>
+          <Expression>{0} - {1} - {2} - {3}</Expression>
+          <Items>
+            <Item>
+              <Form>
+                <Property Name="Height" />
+              </Form>
+            </Item>
+            <Item>
+              <Object Name="ContentPanel">
+                <Property Name="Top" />
+              </Object>
+            </Item>
+            <Item>
+              <Object Name="FootSeparatePanel">
+                <Property Name="Height" />
+              </Object>
+            </Item>
+            <Item>
+              <Object Name="FootPanel">
+                <Property Name="Height" />
+              </Object>
+            </Item>
+          </Items>
+        </Calculate>
+      </Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>1</TabIndex>
+      <BackColor>ThemeBackgroundColor</BackColor>
+
+      <MyObject Name="TitleLabel" Type="Label" Assembly="BaseControls">
+        <Top>5</Top>
+        <Left>10</Left>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="TitleLabel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <Height>20</Height>
+        <TextAlign>MiddleLeft</TextAlign>
+        <FontStyle>LabelFontStyle</FontStyle>
+        <ForeColor>LabelForeColor</ForeColor>
+        <Text>Наименование</Text>
+      </MyObject>
+
+      <MyObject Name="TitleTextBox" Type="TextBox" Assembly="BaseControls">
+        <Top>
+          <Object Name="TitleLabel">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Object Name="TitleLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Calculate>
+            <Expression>{0} - {1} - 10</Expression>
+            <Items>
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="TitleTextBox">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Width>
+        <Text>
+          <DataConnection SourceDataConnection="GroupPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="Title" />
+            </Fields>
+          </DataConnection>
+        </Text>
+        <TabIndex>1</TabIndex>
+      </MyObject>
+
+      <MyObject Name="DescriptionLabel" Type="Label" Assembly="BaseControls">
+        <Top>
+          <Formula>
+            <Plus DataType="IntegerDataType">
+              <Item>
+                <Object Name="TitleTextBox">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+              <Item>5</Item>
+            </Plus>
+          </Formula>
+        </Top>
+        <Left>
+          <Object Name="TitleLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="TitleLabel">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Height>20</Height>
+        <TextAlign>MiddleLeft</TextAlign>
+        <FontStyle>LabelFontStyle</FontStyle>
+        <ForeColor>LabelForeColor</ForeColor>
+        <Text>Описание</Text>
+      </MyObject>
+
+      <MyObject Name="DescriptionTextBox" Type="TextBox" Assembly="BaseControls">
+        <Top>
+          <Object Name="DescriptionLabel">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Object Name="TitleTextBox">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="TitleTextBox">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <TabIndex>2</TabIndex>
+        <Text>
+          <DataConnection SourceDataConnection="GroupPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="Description" />
+            </Fields>
+          </DataConnection>
+        </Text>
+      </MyObject>
+
+      <MyObject Name="PermissionPanel" Type="Panel" Assembly="BaseControls">
+        <Top>
+          <Object Name="DescriptionTextBox">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>0</Left>
+        <Height>
+          <Formula>
+            <Minus DataType="IntegerDataType">
+              <Item>
+                <Object Name="ContentPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="PermissionPanel">
+                  <Property Name="Top" />
+                </Object>
+              </Item>
+            </Minus>
+          </Formula>
+        </Height>
+        <Width>
+          <Object Name="ContentPanel">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <Visible>
+          <Not>
+            <Parameter Name="System" />
+          </Not>
+        </Visible>
+
+        <MyObject Name="PermissionLabel" Type="Label" Assembly="BaseControls">
+          <Top>5</Top>
+          <Left>
+            <Object Name="TitleLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Width>
+            <Object Name="TitleLabel">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <Height>20</Height>
+          <TextAlign>MiddleLeft</TextAlign>
+          <FontStyle>LabelFontStyle</FontStyle>
+          <ForeColor>LabelForeColor</ForeColor>
+          <Text>Настраиваемые права доступа</Text>
+        </MyObject>
+
+        <MyObject Name="PermissionDatabaseTable" Type="DatabaseTable" Assembly="ComplexControls">
+          <Top>
+            <Object Name="PermissionLabel">
+              <Property Name="Bottom" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="PermissionLabel">
+              <Property Name="Left" />
+            </Object>
+          </Left>
+          <Height>
+            <Formula>
+              <Minus DataType="IntegerDataType">
+                <Item>
+                  <Object Name="PermissionPanel">
+                    <Property Name="Height" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="PermissionDatabaseTable">
+                    <Property Name="Top" />
+                  </Object>
+                </Item>
+                <Item>10</Item>
+              </Minus>
+            </Formula>
+          </Height>
+          <Width>
+            <Formula>
+              <Minus DataType="IntegerDataType">
+                <Item>
+                  <Object Name="PermissionPanel">
+                    <Property Name="Width" />
+                  </Object>
+                </Item>
+                <Item>
+                  <Object Name="PermissionDatabaseTable">
+                    <Property Name="Left" />
+                  </Object>
+                </Item>
+                <Item>10</Item>
+              </Minus>
+            </Formula>
+          </Width>
+          <AllowResizeColumns Value="False" />
+          <AllowResizeRows Value="False" />
+          <TabIndex>1</TabIndex>
+          <AllowInsert>False</AllowInsert>
+          <AllowUpdate>True</AllowUpdate>
+          <AllowDelete>False</AllowDelete>
+          <AutoSizeColumnsMode Value="Fill" />
+          <AllowFilterColumns Value="False" />
+          <SourceDataConnection Name="PermissionBlockItemPrimaryGetDataConnection" />
+          <Columns>
+            <Column Name="PermissionBlockRowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+            </Column>
+            <Column Name="PermissionBlockItemRowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+            </Column>
+            <Column Name="RowNumber" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>№</Title>
+              <Width>30</Width>
+              <AutoSizeMode Value="None" />
+              <AllowSort Value="False" />
+              <Alignment Value="MiddleCenter" />
+              <Calculate>
+                <Expression>PermissionBlockRowNumber + IIF(PermissionBlockItemRowNumber = 0, '', '.' + PermissionBlockItemRowNumber)</Expression>
+              </Calculate>
+            </Column>
+            <Column Name="PermissionBlockId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+            </Column>
+            <Column Name="PermissionBlockItemId" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Visible>False</Visible>
+            </Column>
+            <Column Name="Title" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Наименование</Title>
+              <Width>400</Width>
+              <MinimumWidth>100</MinimumWidth>
+              <ReadOnly>True</ReadOnly>
+              <AllowSort Value="False" />
+            </Column>
+            <Column Name="Checked" Type="DatabaseTableColumnCheckBox" Assembly="DatabaseTableColumnControls">
+              <Hint>Чтение/запись</Hint>
+              <Width>50</Width>
+              <AutoSizeMode Value="None" />
+              <AllowSort Value="False" />
+              <HeaderCheckAll Value="True" />
+            </Column>
+          </Columns>
+          <Formatting>
+            <FontStyle Name="TitleBoldFont">
+              <Expression>PermissionBlockItemId IS NULL</Expression>
+            </FontStyle>
+          </Formatting>
+        </MyObject>
+      </MyObject>
+
+    </MyObject>
+
+    <MyObject Name="FootSeparatePanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="ContentPanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>5</Left>
+      <Height>1</Height>
+      <Width>
+        <Calculate>
+          <Expression>{0} - 10</Expression>
+          <Items>
+            <Item>
+              <Form>
+                <Property Name="Width" />
+              </Form>
+            </Item>
+          </Items>
+        </Calculate>
+      </Width>
+      <BackColor>ThemeSeparateBackgroundColor</BackColor>
+    </MyObject>
+
+    <MyObject Name="FootPanel" Type="Panel" Assembly="BaseControls">
+      <Top>
+        <Object Name="FootSeparatePanel">
+          <Property Name="Bottom" />
+        </Object>
+      </Top>
+      <Left>0</Left>
+      <Height>40</Height>
+      <Width>
+        <Form>
+          <Property Name="Width" />
+        </Form>
+      </Width>
+      <TabIndex>2</TabIndex>
+      <BackColor>ThemeBackgroundColor</BackColor>
+
+      <MyObject Name="SaveButton" Type="Button" Assembly="BaseControls">
+        <Top>5</Top>
+        <Right>
+          <Formula>
+            <Minus DataType="IntegerDataType">
+              <Item>
+                <Object Name="FootPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>5</Item>
+            </Minus>
+          </Formula>
+        </Right>
+        <Height>30</Height>
+        <Width>200</Width>
+        <TextAlign>MiddleCenter</TextAlign>
+        <FontStyle>ButtonFontStyle</FontStyle>
+        <ImageAlign>MiddleLeft</ImageAlign>
+        <Image>Images\24x24\content-save.png</Image>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Text>Сохранить</Text>
+        <TabIndex>1</TabIndex>
+        <Enabled>
+          <And>
+            <Condition Name="MandatoryFieldsAreFilledEqualCondition" />
+            <Condition Name="FormChangedEqualCondition" />
+          </And>
+        </Enabled>
+        <Commands>
+          <Command Name="SaveSequentialCommand" />
+        </Commands>
+        <DisabledMode>
+          <Condition Name="FormChangedEqualCondition" />
+        </DisabledMode>
+        <DisabledText>Одно или несколько полей заполнены некорректно.</DisabledText>
+      </MyObject>
+    </MyObject>
+  </MyObjects>
+</Form>

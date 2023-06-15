@@ -34,6 +34,16 @@
   </Appearance>
 
   <DataConnections>
+    <DataConnection Name="AccessPointDataConnection" Type="AccessPointDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <AccessPoints>
+        <AccessPoint Name="CityAddAccessPoint" />
+        <AccessPoint Name="CityEditAccessPoint" />
+        <AccessPoint Name="CityDeleteAccessPoint" />
+        <AccessPoint Name="CityArchiveAccessPoint" />
+      </AccessPoints>
+    </DataConnection>
+
     <DataConnection Name="CityPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <SqlQuery Name="CitySelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
@@ -252,6 +262,7 @@
     </Command>
 
     <Command Name="CityDatabaseTableSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <Lock Value="True" />
       <DataConnections>
         <DataConnection Name="CityDatabaseTableSetDataConnection" />
       </DataConnections>
@@ -348,6 +359,17 @@
       <Icon Type="Warning" />
       <Buttons Type="Ok" />
     </Command>
+
+    <Command Name="WarningMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>
+        <Input Name="Caption" />
+      </Caption>
+      <Text>
+        <Input Name="Text" />
+      </Text>
+      <Icon Type="Warning" />
+      <Buttons Type="Ok" />
+    </Command>
   </Commands>
 
   <Executions>
@@ -411,11 +433,24 @@
       <Commands>
         <If>
           <When>
-            <Condition Name="SelectedCityIsArchiveCondition" />
+            <Not>
+              <AccessPoint Name="CityEditAccessPoint" />
+            </Not>
           </When>
           <Then>
-            <Command Name="EditingArchiveCityMessageBoxCommand" />
+            <Command Name="WarningMessageBoxCommand">
+              <Input Name="Caption">Редактирование</Input>
+              <Input Name="Text">У вас недостаточно прав для выполнения команды.</Input>
+            </Command>
           </Then>
+          <ElseIf>
+            <When>
+              <Condition Name="SelectedCityIsArchiveCondition" />
+            </When>
+            <Then>
+              <Command Name="EditingArchiveCityMessageBoxCommand" />
+            </Then>
+          </ElseIf>
           <Else>
             <Command Name="CityEditFormShowCommand" />
           </Else>
@@ -716,6 +751,11 @@
         <Commands>
           <Command Name="CityAddFormShowCommand" />
         </Commands>
+        <Enabled>
+          <AccessPoint Name="CityAddAccessPoint" />
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>У вас недостаточно прав для выполнения команды.</DisabledText>
       </MyObject>
 
       <MyObject Name="CityEditButton" Type="Button" Assembly="BaseControls">
@@ -756,6 +796,7 @@
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
           <And>
+            <AccessPoint Name="CityEditAccessPoint" />
             <Condition Name="CitySelectedCondition" />
             <Not>
               <Condition Name="SelectedCityIsArchiveCondition" />
@@ -765,6 +806,14 @@
         <DisabledMode>True</DisabledMode>
         <DisabledText>
           <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="CityEditAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
             <Case>
               <When>
                 <Not>
@@ -824,6 +873,7 @@
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
           <And>
+            <AccessPoint Name="CityDeleteAccessPoint" />
             <Condition Name="CitySelectedCondition" />
             <Not>
               <Condition Name="SelectedCityIsArchiveCondition" />
@@ -833,6 +883,14 @@
         <DisabledMode>True</DisabledMode>
         <DisabledText>
           <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="CityDeleteAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
             <Case>
               <When>
                 <Not>
@@ -917,18 +975,40 @@
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
-          <Condition Name="CitySelectedCondition" />
+          <And>
+            <AccessPoint Name="CityArchiveAccessPoint" />
+            <Condition Name="CitySelectedCondition" />
+          </And>
         </Enabled>
         <DisabledMode>True</DisabledMode>
         <DisabledText>
           <Switch>
             <Case>
               <When>
-                <Object Name="ArchiveFilterComboBox" />
+                <Not>
+                  <AccessPoint Name="CityArchiveAccessPoint" />
+                </Not>
               </When>
-              <Then>Для восстановления из архива выберите запись.</Then>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
             </Case>
-            <Case>Для переноса в архив выберите запись.</Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="CitySelectedCondition" />
+                </Not>
+              </When>
+              <Then>
+                <Switch>
+                  <Case>
+                    <When>
+                      <Object Name="ArchiveFilterComboBox" />
+                    </When>
+                    <Then>Для восстановления из архива выберите запись.</Then>
+                  </Case>
+                  <Case>Для переноса в архив выберите запись.</Case>
+                </Switch>
+              </Then>
+            </Case>
           </Switch>
         </DisabledText>
         <Commands>

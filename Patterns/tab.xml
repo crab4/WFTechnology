@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Snippet>
+  <Name>Tabs</Name>
+  <ShortName>tabs</ShortName>
+  <Description>Таб-кнопки в хэдере. Располагаются справа налево.
+
+Начальные условия.
+Курсор должен стоять там, где идет описание графических объектов. Для данного паттерна лучший вариант - панель-заголовок формы (HeadPanel).
+
+Применение.
+В текущий файл будут добавлены 2 кнопки, имитирующие Tab, а также 2 вспогательных условия и 1 команда.</Description>
+  <FileTypes>
+    <FileType Value="Form" />
+  </FileTypes>
+  <ContextCheckings>
+    <Checking Type="ObjectsContextChecker" />
+  </ContextCheckings>
+  <Actions>
+    <Input Type="Wizard">
+      <Page>
+        <Title>Настройки паттерна Tabs</Title>
+        <Description>Таб-кнопки в хэдере.</Description>
+        <FieldDescription>
+          <Text>Начальные условия. Курсор должен стоять там, где идет описание графических объектов. Для данного паттерна лучший вариант - хэдер формы.</Text>
+        </FieldDescription>
+        <FieldDescription>
+          <Text>Применение. В текущий файл будут добавлены 2 кнопки, имитирующие Tab, а также 2 вспогательных условия и 1 команда.</Text>
+        </FieldDescription>
+        
+        <Variable Name="ParentObjectName">
+          <Type Value="Text" />
+          <Text>Родительский объект-контейнер (например, "HeadPanel")</Text>
+          <Default>[HeadPanel]</Default>
+        </Variable>
+        
+        <Variable Name="Tab1Name">
+          <Type Value="Text" />
+          <Text>Имя первого таба - самого правого</Text>
+          <Default>[Tab1]</Default>
+        </Variable>
+        <Variable Name="Tab1Title">
+          <Type Value="Text" />
+          <Text>Заголовок первого таба</Text>
+          <Default>Вкладка 1</Default>
+        </Variable>
+        
+        <Variable Name="Tab2Name">
+          <Type Value="Text" />
+          <Text>Имя второго таба - он идет левее. Включен по умолчанию</Text>
+          <Default>[Tab2]</Default>
+        </Variable>
+        <Variable Name="Tab2Title">
+          <Type Value="Text" />
+          <Text>Заголовок второго таба</Text>
+          <Default>Вкладка 2</Default>
+        </Variable>
+      </Page>      
+    </Input>
+    <Insert Place="Caret">
+      <Xml Path="Tab\TabCaret.xml" />
+    </Insert>
+    <Insert Place="Conditions">
+      <Xml Path="Tab\TabConditions.xml" />
+    </Insert>
+    <Insert Place="Commands">
+      <Xml Path="Tab\TabCommands.xml" />
+    </Insert>
+    <ToDo>
+      <Text>Доработка после применения паттерна Tabs.
+Разместить добавленные условия в тэгах Visible объектов-контейнеров, видимость которых нужно переключать табами.</Text>
+    </ToDo>
+  </Actions>
+</Snippet>

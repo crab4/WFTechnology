@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateOperationForm" Width="450" Height="250" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateOperationForm" Width="450" Height="195" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
     <Parameter Name="Edit">False</Parameter>
     <Parameter Name="Title">
@@ -14,8 +14,8 @@
       </Switch>
     </Parameter>
     <Parameter Name="OperationId" />
-    <Parameter Name="Updated">False</Parameter>
     <Parameter Name="OperationCategoryId" />
+    <Parameter Name="Updated">False</Parameter>
   </Parameters>
 
   <Appearance>
@@ -46,8 +46,8 @@
     </FontStyles>
   </Appearance>
 
-
   <DataConnections>
+
     <DataConnection Name="OperationPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <ManualLoad>
         <Not>
@@ -57,115 +57,19 @@
       <SqlQuery Name="OperationByIdSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
-          <Field Name="OperationId" />
           <Field Name="Title" />
           <Field Name="OperationCategoryId" />
           <Field Name="IsIncome" />
           <Field Name="IsSystem" />
         </Fields>
         <Parameters>
-          <Parameter NativeName="OperationId">
+          <Parameter NativeName="OperationId" RefreshQuery="False">
             <Value>
               <Parameter Name="OperationId" />
             </Value>
           </Parameter>
         </Parameters>
       </SqlQuery>
-    </DataConnection>
-
-    <DataConnection Name="OperationInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
-      <Workflow Name="Template" />
-      <SqlQueries>
-        <SqlQuery Name="OperationInsertSqlQuery" Type="Insert" />
-      </SqlQueries>
-      <Parameters>
-        <Parameter NativeName="OperationCategoryId">
-          <Value>
-            <Switch>
-              <Case>
-                <When>
-                  <Condition Name="CategoryGreaterCondition" />
-                </When>
-                <Then>
-                  <Object Name="OperationCategoryComboBox" />
-                </Then>
-              </Case>
-            </Switch>
-          </Value>
-        </Parameter>
-        <Parameter NativeName="Title">
-          <Value>
-            <Object Name="TitleTextBox" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="IsIncome">
-          <Value>
-            <DataConnection SourceDataConnection="OperationCategorySecondaryGetDataConnection">
-              <Fields>
-                <Field Name="IsIncome" />
-              </Fields>
-            </DataConnection>
-          </Value>
-        </Parameter>
-        <Parameter NativeName="OperationCategoryIsLeaf">
-          <Value>
-            <And>
-              <Condition Name="CategoryGreaterCondition" />
-              <Condition Name="OperationCategoryIsLeafEqualCondition" />
-            </And>
-          </Value>
-        </Parameter>
-      </Parameters>
-    </DataConnection>
-
-    <DataConnection Name="OperationUpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
-      <Workflow Name="Template" />
-      <SqlQueries>
-        <SqlQuery Name="OperationUpdateSqlQuery" Type="Update" />
-      </SqlQueries>
-      <Parameters>
-        <Parameter NativeName="OperationId">
-          <Value>
-            <Parameter Name="OperationId" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="OperationCategoryId">
-          <Value>
-            <Switch>
-              <Case>
-                <When>
-                  <Condition Name="CategoryGreaterCondition" />
-                </When>
-                <Then>
-                  <Object Name="OperationCategoryComboBox" />
-                </Then>
-              </Case>
-            </Switch>
-          </Value>
-        </Parameter>
-        <Parameter NativeName="Title">
-          <Value>
-            <Object Name="TitleTextBox" />
-          </Value>
-        </Parameter>
-        <Parameter NativeName="IsIncome">
-          <Value>
-            <DataConnection SourceDataConnection="OperationCategorySecondaryGetDataConnection">
-              <Fields>
-                <Field Name="IsIncome" />
-              </Fields>
-            </DataConnection>
-          </Value>
-        </Parameter>
-        <Parameter NativeName="OperationCategoryIsLeaf">
-          <Value>
-            <And>
-              <Condition Name="CategoryGreaterCondition" />
-              <Condition Name="OperationCategoryIsLeafEqualCondition" />
-            </And>
-          </Value>
-        </Parameter>
-      </Parameters>
     </DataConnection>
 
     <DataConnection Name="OperationCategoryPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
@@ -200,7 +104,7 @@
       <Filter>
         <Field NativeName="OperationId" />
         <Value>
-          <Object Name="OperationCategoryComboBox" />
+          <Object Name="CategoryComboBox" />
         </Value>
         <DataType Type="IntegerDataType" />
       </Filter>
@@ -223,7 +127,7 @@
       </SqlQuery>
     </DataConnection>
 
-    <DataConnection Name="OperationIfLeafPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+    <DataConnection Name="OperationIsLeafPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <ManualLoad>True</ManualLoad>
       <SqlQuery Name="OperationIsLeafSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
@@ -235,13 +139,107 @@
         <Parameters>
           <Parameter NativeName="OperationId" RefreshQuery="False">
             <Value>
-              <Object Name="OperationCategoryComboBox" />
+              <Object Name="CategoryComboBox" />
             </Value>
           </Parameter>
         </Parameters>
       </SqlQuery>
     </DataConnection>
 
+    <DataConnection Name="OperationInsertSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="OperationInsertSqlQuery" Type="Insert" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="OperationCategoryId">
+          <Value>
+            <Switch>
+              <Case>
+                <When>
+                  <Condition Name="CategoryIdGreater0Condition" />
+                </When>
+                <Then>
+                  <Object Name="CategoryComboBox" />
+                </Then>
+              </Case>
+            </Switch>
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Title">
+          <Value>
+            <Object Name="TitleTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="IsIncome">
+          <Value>
+            <DataConnection SourceDataConnection="OperationCategorySecondaryGetDataConnection">
+              <Fields>
+                <Field Name="IsIncome" />
+              </Fields>
+            </DataConnection>
+          </Value>
+        </Parameter>
+        <Parameter NativeName="OperationCategoryIsLeaf">
+          <Value>
+            <And>
+              <Condition Name="CategoryIdGreater0Condition" />
+              <Condition Name="OperationCategoryIsLeafEqualCondition" />
+            </And>
+          </Value>
+        </Parameter>
+      </Parameters>
+    </DataConnection>
+
+    <DataConnection Name="OperationUpdateSetDataConnection" Type="SetDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <SqlQueries>
+        <SqlQuery Name="OperationUpdateSqlQuery" Type="Update" />
+      </SqlQueries>
+      <Parameters>
+        <Parameter NativeName="OperationId">
+          <Value>
+            <Parameter Name="OperationId" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="OperationCategoryId">
+          <Value>
+            <Switch>
+              <Case>
+                <When>
+                  <Condition Name="CategoryIdGreater0Condition" />
+                </When>
+                <Then>
+                  <Object Name="CategoryComboBox" />
+                </Then>
+              </Case>
+            </Switch>
+          </Value>
+        </Parameter>
+        <Parameter NativeName="Title">
+          <Value>
+            <Object Name="TitleTextBox" />
+          </Value>
+        </Parameter>
+        <Parameter NativeName="IsIncome">
+          <Value>
+            <DataConnection SourceDataConnection="OperationCategorySecondaryGetDataConnection">
+              <Fields>
+                <Field Name="IsIncome" />
+              </Fields>
+            </DataConnection>
+          </Value>
+        </Parameter>
+        <Parameter NativeName="OperationCategoryIsLeaf">
+          <Value>
+            <And>
+              <Condition Name="CategoryIdGreater0Condition" />
+              <Condition Name="OperationCategoryIsLeafEqualCondition" />
+            </And>
+          </Value>
+        </Parameter>
+      </Parameters>
+    </DataConnection>
   </DataConnections>
 
   <Conditions>
@@ -283,10 +281,18 @@
       </Items>
     </Condition>
 
-    <Condition Name="CategoryGreaterCondition" Type="GreaterCondition" Assembly="Conditions">
+    <Condition Name="CategoryIdIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
       <Items>
         <Item>
-          <Object Name="OperationCategoryComboBox" />
+          <Object Name="CategoryComboBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="CategoryIdGreater0Condition" Type="GreaterCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="CategoryComboBox" />
         </Item>
         <Item>0</Item>
       </Items>
@@ -298,12 +304,13 @@
         <Item>
           <DataConnection SourceDataConnection="OperationPrimaryGetDataConnection">
             <Fields>
-              <Field Name="IsIncome" />
+              <Field Name="IsSystem" />
             </Fields>
           </DataConnection>
         </Item>
         <Item>True</Item>
       </Items>
+      <DataType Type="BooleanDataType" />
     </Condition>
 
     <Condition Name="OperationTypeAndCategoryTypeNotEqualCondition" Type="NotEqualCondition" Assembly="Conditions">
@@ -343,7 +350,7 @@
     <Condition Name="OperationCategoryIsLeafEqualCondition" Type="EqualCondition" Assembly="Conditions">
       <Items>
         <Item>
-          <DataConnection SourceDataConnection="OperationIfLeafPrimaryGetDataConnection">
+          <DataConnection SourceDataConnection="OperationIsLeafPrimaryGetDataConnection">
             <Fields>
               <Field Name="IsLeaf" />
             </Fields>
@@ -351,19 +358,21 @@
         </Item>
         <Item>True</Item>
       </Items>
+      <DataType Type="BooleanDataType" />
     </Condition>
 
     <Condition Name="OperationCategoryIsUsedEqualCondition" Type="EqualCondition" Assembly="Conditions">
       <Items>
         <Item>
-          <DataConnection SourceDataConnection="OperationIfLeafPrimaryGetDataConnection">
+          <DataConnection SourceDataConnection="OperationIsLeafPrimaryGetDataConnection">
             <Fields>
               <Field Name="IsUsed" />
             </Fields>
           </DataConnection>
         </Item>
-        <Item />
+        <Item>True</Item>
       </Items>
+      <DataType Type="BooleanDataType" />
     </Condition>
   </Conditions>
 
@@ -406,6 +415,18 @@
       </Parameter>
     </Command>
 
+    <Command Name="OperationIsUsedDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OperationIsUsedPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="OperationIsLeafDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="OperationIsLeafPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+
     <Command Name="SaveSequentialCommand" Type="SequentialCommand" Assembly="Commands">
       <Commands Lock="True">
         <If>
@@ -439,7 +460,7 @@
           <Else>
             <If>
               <When>
-                <Condition Name="CategoryGreaterCondition" />
+                <Condition Name="CategoryIdGreater0Condition" />
               </When>
               <Then>
                 <Command Name="OperationIsLeafDataConnectionRefreshCommand" />
@@ -460,7 +481,7 @@
               <When>
                 <Or>
                   <Not>
-                    <Condition Name="CategoryGreaterCondition" />
+                    <Condition Name="CategoryIdGreater0Condition" />
                   </Not>
                   <Not>
                     <And>
@@ -491,18 +512,6 @@
           </Else>
         </If>
       </Commands>
-    </Command>
-
-    <Command Name="OperationIsUsedDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="OperationIsUsedPrimaryGetDataConnection" Packet="True" />
-      </DataConnections>
-    </Command>
-
-    <Command Name="OperationIsLeafDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="OperationIfLeafPrimaryGetDataConnection" Packet="True" />
-      </DataConnections>
     </Command>
 
     <Command Name="OperationChangedIsIncomeMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
@@ -577,7 +586,7 @@
               <Object Name="TitleTextBox" />
             </Item>
             <Item>
-              <DataConnection SourceDataConnection="OperationIfLeafPrimaryGetDataConnection">
+              <DataConnection SourceDataConnection="OperationIsLeafPrimaryGetDataConnection">
                 <Fields>
                   <Field Name="Title" />
                 </Fields>
@@ -650,6 +659,14 @@
 
   <Checkings>
     <Checking>
+      <Object Name="CategoryComboBox" />
+      <ConditionExpression>
+        <Condition Name="CategoryIdIsNullCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
+    </Checking>
+
+    <Checking>
       <Object Name="TitleTextBox" />
       <ConditionExpression>
         <Condition Name="TitleIsNullOrEmptyCondition" />
@@ -699,8 +716,7 @@
         <ForeColor>HeadForeColor</ForeColor>
         <TextAlign>MiddleLeft</TextAlign>
         <Text>
-           <Parameter Name="Title" />
-          <!--<Parameter Name="OperationCategoryId" />-->
+          <Parameter Name="Title" />
         </Text>
       </MyObject>
     </MyObject>
@@ -747,45 +763,55 @@
       <TabIndex>1</TabIndex>
       <BackColor>ThemeBackgroundColor</BackColor>
 
-      <MyObject Name="OperationCategoryLabel" Type="Label" Assembly="BaseControls">
+      <MyObject Name="CategoryLabel" Type="Label" Assembly="BaseControls">
         <Top>5</Top>
         <Left>10</Left>
-        <Width>100</Width>
-        <TextAlign>MiddleLeft</TextAlign>
-        <FontStyle>LabelFontStyle</FontStyle>
-        <ForeColor>LabelForeColor</ForeColor>
-        <Text>Категория</Text>
-      </MyObject>
-
-      <MyObject Name="OperationCategoryComboBox" Type="ComboBox" Assembly="BaseControls">
-        <Top>
-          <Object Name="OperationCategoryLabel">
-            <Property Name="Bottom" />
-          </Object>
-        </Top>
-        <Left>
-          <Object Name="OperationCategoryLabel">
-            <Property Name="Left" />
-          </Object>
-        </Left>
         <Width>
-          <Calculate>
-            <Expression>{0} - {1} * 2</Expression>
-            <Items>
+          <Formula>
+            <Minus DataType="IntegerDataType">
               <Item>
                 <Object Name="ContentPanel">
                   <Property Name="Width" />
                 </Object>
               </Item>
               <Item>
-                <Object Name="OperationCategoryComboBox">
+                <Object Name="CategoryLabel">
                   <Property Name="Left" />
                 </Object>
               </Item>
-            </Items>
-          </Calculate>
+              <Item>10</Item>
+            </Minus>
+          </Formula>
         </Width>
+        <Height>20</Height>
+        <TextAlign>MiddleLeft</TextAlign>
+        <FontStyle>LabelFontStyle</FontStyle>
+        <ForeColor>LabelForeColor</ForeColor>
+        <Text>Категория</Text>
+      </MyObject>
+
+      <MyObject Name="CategoryComboBox" Type="ComboBox" Assembly="BaseControls">
+        <Top>
+          <Object Name="CategoryLabel">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Object Name="CategoryLabel">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Width>
+          <Object Name="CategoryLabel">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <TabIndex>1</TabIndex>
         <NullValue Show="True" />
+        <NullValueTitle>
+          <Text Id="NotChosen">[Не выбрано]</Text>
+        </NullValueTitle>
+        <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
         <ValueList>
           <DataConnection SourceDataConnection="OperationCategoryPrimaryGetDataConnection">
             <Fields>
@@ -815,14 +841,13 @@
         </Value>
       </MyObject>
 
-
       <MyObject Name="TitleLabel" Type="Label" Assembly="BaseControls">
         <Top>
           <Calculate>
             <Expression>{0} + 5</Expression>
             <Items>
               <Item>
-                <Object Name="OperationCategoryComboBox">
+                <Object Name="CategoryComboBox">
                   <Property Name="Bottom" />
                 </Object>
               </Item>
@@ -830,7 +855,7 @@
           </Calculate>
         </Top>
         <Left>
-          <Object Name="OperationCategoryLabel">
+          <Object Name="CategoryLabel">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -893,11 +918,8 @@
             </Fields>
           </DataConnection>
         </Text>
+        <TabIndex>1</TabIndex>
       </MyObject>
-
-
-
-
     </MyObject>
 
     <MyObject Name="FootSeparatePanel" Type="Panel" Assembly="BaseControls">

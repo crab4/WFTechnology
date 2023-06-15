@@ -1,0 +1,42 @@
+<Execution>
+  <ConditionExpression>
+    <Condition Name="{ItemName}CurrentPageTextBoxKeyEnterPressCondition" />
+  </ConditionExpression>
+  <Commands>
+    <If>
+      <When>
+        <And>
+          <Condition Name="{ItemName}CurrentPageTextBoxNotGreaterMaxCondition" />
+          <Condition Name="{ItemName}CurrentPageTextBoxNotLessMinCondition" />
+        </And>
+      </When>
+      <Then>
+        <Command Name="{ItemName}CurrentPageVariableValueSetCommand">
+          <Object Name="{ItemName}CurrentPageTextBox" />
+        </Command>
+      </Then>
+      <ElseIf>
+        <When>
+          <Not>
+            <Condition Name="{ItemName}CurrentPageTextBoxNotLessMinCondition" />
+          </Not>
+        </When>
+        <Then>
+          <Command Name="{ItemName}CurrentPageVariableValueSetCommand">1</Command>
+        </Then>
+      </ElseIf>
+      <ElseIf>
+        <When>
+          <Not>
+            <Condition Name="{ItemName}CurrentPageTextBoxNotGreaterMaxCondition" />
+          </Not>
+        </When>
+        <Then>
+          <Command Name="{ItemName}CurrentPageVariableValueSetCommand">
+            <Object Name="{ItemName}TotalPagesVariable" />
+          </Command>
+        </Then>
+      </ElseIf>
+    </If>
+  </Commands>
+</Execution>

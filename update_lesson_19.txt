@@ -1,0 +1,204 @@
+CREATE SEQUENCE template.permission_block_id_seq;
+CREATE TABLE template.permission_block
+(
+  permission_block_id smallint NOT NULL DEFAULT nextval('template.permission_block_id_seq'::regclass),
+  id_title character varying NOT NULL,
+  title character varying NOT NULL,
+  by_default boolean NOT NULL DEFAULT false,
+  CONSTRAINT pk_permission_block_id PRIMARY KEY (permission_block_id),
+  CONSTRAINT uniq_permission_block_name UNIQUE (id_title)
+);
+
+CREATE SEQUENCE template.permission_block_item_id_seq;
+CREATE TABLE template.permission_block_item
+(
+  permission_block_item_id smallint NOT NULL DEFAULT nextval('template.permission_block_item_id_seq'::regclass),
+  permission_block_id smallint NOT NULL,
+  id_title character varying NOT NULL,
+  title character varying NOT NULL,
+  CONSTRAINT pk_permission_block_item_id PRIMARY KEY (permission_block_item_id),
+  CONSTRAINT fk_permission_block_id FOREIGN KEY (permission_block_id)
+      REFERENCES template.permission_block (permission_block_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT uniq_permission_block_item_name UNIQUE (id_title)
+);
+
+ALTER TABLE template.permission
+  ADD COLUMN permission_block_item_id smallint NOT NULL;
+
+INSERT INTO template.permission_block(id_title, title, by_default)
+VALUES
+  ('base', 'Доступы по умолчанию', true), -- 1
+  ('user_action', 'Действия пользователя', false), -- 2
+  ('list', 'Списки', false), -- 3
+  ('main_functionality', 'Основная деятельность', false), -- 4
+  ('finance', 'Финансы', false), -- 5
+  ('report', 'Отчеты', false), -- 6
+  ('administration', 'Администрирование', false); -- 7
+
+INSERT INTO template.permission_block_item(permission_block_id, id_title, title)
+VALUES
+  -- Доступы по умолчанию
+  (1, 'login', 'Вход в программу'), -- 1
+  -- Действия пользователя
+  (2, 'password_edit', 'Смена собственного пароля'), -- 2
+  -- Списки
+  (3, 'city', 'Города'), -- 3
+  (3, 'client', 'Клиенты'), -- 4
+  (3, 'account', 'Счета'), -- 5
+  (3, 'operation', 'Назначения платежей'), -- 6
+  (3, 'unit', 'Единицы измерения'), -- 7
+  (3, 'material', 'ТМЦ'), -- 8
+  -- Основная деятельность
+  (4, 'order', 'Заказы'), -- 9
+  -- Финансы
+  (5, 'cash', 'Касса'), -- 10
+  -- Отчеты
+  (6, 'budget_report', 'Отчет по бюджету'), -- 11
+  (6, 'deleted_order_report', 'Удаленные заказы'), -- `12
+  -- Администрирование
+  (7, 'user', 'Пользователи'), -- 13
+  (7, 'group', 'Группы пользователей'), -- 14
+  (7, 'settings', 'Настройки'); -- 15
+
+  INSERT INTO template.permission(name, permission_block_item_id)
+  VALUES
+  -- Вход в программу
+    ('BaseViewPermission', 1),
+  -- Смена собственного пароля
+    ('UserPasswordEditPermission', 2),
+  -- Города
+    ('CityViewPermission', 3),
+    ('CityEditPermission', 3),
+  -- Клиенты
+    ('ClientViewPermission', 4),
+    ('ClientEditPermission', 4),
+  -- Счета
+    ('AccountViewPermission', 5),
+    ('AccountEditPermission', 5),
+  -- Назначения платежей
+    ('OperationViewPermission', 6),
+    ('OperationEditPermission', 6),
+  -- Единицы измерения
+    ('UnitViewPermission', 7),
+    ('UnitEditPermission', 7),
+  -- ТМЦ
+    ('MaterialCategoryViewPermission', 8),
+    ('MaterialCategoryEditPermission', 8),
+    ('MaterialViewPermission', 8),
+    ('MaterialEditPermission', 8),
+  -- Основная деятельность
+    ('OrderViewPermission', 9),
+    ('OrderEditPermission', 9),
+  -- Финансы
+    ('CashViewPermission', 10),
+    ('CashEditPermission', 10),
+  -- Отчет по бюджету
+    ('BudgetReportPermission', 11),
+  -- Удаленные заказы
+    ('DeletedOrderReportPermission', 12),
+  -- Пользователи
+    ('UserViewPermission', 13),
+    ('UserEditPermission', 13),
+  -- Группы пользователей
+    ('GroupViewPermission', 14),
+    ('GroupEditPermission', 14),
+  -- Настройки
+    ('SettingsViewPermission', 15),
+    ('SettingsEditPermission', 15);
+
+ALTER TABLE template."group"
+   ALTER COLUMN name DROP NOT NULL;
+
+UPDATE template."group"
+SET
+  name = null,
+  description = 'Настраиваемый доступ'
+WHERE name = 'UserGroup';
+
+INSERT INTO template.group_permission (group_id, permission_id)
+SELECT
+  G.group_id, P.permission_id
+FROM
+  template.group G, template.permission P
+WHERE
+  G.name = 'AdministratorGroup';
+
+INSERT INTO template.group_permission (group_id, permission_id)
+SELECT
+  G.group_id, P.permission_id
+FROM
+  template.group G, template.permission P
+WHERE
+  G.name = 'GuestGroup' AND
+  P.name = 'BaseViewPermission';
+
+INSERT INTO template.group_permission (group_id, permission_id)
+SELECT
+  G.group_id, P.permission_id
+FROM
+  template.group G, template.permission P
+WHERE
+  G.name ISNULL AND
+  P.name = 'BaseViewPermission';
+
+CREATE OR REPLACE FUNCTION template.group_try_delete(in_group_id smallint)
+  RETURNS character varying AS
+$BODY$
+BEGIN
+  IF (SELECT NOT EXISTS(SELECT * FROM template.group WHERE group_id = in_group_id))
+  THEN
+    RETURN NULL;
+  END IF;
+
+  IF (SELECT name IS NOT NULL FROM template.group WHERE group_id = in_group_id)
+  THEN
+    RETURN 'system';
+  END IF;
+
+  IF (SELECT used from template.is_used('group', 'group_id', ARRAY['group_permission']::text[], ARRAY[]::text[], in_group_id))
+  THEN
+    UPDATE template.group
+    SET archive = TRUE
+    WHERE group_id = in_group_id AND NOT archive;
+
+    RETURN 'used';
+  ELSE
+    DELETE FROM template.group
+    WHERE group_id = in_group_id;
+
+    RETURN NULL;
+  END IF;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION template.group_try_archive(
+    in_group_id smallint,
+    in_archive boolean)
+  RETURNS character varying AS
+$BODY$
+BEGIN
+  IF (SELECT name IS NOT NULL FROM template.group WHERE group_id = in_group_id) THEN
+    RETURN 'system';
+  END IF;
+
+  UPDATE template.group
+  SET archive = in_archive
+  WHERE group_id = in_group_id;
+
+  RETURN NULL;
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION public.array_compare(
+    anyarray,
+    anyarray)
+  RETURNS boolean AS
+$BODY$
+  SELECT $1 @> $2 AND $1 <@ $2;
+$BODY$
+  LANGUAGE sql STABLE STRICT
+  COST 100;
+

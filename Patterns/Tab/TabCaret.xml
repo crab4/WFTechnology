@@ -1,0 +1,124 @@
+<MyObject Name="ActiveTabVariable" Type="Variable" Assembly="SimpleControls" ChangeForm="False">
+  <Value>{Tab2Name}</Value>
+</MyObject>
+
+<MyObject Name="{Tab1Name}TabButton" Type="Button" Assembly="BaseControls">
+  <Bottom>
+    <Object Name="HeadPanel">
+      <Property Name="Height" />
+    </Object>
+  </Bottom>
+  <Right>
+    <Formula>
+      <Minus DataType="IntegerDataType">
+        <Item>
+          <Object Name="{ParentObjectName}">
+            <Property Name="Width" />
+          </Object>
+        </Item>
+        <Item>10</Item>
+      </Minus>
+    </Formula>
+  </Right>
+  <Height>30</Height>
+  <Width>100</Width>
+  <TextAlign>MiddleCenter</TextAlign>
+  <Text>{Tab1Title}</Text>
+  <FlatStyle>Flat</FlatStyle>
+  <FlatBorderSize>0</FlatBorderSize>
+  <BackColor>
+    <Switch>
+      <Case>
+        <When>
+          <Condition Name="{Tab1Name}TabActiveEqualCondition" />
+        </When>
+        <Then>ThemeBackgroundColor</Then>
+      </Case>
+      <Case>HeadBackgroundColor</Case>
+    </Switch>
+  </BackColor>
+  <FlatMouseOverBackColor>
+    <Switch>
+      <Case>
+        <When>
+          <Condition Name="{Tab1Name}TabActiveEqualCondition" />
+        </When>
+        <Then>ThemeBackgroundColor</Then>
+      </Case>
+      <Case>TabMouseOverBackColor</Case>
+    </Switch>
+  </FlatMouseOverBackColor>
+  <FlatMouseDownBackColor>
+    <Switch>
+      <Case>
+        <When>
+          <Condition Name="{Tab1Name}TabActiveEqualCondition" />
+        </When>
+        <Then>ThemeBackgroundColor</Then>
+      </Case>
+      <Case>TabMouseOverBackColor</Case>
+    </Switch>
+  </FlatMouseDownBackColor>
+  <ForeColor>HeadForeColor</ForeColor>
+  <FontStyle>ButtonFontStyle</FontStyle>
+  <Commands>
+    <Command Name="ActiveTabValueSetCommand">{Tab1Name}</Command>
+  </Commands>
+</MyObject>
+
+<MyObject Name="{Tab2Name}TabButton" Type="Button" Assembly="BaseControls">
+  <Top>
+    <Object Name="{Tab1Name}TabButton">
+      <Property Name="Top" />
+    </Object>
+  </Top>
+  <Right>
+    <Object Name="{Tab1Name}TabButton">
+      <Property Name="Left" />
+    </Object>
+  </Right>
+  <Height>30</Height>
+  <Width>100</Width>
+  <TextAlign>MiddleCenter</TextAlign>
+  <Text>{Tab2Title}</Text>
+  <FlatStyle>Flat</FlatStyle>
+  <FlatBorderSize>0</FlatBorderSize>
+  <BackColor>
+    <Switch>
+      <Case>
+        <When>
+          <Condition Name="{Tab2Name}TabActiveEqualCondition" />
+        </When>
+        <Then>ThemeBackgroundColor</Then>
+      </Case>
+      <Case>HeadBackgroundColor</Case>
+    </Switch>
+  </BackColor>
+  <FlatMouseOverBackColor>
+    <Switch>
+      <Case>
+        <When>
+          <Condition Name="{Tab2Name}TabActiveEqualCondition" />
+        </When>
+        <Then>ThemeBackgroundColor</Then>
+      </Case>
+      <Case>TabMouseOverBackColor</Case>
+    </Switch>
+  </FlatMouseOverBackColor>
+  <FlatMouseDownBackColor>
+    <Switch>
+      <Case>
+        <When>
+          <Condition Name="{Tab2Name}TabActiveEqualCondition" />
+        </When>
+        <Then>ThemeBackgroundColor</Then>
+      </Case>
+      <Case>TabMouseOverBackColor</Case>
+    </Switch>
+  </FlatMouseDownBackColor>
+  <ForeColor>HeadForeColor</ForeColor>
+  <FontStyle>ButtonFontStyle</FontStyle>
+  <Commands>
+    <Command Name="ActiveTabValueSetCommand">{Tab2Name}</Command>
+  </Commands>
+</MyObject>

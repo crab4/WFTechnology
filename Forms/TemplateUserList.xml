@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateUserListForm" Width="400" Height="600" FormBorderStyle="Sizable" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" BackColor="ThemeBackgroundColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True">
+<Form Name="TemplateUserListForm" Width="600" Height="350" FormBorderStyle="Sizable" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" BackColor="ThemeBackgroundColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True">
   <Parameters>
     <Parameter Name="Title">Пользователи</Parameter>
     <Parameter Name="Updated">False</Parameter>
@@ -34,12 +34,24 @@
   </Appearance>
 
   <DataConnections>
+    <DataConnection Name="AccessPointDataConnection" Type="AccessPointDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <AccessPoints>
+        <AccessPoint Name="UserAddAccessPoint" />
+        <AccessPoint Name="UserEditAccessPoint" />
+        <AccessPoint Name="UserArchiveAccessPoint" />
+        <AccessPoint Name="UserDeleteAccessPoint" />
+        <AccessPoint Name="UserPasswordEditAccessPoint" />
+      </AccessPoints>
+    </DataConnection>
+
     <DataConnection Name="UserPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <SqlQuery Name="UserSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
         <Fields>
           <Field Name="UserId" />
           <Field Name="Title" />
+          <Field Name="GroupTitle" />
           <Field Name="Archive" />
         </Fields>
       </SqlQuery>
@@ -51,6 +63,17 @@
         <SqlQuery Name="UserArchiveUpdateSqlQuery" Type="Update" />
       </SqlQueries>
       <Parameters>
+        <Parameter NativeName="EditedUserId">
+          <Value>
+            <Object Name="UserDatabaseTable">
+              <Property Name="SelectedRowCellValueByColumnName">
+                <Parameters>
+                  <Parameter Name="ColumnName">UserId</Parameter>
+                </Parameters>
+              </Property>
+            </Object>
+          </Value>
+        </Parameter>
         <Parameter NativeName="Archive">
           <Value>
             <Not>
@@ -64,17 +87,6 @@
             </Not>
           </Value>
         </Parameter>
-        <Parameter NativeName="EditedUserId">
-          <Value>
-            <Object Name="UserDatabaseTable">
-              <Property Name="SelectedRowCellValueByColumnName">
-                <Parameters>
-                  <Parameter Name="ColumnName">UserId</Parameter>
-                </Parameters>
-              </Property>
-            </Object>
-          </Value>
-        </Parameter>
       </Parameters>
     </DataConnection>
 
@@ -84,7 +96,7 @@
         <SqlQuery Name="UserDeleteSqlQuery" Type="Delete" />
       </SqlQueries>
       <Parameters>
-        <Parameter NativeName="UserId">
+        <Parameter NativeName="EditedUserId">
           <Value>
             <Object Name="UserDatabaseTable">
               <Property Name="SelectedRowCellValueByColumnName">
@@ -186,22 +198,15 @@
     <Command Name="UserAddFormShowCommand" Type="FormShowCommand" Assembly="Commands">
       <Xml Type="Path">TemplateUserEdit.xml</Xml>
       <Show Type="None" />
+      <Multiple Allow="True" />
     </Command>
 
     <Command Name="UserEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
       <Xml Type="Path">TemplateUserEdit.xml</Xml>
       <Show Type="None" />
+      <Multiple Allow="True" />
       <Parameters>
         <Parameter Name="Edit">True</Parameter>
-        <Parameter Name="UserId">
-          <Object Name="UserDatabaseTable">
-            <Property Name="SelectedRowCellValueByColumnName">
-              <Parameters>
-                <Parameter Name="ColumnName">UserId</Parameter>
-              </Parameters>
-            </Property>
-          </Object>
-        </Parameter>
         <Parameter Name="EditedUserId">
           <Object Name="UserDatabaseTable">
             <Property Name="SelectedRowCellValueByColumnName">
@@ -275,6 +280,34 @@
           </Parameters>
         </Property>
       </Object>
+    </Command>
+
+    <Command Name="UserPasswordEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateUserPasswordEdit.xml</Xml>
+      <Show Type="None" />
+      <Multiple Allow="True" />
+      <Parameters>
+        <Parameter Name="EditedUserId">
+          <Object Name="UserDatabaseTable">
+            <Property Name="SelectedRowCellValueByColumnName">
+              <Parameters>
+                <Parameter Name="ColumnName">UserId</Parameter>
+              </Parameters>
+            </Property>
+          </Object>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="WarningMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>
+        <Input Name="Caption" />
+      </Caption>
+      <Text>
+        <Input Name="Text" />
+      </Text>
+      <Icon Type="Warning" />
+      <Buttons Type="Ok" />
     </Command>
   </Commands>
 
@@ -355,11 +388,24 @@
       <Commands>
         <If>
           <When>
-            <Condition Name="SelectedUserIsArchiveCondition" />
+            <Not>
+              <AccessPoint Name="UserEditAccessPoint" />
+            </Not>
           </When>
           <Then>
-            <Command Name="EditingArchiveUserMessageBoxCommand" />
+            <Command Name="WarningMessageBoxCommand">
+              <Input Name="Caption">Редактирование</Input>
+              <Input Name="Text">У вас недостаточно прав для выполнения команды.</Input>
+            </Command>
           </Then>
+          <ElseIf>
+            <When>
+              <Condition Name="SelectedUserIsArchiveCondition" />
+            </When>
+            <Then>
+              <Command Name="EditingArchiveUserMessageBoxCommand" />
+            </Then>
+          </ElseIf>
           <Else>
             <Command Name="UserEditFormShowCommand" />
           </Else>
@@ -567,8 +613,13 @@
             <AutoSizeMode Value="None" />
           </Column>
           <Column Name="Title" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
-            <Title>Название</Title>
+            <Title>Фамилия И.О.</Title>
             <Width>150</Width>
+            <AutoSizeMode Value="Fill" />
+          </Column>
+          <Column Name="GroupTitle" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+            <Title>Группа</Title>
+            <MinimumWidth>120</MinimumWidth>
             <AutoSizeMode Value="Fill" />
           </Column>
           <Column Name="Archive" Type="DatabaseTableColumnCheckBox" Assembly="DatabaseTableColumnControls">
@@ -624,6 +675,11 @@
         <Commands>
           <Command Name="UserAddFormShowCommand" />
         </Commands>
+        <Enabled>
+          <AccessPoint Name="UserAddAccessPoint" />
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>У вас недостаточно прав для выполнения команды.</DisabledText>
       </MyObject>
 
       <MyObject Name="UserEditButton" Type="Button" Assembly="BaseControls">
@@ -665,6 +721,7 @@
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
           <And>
+            <AccessPoint Name="UserEditAccessPoint" />
             <Condition Name="UserSelectedCondition" />
             <Not>
               <Condition Name="SelectedUserIsArchiveCondition" />
@@ -677,6 +734,14 @@
         <DisabledMode>True</DisabledMode>
         <DisabledText>
           <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="UserEditAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
             <Case>
               <When>
                 <Not>
@@ -734,6 +799,7 @@
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
           <And>
+            <AccessPoint Name="UserDeleteAccessPoint" />
             <Not>
               <Condition Name="SelectedUserIsArchiveCondition" />
             </Not>
@@ -746,6 +812,14 @@
         <DisabledMode>True</DisabledMode>
         <DisabledText>
           <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="UserDeleteAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
             <Case>
               <When>
                 <Not>
@@ -797,7 +871,10 @@
           <Switch>
             <Case>
               <When>
-                <Condition Name="SelectedUserIsArchiveCondition" />
+                <Or>
+                  <Condition Name="SelectedUserIsArchiveCondition" />
+                  <Object Name="ArchiveFilterComboBox" />
+                </Or>
               </When>
               <Then>Восстановить запись из архива</Then>
             </Case>
@@ -825,7 +902,10 @@
         <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
         <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
         <Enabled>
-          <Condition Name="UserSelectedCondition" />
+          <And>
+            <AccessPoint Name="UserArchiveAccessPoint" />
+            <Condition Name="UserSelectedCondition" />
+          </And>
         </Enabled>
         <Commands>
           <Command Name="UserArchiveMessageBoxCommand" />
@@ -835,14 +915,103 @@
           <Switch>
             <Case>
               <When>
-                <Object Name="ArchiveFilterComboBox" />
+                <Not>
+                  <AccessPoint Name="UserArchiveAccessPoint" />
+                </Not>
               </When>
-              <Then>Для восстановления из архива выберите запись.</Then>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
             </Case>
-            <Case>Для переноса в архив выберите запись.</Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="UserSelectedCondition" />
+                </Not>
+              </When>
+              <Then>
+                <Switch>
+                  <Case>
+                    <When>
+                      <Object Name="ArchiveFilterComboBox" />
+                    </When>
+                    <Then>Для восстановления из архива выберите запись.</Then>
+                  </Case>
+                  <Case>Для переноса в архив выберите запись.</Case>
+                </Switch>
+              </Then>
+            </Case>
           </Switch>
         </DisabledText>
       </MyObject>
+
+      <MyObject Name="PasswordEditButton" Type="Button" Assembly="BaseControls">
+        <Top>
+          <Calculate>
+            <Expression>{0} + 5</Expression>
+            <Items>
+              <Item>
+                <Object Name="UserArchiveButton">
+                  <Property Name="Bottom" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Top>
+        <Left>
+          <Object Name="UserAddButton">
+            <Property Name="Left" />
+          </Object>
+        </Left>
+        <Height>
+          <Object Name="UserAddButton">
+            <Property Name="Height" />
+          </Object>
+        </Height>
+        <Width>
+          <Object Name="UserAddButton">
+            <Property Name="Width" />
+          </Object>
+        </Width>
+        <TabIndex>7</TabIndex>
+        <Hint>Изменить пароль...</Hint>
+        <BackgroundImage>Images\24x24\password.png</BackgroundImage>
+        <BackgroundImageLayout>Center</BackgroundImageLayout>
+        <FlatStyle>Flat</FlatStyle>
+        <FlatBorderSize>1</FlatBorderSize>
+        <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+        <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+        <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+        <Commands>
+          <Command Name="UserPasswordEditFormShowCommand" />
+        </Commands>
+        <Enabled>
+          <And>
+            <AccessPoint Name="UserPasswordEditAccessPoint" />
+            <Condition Name="UserSelectedCondition" />
+          </And>
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Not>
+                  <AccessPoint Name="UserPasswordEditAccessPoint" />
+                </Not>
+              </When>
+              <Then>У вас недостаточно прав для выполнения команды.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Not>
+                  <Condition Name="UserSelectedCondition" />
+                </Not>
+              </When>
+              <Then>Выберите запись для редактирования пароля.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
+      </MyObject>
+
     </MyObject>
 
   </MyObjects>

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Form Name="TemplateStartForm" Width="900" Height="400" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable" Opacity="0">
+<Form Name="TemplateStartForm" Width="1200" Height="500" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable" Opacity="0">
   <Parameters>
     <Parameter Name="Title">Заказы</Parameter>
   </Parameters>
@@ -37,6 +37,50 @@
   </Appearance>
 
   <DataConnections>
+    <DataConnection Name="AccessPointDataConnection" Type="AccessPointDataConnection" Assembly="DataConnections">
+      <Workflow Name="Template" />
+      <AccessPoints>
+        <!-- Сменить пароль -->
+        <AccessPoint Name="UserCurrentPasswordEditAccessPoint" />
+
+        <!-- Списки -->
+        <AccessPoint Name="CityViewAccessPoint" />
+        <AccessPoint Name="ClientViewAccessPoint" />
+        <AccessPoint Name="AccountViewAccessPoint" />
+        <AccessPoint Name="OperationViewAccessPoint" />
+        <AccessPoint Name="UnitViewAccessPoint" />
+        <AccessPoint Name="MaterialViewAccessPoint" />
+
+        <!-- Касса -->
+        <AccessPoint Name="CashViewAccessPoint" />
+
+        <!-- Отчеты -->
+        <AccessPoint Name="DeletedOrderReportViewAccessPoint" />
+        <AccessPoint Name="BudgetReportViewAccessPoint" />
+
+        <!-- Администрирование -->
+        <AccessPoint Name="UserViewAccessPoint" />
+        <AccessPoint Name="GroupViewAccessPoint" />
+        <AccessPoint Name="SettingsViewAccessPoint" />
+
+        <!-- Заказы -->
+        <AccessPoint Name="OrderViewAccessPoint" />
+        <AccessPoint Name="OrderAddAccessPoint" />
+        <AccessPoint Name="OrderEditAccessPoint" />
+        <AccessPoint Name="OrderDeleteAccessPoint" />
+      </AccessPoints>
+    </DataConnection>
+
+    <DataConnection Name="UserCurrentPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
+      <ManualLoad>True</ManualLoad>
+      <SqlQuery Name="UserCurrentSelectSqlQuery" Type="Select">
+        <Workflow Name="Template" />
+        <Fields>
+          <Field Name="UserId" />
+        </Fields>
+      </SqlQuery>
+    </DataConnection>
+
     <DataConnection Name="OrderPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <ManualLoad>True</ManualLoad>
       <SqlQuery Name="OrderSelectSqlQuery" Type="Select">
@@ -47,6 +91,9 @@
           <Field Name="CityId" />
           <Field Name="OrderNumber" />
           <Field Name="OrderDate" />
+          <Field Name="TotalOrderCost" />
+          <Field Name="TotalPaymentSumm" />
+          <Field Name="TotalDebt" />
           <Field Name="Count" />
         </Fields>
         <Parameters>
@@ -208,10 +255,6 @@
       </Items>
     </Condition>
 
-
-    <!-- Pagination -->
-    <!-- Pagination -->
-    <!-- Pagination -->
     <Condition Name="NumberOfOrdersEqual0Condition" Type="EqualCondition" Assembly="Conditions">
       <Items>
         <Item>
@@ -291,21 +334,28 @@
       <DataType Type="IntegerDataType" />
     </Condition>
 
-    <!--STOP PAGINATION-->
-    <!--STOP PAGINATION-->
-    <!--STOP PAGINATION-->
+    <Condition Name="OrderViewAccessPointCondition" Type="EqualCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <AccessPoint Name="OrderViewAccessPoint" />
+        </Item>
+        <Item>True</Item>
+      </Items>
+      <DataType Type="BooleanDataType" />
+    </Condition>
   </Conditions>
 
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
 
-    <Command Name="FormShowValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Form>
-        <Property Name="Opacity">1</Property>
-      </Form>
+    <Command Name="AccessPointDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="AccessPointDataConnection" />
+      </DataConnections>
     </Command>
 
     <Command Name="OrderDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <Condition Name="OrderViewAccessPointCondition" />
       <DataConnections>
         <DataConnection Name="OrderPrimaryGetDataConnection" />
       </DataConnections>
@@ -321,11 +371,6 @@
       <Show Type="None" />
     </Command>
 
-    <Command Name="OperationListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">TemplateOperationList.xml</Xml>
-      <Show Type="None" />
-    </Command>
-
     <Command Name="UnitListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
       <Xml Type="Path">TemplateUnitList.xml</Xml>
       <Show Type="None" />
@@ -336,8 +381,8 @@
       <Show Type="None" />
     </Command>
 
-    <Command Name="CashListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">TemplateCashList.xml</Xml>
+    <Command Name="CashFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateCash.xml</Xml>
       <Show Type="None" />
     </Command>
 
@@ -366,11 +411,6 @@
           </Object>
         </Parameter>
       </Parameters>
-    </Command>
-
-    <Command Name="AccountListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">TemplateAccountList.xml</Xml>
-      <Show Type="None" />
     </Command>
 
     <Command Name="OrderDeleteSaveCommand" Type="SaveCommand" Assembly="Commands">
@@ -411,18 +451,16 @@
       </DataConnections>
     </Command>
 
-    <Command Name="AllPrimaryDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
-      <Parallel>True</Parallel>
-      <DataConnections>
-        <DataConnection Name="CityPrimaryGetDataConnection" Packet="True" />
-        <DataConnection Name="ClientPrimaryGetDataConnection" Packet="True" />
-      </DataConnections>
-    </Command>
-
     <Command Name="ActiveFilterValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <Object Name="ActiveFilterVariable">
         <Input />
       </Object>
+    </Command>
+
+    <Command Name="EmptyOrderInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="EmptyOrderInsertSetDataConnection" />
+      </DataConnections>
     </Command>
 
     <Command Name="DeletedOrderListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
@@ -431,14 +469,8 @@
     </Command>
 
     <Command Name="BudgetReportFormShowCommand" Type="FormShowCommand" Assembly="Commands">
-      <Xml Type="Path">TemplateReportBudget.xml</Xml>
+      <Xml Type="Path">TemplateBudgetReport.xml</Xml>
       <Show Type="None" />
-    </Command>
-
-    <Command Name="EmptyOrderInsertSaveCommand" Type="SaveCommand" Assembly="Commands">
-      <DataConnections>
-        <DataConnection Name="EmptyOrderInsertSetDataConnection" />
-      </DataConnections>
     </Command>
 
     <Command Name="SettingsFormShowCommand" Type="FormShowCommand" Assembly="Commands">
@@ -448,6 +480,11 @@
 
     <Command Name="UserListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
       <Xml Type="Path">TemplateUserList.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="GroupListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateGroupList.xml</Xml>
       <Show Type="None" />
     </Command>
 
@@ -461,9 +498,30 @@
       <Show Type="Modal" />
     </Command>
 
-    <!-- Paggination -->
-    <!-- Paggination -->
-    <!-- Paggination -->
+    <Command Name="PasswordEditFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateUserPasswordEdit.xml</Xml>
+      <Show Type="None" />
+      <Parameters>
+        <Parameter Name="EditedUserId">
+          <DataConnection SourceDataConnection="UserCurrentPrimaryGetDataConnection">
+            <Fields>
+              <Field Name="UserId" />
+            </Fields>
+          </DataConnection>
+        </Parameter>
+      </Parameters>
+    </Command>
+
+    <Command Name="AccountListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateAccountList.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
+    <Command Name="OperationListFormShowCommand" Type="FormShowCommand" Assembly="Commands">
+      <Xml Type="Path">TemplateOperationList.xml</Xml>
+      <Show Type="None" />
+    </Command>
+
     <Command Name="CurrentPageVariableValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
       <Object Name="CurrentPageVariable">
         <Input />
@@ -496,6 +554,32 @@
       </Object>
     </Command>
 
+    <Command Name="ShowFormCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Form>
+        <Property Name="Opacity">1</Property>
+      </Form>
+    </Command>
+
+    <Command Name="AllPrimaryGetDataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <Condition Name="OrderViewAccessPointCondition" />
+      <Parallel>True</Parallel>
+      <DataConnections>
+        <DataConnection Name="CityPrimaryGetDataConnection" />
+        <DataConnection Name="ClientPrimaryGetDataConnection" />
+        <DataConnection Name="UserCurrentPrimaryGetDataConnection" />
+      </DataConnections>
+    </Command>
+
+    <Command Name="WarningMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
+      <Caption>
+        <Input Name="Caption" />
+      </Caption>
+      <Text>
+        <Input Name="Text" />
+      </Text>
+      <Icon Type="Warning" />
+      <Buttons Type="Ok" />
+    </Command>
   </Commands>
 
   <Executions>
@@ -513,8 +597,9 @@
         <Command Name="LoginFormShowCommand" Parameter="Updated" />
       </ConditionExpression>
       <Commands>
-        <Command Name="FormShowValueSetCommand" />
-        <Command Name="AllPrimaryDataConnectionRefreshCommand" />
+        <Command Name="ShowFormCommand" />
+        <Command Name="AccessPointDataConnectionRefreshCommand" />
+        <Command Name="AllPrimaryGetDataConnectionRefreshCommand" />
         <Command Name="OrderDataConnectionRefreshCommand" />
       </Commands>
     </Execution>
@@ -535,7 +620,8 @@
         <Command Name="ReloginFormShowCommand" Parameter="Updated" />
       </ConditionExpression>
       <Commands>
-        <Command Name="AllPrimaryDataConnectionRefreshCommand" />
+        <Command Name="AccessPointDataConnectionRefreshCommand" />
+        <Command Name="AllPrimaryGetDataConnectionRefreshCommand" />
         <Command Name="OrderDataConnectionRefreshCommand" />
       </Commands>
     </Execution>
@@ -588,7 +674,20 @@
         <Condition Name="OrderCellDoubleClickCondition" />
       </ConditionExpression>
       <Commands>
-        <Command Name="OrderEditFormShowCommand" />
+        <If>
+          <When>
+            <AccessPoint Name="OrderEditAccessPoint" />
+          </When>
+          <Then>
+            <Command Name="OrderEditFormShowCommand" />
+          </Then>
+          <Else>
+            <Command Name="WarningMessageBoxCommand">
+              <Input Name="Caption">Редактирование</Input>
+              <Input Name="Text">У вас недостаточно прав для выполнения команды.</Input>
+            </Command>
+          </Else>
+        </If>
       </Commands>
     </Execution>
 
@@ -658,16 +757,30 @@
     <MenuItem Name="FileMenuItem" Type="MenuItem">
       <Title>Файл</Title>
       <Items>
-        <MenuItem Name="ReloginMenuItem" Type="MenuItem">
+        <MenuItem Name="FileLoginMenuItem" Type="MenuItem">
           <Title>Войти как...</Title>
-          <Command Name="ReloginFormShowCommand" />
+          <Commands>
+            <Command Name="ReloginFormShowCommand" />
+          </Commands>
         </MenuItem>
 
-        <MenuItem Name="ReloginFileRefreshSeparator" Type="Separator" />
+        <MenuItem Name="PasswordEditMenuItem" Type="MenuItem">
+          <Title>Сменить пароль...</Title>
+          <Command Name="PasswordEditFormShowCommand" />
+          <Visible>
+            <AccessPoint Name="UserCurrentPasswordEditAccessPoint" />
+          </Visible>
+        </MenuItem>
+
+        <MenuItem Name="File1Separator" Type="Separator" />
 
         <MenuItem Name="FileRefreshMenuItem" Type="MenuItem">
           <Title>Обновить</Title>
-          <Command Name="OrderDataConnectionRefreshCommand" />
+          <Commands>
+            <Command Name="AccessPointDataConnectionRefreshCommand" />
+            <Command Name="AllPrimaryGetDataConnectionRefreshCommand" />
+            <Command Name="OrderDataConnectionRefreshCommand" />
+          </Commands>
         </MenuItem>
 
         <MenuItem Name="FileSeparator" Type="Separator" />
@@ -681,145 +794,207 @@
 
     <MenuItem Name="ListMenuItem" Type="MenuItem">
       <Title>Списки</Title>
+      <Visible>
+        <Or>
+          <AccessPoint Name="CityViewAccessPoint" />
+          <AccessPoint Name="ClientViewAccessPoint" />
+          <AccessPoint Name="AccountViewAccessPoint" />
+          <AccessPoint Name="OperationViewAccessPoint" />
+          <AccessPoint Name="UnitViewAccessPoint" />
+          <AccessPoint Name="MaterialViewAccessPoint" />
+        </Or>
+      </Visible>
       <Items>
         <MenuItem Name="CityMenuItem" Type="MenuItem">
           <Title>Города...</Title>
           <Command Name="CityListFormShowCommand" />
+          <Visible>
+            <AccessPoint Name="CityViewAccessPoint" />
+          </Visible>
         </MenuItem>
 
         <MenuItem Name="ClientMenuItem" Type="MenuItem">
           <Title>Клиенты...</Title>
           <Command Name="ClientListFormShowCommand" />
+          <Visible>
+            <AccessPoint Name="ClientViewAccessPoint" />
+          </Visible>
         </MenuItem>
 
-        <MenuItem Name="List1Separator" Type="Separator" />
-
-        <MenuItem Name="OperationListMenuItem" Type="MenuItem">
-          <Title>Назначения платежей</Title>
-          <Command Name="OperationListFormShowCommand" />
+        <MenuItem Name="List1Separator" Type="Separator">
+          <Visible>
+            <And>
+              <Or>
+                <AccessPoint Name="ClientViewAccessPoint" />
+                <AccessPoint Name="CityViewAccessPoint" />
+              </Or>
+              <Or>
+                <AccessPoint Name="AccountViewAccessPoint" />
+                <AccessPoint Name="OperationViewAccessPoint" />
+              </Or>
+            </And>
+          </Visible>
         </MenuItem>
 
         <MenuItem Name="AccountListMenuItem" Type="MenuItem">
-          <Title>Счета</Title>
+          <Title>Счета...</Title>
           <Command Name="AccountListFormShowCommand" />
+          <Visible>
+            <AccessPoint Name="AccountViewAccessPoint" />
+          </Visible>
         </MenuItem>
 
-        <MenuItem Name="OperationUnitSeparator" Type="Separator" />
+        <MenuItem Name="OperationListMenuItem" Type="MenuItem">
+          <Title>Назначения платежей...</Title>
+          <Command Name="OperationListFormShowCommand" />
+          <Visible>
+            <AccessPoint Name="OperationViewAccessPoint" />
+          </Visible>
+        </MenuItem>
+
+        <MenuItem Name="List2Separator" Type="Separator">
+          <Visible>
+            <And>
+              <Or>
+                <AccessPoint Name="ClientViewAccessPoint" />
+                <AccessPoint Name="CityViewAccessPoint" />
+                <AccessPoint Name="AccountViewAccessPoint" />
+                <AccessPoint Name="OperationViewAccessPoint" />
+              </Or>
+              <Or>
+                <AccessPoint Name="UnitViewAccessPoint" />
+                <AccessPoint Name="MaterialViewAccessPoint" />
+              </Or>
+            </And>
+          </Visible>
+        </MenuItem>
 
         <MenuItem Name="UnitListMenuItem" Type="MenuItem">
           <Title>Единицы измерения...</Title>
           <Command Name="UnitListFormShowCommand" />
+          <Visible>
+            <AccessPoint Name="UnitViewAccessPoint" />
+          </Visible>
         </MenuItem>
 
         <MenuItem Name="MaterialListMenuItem" Type="MenuItem">
           <Title>ТМЦ...</Title>
           <Command Name="MaterialListFormShowCommand" />
+          <Visible>
+            <AccessPoint Name="MaterialViewAccessPoint" />
+          </Visible>
         </MenuItem>
       </Items>
     </MenuItem>
 
     <MenuItem Name="FinanceMenuItem" Type="MenuItem">
       <Title>Финансы</Title>
+      <Visible>
+        <Or>
+          <AccessPoint Name="CashViewAccessPoint" />
+        </Or>
+      </Visible>
       <Items>
-        <MenuItem Name="CashListMenuItem" Type="MenuItem">
-          <Title>Касса</Title>
-          <Command Name="CashListFormShowCommand" />
+        <MenuItem Name="CashMenuItem" Type="MenuItem">
+          <Title>Касса...</Title>
+          <Command Name="CashFormShowCommand" />
+          <Visible>
+            <AccessPoint Name="CashViewAccessPoint" />
+          </Visible>
         </MenuItem>
       </Items>
     </MenuItem>
 
     <MenuItem Name="LogMenuItem" Type="MenuItem">
       <Title>Журналы</Title>
+      <Visible>
+        <Or>
+          <AccessPoint Name="DeletedOrderReportViewAccessPoint" />
+        </Or>
+      </Visible>
       <Items>
-        <MenuItem Name="DeletedRentsListMenuItem" Type="MenuItem">
+        <MenuItem Name="DeletedOrderListMenuItem" Type="MenuItem">
           <Title>Список удаленных заказов...</Title>
           <Command Name="DeletedOrderListFormShowCommand" />
+          <Visible>
+            <AccessPoint Name="DeletedOrderReportViewAccessPoint" />
+          </Visible>
         </MenuItem>
       </Items>
     </MenuItem>
 
     <MenuItem Name="ReportMenuItem" Type="MenuItem">
       <Title>Отчеты</Title>
+      <Visible>
+        <Or>
+          <AccessPoint Name="BudgetReportViewAccessPoint" />
+        </Or>
+      </Visible>
       <Items>
         <MenuItem Name="BudgetReportMenuItem" Type="MenuItem">
-          <Title>Отчет по бюджету</Title>
+          <Title>Отчет по бюджету...</Title>
           <Command Name="BudgetReportFormShowCommand" />
+          <Visible>
+            <AccessPoint Name="BudgetReportViewAccessPoint" />
+          </Visible>
         </MenuItem>
       </Items>
     </MenuItem>
 
     <MenuItem Name="AdminMenuItem" Type="MenuItem">
       <Title>Администрирование</Title>
+      <Visible>
+        <Or>
+          <AccessPoint Name="UserViewAccessPoint" />
+          <AccessPoint Name="GroupViewAccessPoint" />
+          <AccessPoint Name="SettingsViewAccessPoint" />
+        </Or>
+      </Visible>
       <Items>
         <MenuItem Name="UserListMenuItem" Type="MenuItem">
           <Title>Пользователи...</Title>
-          <Command Name="UserListFormShowCommand" />
+          <Commands>
+            <Command Name="UserListFormShowCommand" />
+          </Commands>
+          <Visible>
+            <AccessPoint Name="UserViewAccessPoint" />
+          </Visible>
         </MenuItem>
-        <MenuItem Name="UserSettingsSeparator" Type="Separator" />
+
+        <MenuItem Name="GroupListMenuItem" Type="MenuItem">
+          <Title>Группы пользователей...</Title>
+          <Commands>
+            <Command Name="GroupListFormShowCommand" />
+          </Commands>
+          <Visible>
+            <AccessPoint Name="GroupViewAccessPoint" />
+          </Visible>
+        </MenuItem>
+
+        <MenuItem Name="AdministrationSeparator" Type="Separator">
+          <Visible>
+            <And>
+              <Or>
+                <AccessPoint Name="UserViewAccessPoint" />
+                <AccessPoint Name="GroupViewAccessPoint" />
+              </Or>
+              <AccessPoint Name="SettingsViewAccessPoint" />
+            </And>
+          </Visible>
+        </MenuItem>
+
         <MenuItem Name="SettingsMenuItem" Type="MenuItem">
           <Title>Настройки...</Title>
           <Command Name="SettingsFormShowCommand" />
+          <Visible>
+            <AccessPoint Name="SettingsViewAccessPoint" />
+          </Visible>
         </MenuItem>
       </Items>
     </MenuItem>
   </MainMenu>
 
   <MyObjects>
-    <MyObject Name="VarPanel" Type="Panel" Assembly="BaseControls">
-      <Visible>False</Visible>
-
-      <MyObject Name="NumberOfOrdersVariable" Type="Variable" Assembly="SimpleControls">
-        <Value>
-          <Switch>
-            <Case>
-              <When>
-                <Condition Name="NumberOfOrdersEqual0Condition" />
-              </When>
-              <Then>0</Then>
-            </Case>
-            <Case>
-              <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
-                <Fields>
-                  <Field Name="Count" />
-                </Fields>
-              </DataConnection>
-            </Case>
-          </Switch>
-        </Value>
-      </MyObject>
-
-      <MyObject Name="CurrentPageVariable" Type="Variable" Assembly="SimpleControls">
-        <Value>1</Value>
-      </MyObject>
-
-      <MyObject Name="TotalPagesVariable" Type="Variable" Assembly="SimpleControls" ChangeForm="False">
-        <Value>
-          <Switch>
-            <Case>
-              <When>
-                <Condition Name="ItemsPerPageComboBoxIsNullCondition" />
-              </When>
-              <Then>1</Then>
-            </Case>
-            <Case>
-              <Calculate>
-                <Expression>Ceiling({0}/{1})</Expression>
-                <Items>
-                  <Item>
-                    <Object Name="NumberOfOrdersVariable" />
-                  </Item>
-                  <Item>
-                    <Object Name="ItemsPerPageComboBox" />
-                  </Item>
-                </Items>
-              </Calculate>
-            </Case>
-          </Switch>
-        </Value>
-      </MyObject>
-
-    </MyObject>
-
     <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
       <Top>24</Top>
       <Left>0</Left>
@@ -896,6 +1071,9 @@
       </Width>
       <TabIndex>1</TabIndex>
       <BackColor>ThemeBackgroundColor</BackColor>
+      <Visible>
+        <AccessPoint Name="OrderViewAccessPoint" />
+      </Visible>
 
       <MyObject Name="FilterPanel" Type="Panel" Assembly="BaseControls">
         <Top>0</Top>
@@ -1359,9 +1537,21 @@
           </Object>
         </Left>
         <Height>
-          <Object Name="FilterPanel">
-            <Property Name="Height" />
-          </Object>
+          <Calculate>
+            <Expression>{0} - {1}</Expression>
+            <Items>
+              <Item>
+                <Object Name="FilterPanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="PagePanel">
+                  <Property Name="Height" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
         </Height>
         <Width>
           <Calculate>
@@ -1387,7 +1577,7 @@
           <Left>10</Left>
           <Height>
             <Calculate>
-              <Expression>{0} - {1}*2 - 5 - {2}</Expression>
+              <Expression>{0} - {1}*2</Expression>
               <Items>
                 <Item>
                   <Object Name="DataPanel">
@@ -1397,11 +1587,6 @@
                 <Item>
                   <Object Name="OrderDatabaseTable">
                     <Property Name="Top" />
-                  </Object>
-                </Item>
-                <Item>
-                  <Object Name="PagePanel">
-                    <Property Name="Height" />
                   </Object>
                 </Item>
               </Items>
@@ -1493,6 +1678,27 @@
                 </DataConnection>
               </Substitution>
             </Column>
+            <Column Name="TotalOrderCost" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Сумма заказа</Title>
+              <Width>100</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" Format="N2" />
+              <Alignment Value="MiddleRight" />
+            </Column>
+            <Column Name="TotalPaymentSumm" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Сумма оплат</Title>
+              <Width>100</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" Format="N2" />
+              <Alignment Value="MiddleRight" />
+            </Column>
+            <Column Name="TotalDebt" Type="DatabaseTableColumnTextBox" Assembly="DatabaseTableColumnControls">
+              <Title>Задолженность</Title>
+              <Width>100</Width>
+              <AutoSizeMode Value="None" />
+              <DataType Type="DecimalDataType" Format="N2" />
+              <Alignment Value="MiddleRight" />
+            </Column>
           </Columns>
         </MyObject>
 
@@ -1529,6 +1735,11 @@
             <Command Name="EmptyOrderInsertSaveCommand" />
             <Command Name="OrderAddFormShowCommand" />
           </Commands>
+          <Enabled>
+            <AccessPoint Name="OrderAddAccessPoint" />
+          </Enabled>
+          <DisabledMode>True</DisabledMode>
+          <DisabledText>У вас недостаточно прав для выполнения команды.</DisabledText>
         </MyObject>
 
         <MyObject Name="OrderEditButton" Type="Button" Assembly="BaseControls">
@@ -1569,13 +1780,35 @@
           <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
           <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
           <Enabled>
-            <Condition Name="OrderSelectedCondition" />
+            <And>
+              <AccessPoint Name="OrderEditAccessPoint" />
+              <Condition Name="OrderSelectedCondition" />
+            </And>
           </Enabled>
           <Commands>
             <Command Name="OrderEditFormShowCommand" />
           </Commands>
           <DisabledMode>True</DisabledMode>
-          <DisabledText>Выберите запись для редактирования.</DisabledText>
+          <DisabledText>
+            <Switch>
+              <Case>
+                <When>
+                  <Not>
+                    <AccessPoint Name="OrderEditAccessPoint" />
+                  </Not>
+                </When>
+                <Then>У вас недостаточно прав для выполнения команды.</Then>
+              </Case>
+              <Case>
+                <When>
+                  <Not>
+                    <Condition Name="OrderSelectedCondition" />
+                  </Not>
+                </When>
+                <Then>Выберите запись для редактирования.</Then>
+              </Case>
+            </Switch>
+          </DisabledText>
         </MyObject>
 
         <MyObject Name="OrderDeleteButton" Type="Button" Assembly="BaseControls">
@@ -1616,403 +1849,482 @@
           <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
           <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
           <Enabled>
-            <Condition Name="OrderSelectedCondition" />
+            <And>
+              <AccessPoint Name="OrderDeleteAccessPoint" />
+              <Condition Name="OrderSelectedCondition" />
+            </And>
           </Enabled>
           <Commands>
             <Command Name="OrderDeleteMessageBoxCommand" />
           </Commands>
           <DisabledMode>True</DisabledMode>
-          <DisabledText>Выберите запись для удаления.</DisabledText>
+          <DisabledText>
+            <Switch>
+              <Case>
+                <When>
+                  <Not>
+                    <AccessPoint Name="OrderDeleteAccessPoint" />
+                  </Not>
+                </When>
+                <Then>У вас недостаточно прав для выполнения команды.</Then>
+              </Case>
+              <Case>
+                <When>
+                  <Not>
+                    <Condition Name="OrderSelectedCondition" />
+                  </Not>
+                </When>
+                <Then>Выберите запись для удаления.</Then>
+              </Case>
+            </Switch>
+          </DisabledText>
         </MyObject>
 
+      </MyObject>
 
-        <MyObject Name="PagePanel" Type="Panel" Assembly="BaseControls">
+      <MyObject Name="PagePanel" Type="Panel" Assembly="BaseControls">
+        <Top>
+          <Object Name="DataPanel">
+            <Property Name="Bottom" />
+          </Object>
+        </Top>
+        <Left>
+          <Calculate>
+            <Expression>Ceiling(({0} - {1})/2) + {2}</Expression>
+            <Items>
+              <Item>
+                <Object Name="DataPanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="PagePanel">
+                  <Property Name="Width" />
+                </Object>
+              </Item>
+              <Item>
+                <Object Name="DataPanel">
+                  <Property Name="Left" />
+                </Object>
+              </Item>
+            </Items>
+          </Calculate>
+        </Left>
+        <Height>30</Height>
+        <Width>
+          <Object Name="TotalItemsLabel">
+            <Property Name="Right" />
+          </Object>
+        </Width>
+
+        <MyObject Name="NumberOfOrdersVariable" Type="Variable" Assembly="SimpleControls" ChangeForm="False">
+          <Value>
+            <Switch>
+              <Case>
+                <When>
+                  <Condition Name="NumberOfOrdersEqual0Condition" />
+                </When>
+                <Then>0</Then>
+              </Case>
+              <Case>
+                <DataConnection SourceDataConnection="OrderPrimaryGetDataConnection">
+                  <Fields>
+                    <Field Name="Count" />
+                  </Fields>
+                </DataConnection>
+              </Case>
+            </Switch>
+          </Value>
+        </MyObject>
+
+        <MyObject Name="CurrentPageVariable" Type="Variable" Assembly="SimpleControls">
+          <Value>1</Value>
+        </MyObject>
+
+        <MyObject Name="TotalPagesVariable" Type="Variable" Assembly="SimpleControls" ChangeForm="False">
+          <Value>
+            <Switch>
+              <Case>
+                <When>
+                  <Condition Name="ItemsPerPageComboBoxIsNullCondition" />
+                </When>
+                <Then>1</Then>
+              </Case>
+              <Case>
+                <Calculate>
+                  <Expression>Ceiling({0}/{1})</Expression>
+                  <Items>
+                    <Item>
+                      <Object Name="NumberOfOrdersVariable" />
+                    </Item>
+                    <Item>
+                      <Object Name="ItemsPerPageComboBox" />
+                    </Item>
+                  </Items>
+                </Calculate>
+              </Case>
+            </Switch>
+          </Value>
+        </MyObject>
+
+        <MyObject Name="FirstPageButton" Type="Button" Assembly="BaseControls">
+          <Top>0</Top>
+          <Left>0</Left>
+          <Height>
+            <Object Name="CurrentPageTextBox">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <Width>
+            <Object Name="FirstPageButton">
+              <Property Name="Height" />
+            </Object>
+          </Width>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>0</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <BackgroundImage>Images\16x16\arrow-collapse-left.png</BackgroundImage>
+          <Commands>
+            <Command Name="CurrentPageVariableValueSetCommand">1</Command>
+          </Commands>
+          <Enabled>
+            <And>
+              <Not>
+                <Condition Name="CurrentPageVariableEqual1Condition" />
+              </Not>
+              <Not>
+                <Condition Name="NumberOfOrdersVariableEqual0Condition" />
+              </Not>
+            </And>
+          </Enabled>
+        </MyObject>
+
+        <MyObject Name="PrevPageButton" Type="Button" Assembly="BaseControls">
           <Top>
-            <Object Name="OrderDatabaseTable">
-              <Property Name="Bottom" />
+            <Object Name="FirstPageButton">
+              <Property Name="Top" />
             </Object>
           </Top>
           <Left>
             <Calculate>
-              <Expression>Ceiling(({0} - {1})/2)</Expression>
+              <Expression>{0} + 3</Expression>
               <Items>
                 <Item>
-                  <Object Name="ContentPanel">
-                    <Property Name="Width" />
-                  </Object>
-                </Item>
-                <Item>
-                  <Object Name="PagePanel">
-                    <Property Name="Width" />
+                  <Object Name="FirstPageButton">
+                    <Property Name="Right" />
                   </Object>
                 </Item>
               </Items>
             </Calculate>
           </Left>
-          <Height>30</Height>
+          <Height>
+            <Object Name="FirstPageButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
           <Width>
-            <Object Name="TotalItemsLabel">
-              <Property Name="Right" />
+            <Object Name="FirstPageButton">
+              <Property Name="Width" />
             </Object>
           </Width>
-
-          <MyObject Name="FirstPageButton" Type="Button" Assembly="BaseControls">
-            <Top>5</Top>
-            <Left>0</Left>
-            <Height>
-              <Object Name="CurrentPageTextBox">
-                <Property Name="Height" />
-              </Object>
-            </Height>
-            <Width>
-              <Object Name="FirstPageButton">
-                <Property Name="Height" />
-              </Object>
-            </Width>
-            <FlatStyle>Flat</FlatStyle>
-            <FlatBorderSize>0</FlatBorderSize>
-            <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
-            <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-            <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-            <BackgroundImageLayout>Center</BackgroundImageLayout>
-            <BackgroundImage>Images\16x16\arrow-collapse-left.png</BackgroundImage>
-            <Commands>
-              <Command Name="CurrentPageVariableValueSetCommand">1</Command>
-            </Commands>
-            <Enabled>
-              <And>
-                <Not>
-                  <Condition Name="CurrentPageVariableEqual1Condition" />
-                </Not>
-                <Not>
-                  <Condition Name="NumberOfOrdersVariableEqual0Condition" />
-                </Not>
-              </And>
-            </Enabled>
-          </MyObject>
-
-          <MyObject Name="PrevPageButton" Type="Button" Assembly="BaseControls">
-            <Top>
-              <Object Name="FirstPageButton">
-                <Property Name="Top" />
-              </Object>
-            </Top>
-            <Left>
-              <Calculate>
-                <Expression>{0} + 3</Expression>
-                <Items>
-                  <Item>
-                    <Object Name="FirstPageButton">
-                      <Property Name="Right" />
-                    </Object>
-                  </Item>
-                </Items>
-              </Calculate>
-            </Left>
-            <Height>
-              <Object Name="FirstPageButton">
-                <Property Name="Height" />
-              </Object>
-            </Height>
-            <Width>
-              <Object Name="FirstPageButton">
-                <Property Name="Width" />
-              </Object>
-            </Width>
-            <FlatStyle>Flat</FlatStyle>
-            <FlatBorderSize>0</FlatBorderSize>
-            <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
-            <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-            <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-            <BackgroundImageLayout>Center</BackgroundImageLayout>
-            <BackgroundImage>Images\16x16\arrow-left.png</BackgroundImage>
-            <Commands>
-              <Command Name="CurrentPageVariableDecValueSetCommand" />
-            </Commands>
-            <Enabled>
-              <And>
-                <Not>
-                  <Condition Name="CurrentPageVariableEqual1Condition" />
-                </Not>
-                <Not>
-                  <Condition Name="NumberOfOrdersVariableEqual0Condition" />
-                </Not>
-              </And>
-            </Enabled>
-          </MyObject>
-
-          <MyObject Name="CurrentPageTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
-            <Top>
-              <Object Name="PrevPageButton">
-                <Property Name="Top" />
-              </Object>
-            </Top>
-            <Left>
-              <Calculate>
-                <Expression>{0} + 3</Expression>
-                <Items>
-                  <Item>
-                    <Object Name="PrevPageButton">
-                      <Property Name="Right" />
-                    </Object>
-                  </Item>
-                </Items>
-              </Calculate>
-            </Left>
-            <Width>30</Width>
-            <MaxLength>3</MaxLength>
-            <AllowedSymbols>0123456789</AllowedSymbols>
-            <TextAlign>Right</TextAlign>
-            <Text>
-              <Object Name="CurrentPageVariable" />
-            </Text>
-          </MyObject>
-
-          <MyObject Name="TotalPagesLabel" Type="Label" Assembly="BaseControls" ChangeForm="False">
-            <Top>
-              <Object Name="PrevPageButton">
-                <Property Name="Top" />
-              </Object>
-            </Top>
-            <Left>
-              <Object Name="CurrentPageTextBox">
-                <Property Name="Right" />
-              </Object>
-            </Left>
-            <Height>20</Height>
-            <Width>40</Width>
-            <TextAlign>MiddleLeft</TextAlign>
-            <Text>
-              <String>
-                <Format>/ {0}</Format>
-                <Items>
-                  <Item>
-                    <Switch>
-                      <Case>
-                        <When>
-                          <Condition Name="NumberOfOrdersVariableEqual0Condition" />
-                        </When>
-                        <Then>1</Then>
-                      </Case>
-                      <Case>
-                        <Object Name="TotalPagesVariable" />
-                      </Case>
-                    </Switch>
-                  </Item>
-                </Items>
-              </String>
-            </Text>
-          </MyObject>
-
-          <MyObject Name="NextPageButton" Type="Button" Assembly="BaseControls">
-            <Top>
-              <Object Name="FirstPageButton">
-                <Property Name="Top" />
-              </Object>
-            </Top>
-            <Left>
-              <Calculate>
-                <Expression>{0} + 3</Expression>
-                <Items>
-                  <Item>
-                    <Object Name="TotalPagesLabel">
-                      <Property Name="Right" />
-                    </Object>
-                  </Item>
-                </Items>
-              </Calculate>
-            </Left>
-            <Height>
-              <Object Name="FirstPageButton">
-                <Property Name="Height" />
-              </Object>
-            </Height>
-            <Width>
-              <Object Name="FirstPageButton">
-                <Property Name="Width" />
-              </Object>
-            </Width>
-            <FlatStyle>Flat</FlatStyle>
-            <FlatBorderSize>0</FlatBorderSize>
-            <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
-            <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-            <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-            <BackgroundImageLayout>Center</BackgroundImageLayout>
-            <BackgroundImage>Images\16x16\arrow-right.png</BackgroundImage>
-            <Commands>
-              <Command Name="CurrentPageVariableIncValueSetCommand" />
-            </Commands>
-            <Enabled>
-              <And>
-                <Not>
-                  <Condition Name="CurrentPageVariableEqualMaxCondition" />
-                </Not>
-                <Not>
-                  <Condition Name="NumberOfOrdersVariableEqual0Condition" />
-                </Not>
-              </And>
-            </Enabled>
-          </MyObject>
-
-          <MyObject Name="LastPageButton" Type="Button" Assembly="BaseControls">
-            <Top>
-              <Object Name="PrevPageButton">
-                <Property Name="Top" />
-              </Object>
-            </Top>
-            <Left>
-              <Calculate>
-                <Expression>{0} + 3</Expression>
-                <Items>
-                  <Item>
-                    <Object Name="NextPageButton">
-                      <Property Name="Right" />
-                    </Object>
-                  </Item>
-                </Items>
-              </Calculate>
-            </Left>
-            <Height>
-              <Object Name="FirstPageButton">
-                <Property Name="Height" />
-              </Object>
-            </Height>
-            <Width>
-              <Object Name="FirstPageButton">
-                <Property Name="Width" />
-              </Object>
-            </Width>
-            <FlatStyle>Flat</FlatStyle>
-            <FlatBorderSize>0</FlatBorderSize>
-            <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
-            <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
-            <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
-            <BackgroundImageLayout>Center</BackgroundImageLayout>
-            <BackgroundImage>Images\16x16\arrow-collapse-right.png</BackgroundImage>
-            <Commands>
-              <Command Name="CurrentPageVariableValueSetCommand">
-                <Object Name="TotalPagesVariable" />
-              </Command>
-            </Commands>
-            <Enabled>
-              <And>
-                <Not>
-                  <Condition Name="CurrentPageVariableEqualMaxCondition" />
-                </Not>
-                <Not>
-                  <Condition Name="NumberOfOrdersVariableEqual0Condition" />
-                </Not>
-              </And>
-            </Enabled>
-          </MyObject>
-          <MyObject Name="PerPageLabel" Type="Label" Assembly="BaseControls">
-            <Top>
-              <Object Name="PrevPageButton">
-                <Property Name="Top" />
-              </Object>
-            </Top>
-            <Left>
-              <Calculate>
-                <Expression>{0} + 20</Expression>
-                <Items>
-                  <Item>
-                    <Object Name="LastPageButton">
-                      <Property Name="Right" />
-                    </Object>
-                  </Item>
-                </Items>
-              </Calculate>
-            </Left>
-            <Height>20</Height>
-            <Width>110</Width>
-            <TextAlign>MiddleRight</TextAlign>
-            <Text>строк на странице</Text>
-          </MyObject>
-
-          <MyObject Name="ItemsPerPageComboBox" Type="ComboBox" Assembly="BaseControls" ChangeForm="False">
-            <Top>
-              <Object Name="PrevPageButton">
-                <Property Name="Top" />
-              </Object>
-            </Top>
-            <Left>
-              <Object Name="PerPageLabel">
-                <Property Name="Right" />
-              </Object>
-            </Left>
-            <Width>50</Width>
-            <ValueList>
-              <Structure Type="Table">
-                <Row>
-                  <Item />
-                  <Item>[Все]</Item>
-                </Row>
-                <Row>
-                  <Item>5</Item>
-                  <Item>5</Item>
-                </Row>
-                <Row>
-                  <Item>10</Item>
-                  <Item>10</Item>
-                </Row>
-                <Row>
-                  <Item>50</Item>
-                  <Item>50</Item>
-                </Row>
-                <Row>
-                  <Item>100</Item>
-                  <Item>100</Item>
-                </Row>
-              </Structure>
-            </ValueList>
-            <Value>50</Value>
-          </MyObject>
-
-          <MyObject Name="TotalItemsLabel" Type="Label" Assembly="BaseControls" ChangeForm="False">
-            <Top>
-              <Object Name="PrevPageButton">
-                <Property Name="Top" />
-              </Object>
-            </Top>
-            <Left>
-              <Calculate>
-                <Expression>{0} + 3</Expression>
-                <Items>
-                  <Item>
-                    <Object Name="ItemsPerPageComboBox">
-                      <Property Name="Right" />
-                    </Object>
-                  </Item>
-                </Items>
-              </Calculate>
-            </Left>
-            <Height>20</Height>
-            <Width>60</Width>
-            <TextAlign>MiddleLeft</TextAlign>
-            <Text>
-              <String>
-                <Format>из {0}</Format>
-                <Items>
-                  <Item>
-                    <Switch>
-                      <Case>
-                        <When>
-                          <Condition Name="NumberOfOrdersVariableEqual0Condition" />
-                        </When>
-                        <Then>0</Then>
-                      </Case>
-                      <Case>
-                        <Object Name="NumberOfOrdersVariable" />
-                      </Case>
-                    </Switch>
-                  </Item>
-                </Items>
-              </String>
-            </Text>
-          </MyObject>
-
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>0</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <BackgroundImage>Images\16x16\arrow-left.png</BackgroundImage>
+          <Commands>
+            <Command Name="CurrentPageVariableDecValueSetCommand" />
+          </Commands>
+          <Enabled>
+            <And>
+              <Not>
+                <Condition Name="CurrentPageVariableEqual1Condition" />
+              </Not>
+              <Not>
+                <Condition Name="NumberOfOrdersVariableEqual0Condition" />
+              </Not>
+            </And>
+          </Enabled>
         </MyObject>
+
+        <MyObject Name="CurrentPageTextBox" Type="TextBox" Assembly="BaseControls" ChangeForm="False">
+          <Top>
+            <Object Name="PrevPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 3</Expression>
+              <Items>
+                <Item>
+                  <Object Name="PrevPageButton">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Width>30</Width>
+          <MaxLength>3</MaxLength>
+          <AllowedSymbols>0123456789</AllowedSymbols>
+          <TextAlign>Right</TextAlign>
+          <Text>
+            <Object Name="CurrentPageVariable" />
+          </Text>
+        </MyObject>
+
+        <MyObject Name="TotalPagesLabel" Type="Label" Assembly="BaseControls" ChangeForm="False">
+          <Top>
+            <Object Name="PrevPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="CurrentPageTextBox">
+              <Property Name="Right" />
+            </Object>
+          </Left>
+          <Height>20</Height>
+          <Width>40</Width>
+          <TextAlign>MiddleLeft</TextAlign>
+          <Text>
+            <String>
+              <Format>/ {0}</Format>
+              <Items>
+                <Item>
+                  <Switch>
+                    <Case>
+                      <When>
+                        <Condition Name="NumberOfOrdersVariableEqual0Condition" />
+                      </When>
+                      <Then>1</Then>
+                    </Case>
+                    <Case>
+                      <Object Name="TotalPagesVariable" />
+                    </Case>
+                  </Switch>
+                </Item>
+              </Items>
+            </String>
+          </Text>
+        </MyObject>
+
+        <MyObject Name="NextPageButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Object Name="FirstPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 3</Expression>
+              <Items>
+                <Item>
+                  <Object Name="TotalPagesLabel">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Height>
+            <Object Name="FirstPageButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <Width>
+            <Object Name="FirstPageButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>0</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <BackgroundImage>Images\16x16\arrow-right.png</BackgroundImage>
+          <Commands>
+            <Command Name="CurrentPageVariableIncValueSetCommand" />
+          </Commands>
+          <Enabled>
+            <And>
+              <Not>
+                <Condition Name="CurrentPageVariableEqualMaxCondition" />
+              </Not>
+              <Not>
+                <Condition Name="NumberOfOrdersVariableEqual0Condition" />
+              </Not>
+            </And>
+          </Enabled>
+        </MyObject>
+
+        <MyObject Name="LastPageButton" Type="Button" Assembly="BaseControls">
+          <Top>
+            <Object Name="PrevPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 3</Expression>
+              <Items>
+                <Item>
+                  <Object Name="NextPageButton">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Height>
+            <Object Name="FirstPageButton">
+              <Property Name="Height" />
+            </Object>
+          </Height>
+          <Width>
+            <Object Name="FirstPageButton">
+              <Property Name="Width" />
+            </Object>
+          </Width>
+          <FlatStyle>Flat</FlatStyle>
+          <FlatBorderSize>0</FlatBorderSize>
+          <FlatBorderColor>ButtonFlatBorderColor</FlatBorderColor>
+          <FlatMouseDownBackColor>ButtonFlatMouseDownBackColor</FlatMouseDownBackColor>
+          <FlatMouseOverBackColor>ButtonFlatMouseOverBackColor</FlatMouseOverBackColor>
+          <BackgroundImageLayout>Center</BackgroundImageLayout>
+          <BackgroundImage>Images\16x16\arrow-collapse-right.png</BackgroundImage>
+          <Commands>
+            <Command Name="CurrentPageVariableValueSetCommand">
+              <Object Name="TotalPagesVariable" />
+            </Command>
+          </Commands>
+          <Enabled>
+            <And>
+              <Not>
+                <Condition Name="CurrentPageVariableEqualMaxCondition" />
+              </Not>
+              <Not>
+                <Condition Name="NumberOfOrdersVariableEqual0Condition" />
+              </Not>
+            </And>
+          </Enabled>
+        </MyObject>
+
+        <MyObject Name="PerPageLabel" Type="Label" Assembly="BaseControls">
+          <Top>
+            <Object Name="PrevPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 20</Expression>
+              <Items>
+                <Item>
+                  <Object Name="LastPageButton">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Height>20</Height>
+          <Width>110</Width>
+          <TextAlign>MiddleRight</TextAlign>
+          <Text>строк на странице</Text>
+        </MyObject>
+
+        <MyObject Name="ItemsPerPageComboBox" Type="ComboBox" Assembly="BaseControls" ChangeForm="False">
+          <Top>
+            <Object Name="PrevPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Object Name="PerPageLabel">
+              <Property Name="Right" />
+            </Object>
+          </Left>
+          <Width>50</Width>
+          <ValueList>
+            <Structure Type="Table">
+              <Row>
+                <Item />
+                <Item>[Все]</Item>
+              </Row>
+              <Row>
+                <Item>5</Item>
+                <Item>5</Item>
+              </Row>
+              <Row>
+                <Item>10</Item>
+                <Item>10</Item>
+              </Row>
+              <Row>
+                <Item>50</Item>
+                <Item>50</Item>
+              </Row>
+              <Row>
+                <Item>100</Item>
+                <Item>100</Item>
+              </Row>
+            </Structure>
+          </ValueList>
+          <Value>50</Value>
+        </MyObject>
+
+        <MyObject Name="TotalItemsLabel" Type="Label" Assembly="BaseControls" ChangeForm="False">
+          <Top>
+            <Object Name="PrevPageButton">
+              <Property Name="Top" />
+            </Object>
+          </Top>
+          <Left>
+            <Calculate>
+              <Expression>{0} + 3</Expression>
+              <Items>
+                <Item>
+                  <Object Name="ItemsPerPageComboBox">
+                    <Property Name="Right" />
+                  </Object>
+                </Item>
+              </Items>
+            </Calculate>
+          </Left>
+          <Height>20</Height>
+          <Width>80</Width>
+          <TextAlign>MiddleLeft</TextAlign>
+          <Text>
+            <String>
+              <Format>из {0}</Format>
+              <Items>
+                <Item>
+                  <Switch>
+                    <Case>
+                      <When>
+                        <Condition Name="NumberOfOrdersVariableEqual0Condition" />
+                      </When>
+                      <Then>0</Then>
+                    </Case>
+                    <Case>
+                      <Object Name="NumberOfOrdersVariable" />
+                    </Case>
+                  </Switch>
+                </Item>
+              </Items>
+            </String>
+          </Text>
+        </MyObject>
+
       </MyObject>
+
     </MyObject>
   </MyObjects>
 </Form>

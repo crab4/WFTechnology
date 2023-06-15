@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<Form Name="TemplateLoginForm" Width="500" Height="300" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
+<Form Name="TemplateLoginForm" Width="400" Height="195" BackColor="ThemeBackgroundColor" StartPosition="CenterScreen" FontStyle="ThemeFontStyle" ForeColor="ThemeForeColor" ValidationType="Flat" FlatColor="ThemeFlatColor" FlatWidth="2" StatusBar="True" MaximizeBox="True" FormBorderStyle="Sizable">
   <Parameters>
-    <Parameter Name="Title">Ws.практика</Parameter>
+    <Parameter Name="Title">WS. Практика</Parameter>
     <Parameter Name="Updated">False</Parameter>
   </Parameters>
 
@@ -34,7 +34,6 @@
   </Appearance>
 
   <DataConnections>
-
     <DataConnection Name="UserPrimaryGetDataConnection" Type="PrimaryGetDataConnection" Assembly="DataConnections">
       <SqlQuery Name="UserLoginSelectSqlQuery" Type="Select">
         <Workflow Name="Template" />
@@ -51,15 +50,40 @@
       <Filter>
         <Field NativeName="UserId" />
         <Value>
-          <Object Name="UserFullNameComboBox" />
+          <Object Name="UserComboBox" />
         </Value>
-        <DataType Type="IntegerDataType" />
       </Filter>
     </DataConnection>
   </DataConnections>
 
   <Conditions>
     <Condition Name="FormClosingCondition" Type="FormClosingCondition" Assembly="Conditions" />
+
+    <Condition Name="UserComboBoxIsNullCondition" Type="IsNullCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="UserComboBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="PasswordTextBoxIsNullOrEmptyCondition" Type="IsNullOrEmptyCondition" Assembly="Conditions">
+      <Items>
+        <Item>
+          <Object Name="PasswordTextBox" />
+        </Item>
+      </Items>
+    </Condition>
+
+    <Condition Name="MandatoryFieldsAllowedNestedCondition" Type="NestedCondition" Assembly="Conditions">
+      <ConditionExpression>
+        <Not>
+          <Form>
+            <Property Name="CheckingFired" />
+          </Form>
+        </Not>
+      </ConditionExpression>
+    </Condition>
 
     <Condition Name="PasswordTextBoxEnterKeyPressCondition" Type="KeyPressCondition" Assembly="Conditions">
       <Object Name="PasswordTextBox" />
@@ -77,6 +101,7 @@
     </Condition>
 
     <Condition Name="LoginCommandFailEqualCondition" Type="EqualCondition" Assembly="Conditions">
+      <AlwaysChange Value="True" />
       <Items>
         <Item>
           <Command Name="LoginCommand" />
@@ -84,13 +109,17 @@
         <Item>Fail</Item>
       </Items>
     </Condition>
-
   </Conditions>
 
   <Commands>
     <Command Name="FormCloseCommand" Type="FormCloseCommand" Assembly="Commands" />
 
+    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
+      <Parameter Name="Updated">True</Parameter>
+    </Command>
+
     <Command Name="LoginCommand" Type="LoginCommand" Assembly="Commands">
+      <Condition Name="MandatoryFieldsAllowedNestedCondition" />
       <UserName>
         <DataConnection SourceDataConnection="UserSecondaryGetDataConnection">
           <Fields>
@@ -105,15 +134,16 @@
 
     <Command Name="LoginFailedMessageBoxCommand" Type="MessageBoxCommand" Assembly="Commands">
       <Caption>Ошибка авторизации</Caption>
-      <Text>Пароль указан неверною\rПопробуйте ещё раз</Text>
+      <Text>Пароль указан неверно.\rПопробуйте еще раз.</Text>
       <Icon Type="Warning" />
       <Buttons Type="Ok" />
     </Command>
 
-    <Command Name="UpdatedTrueValueSetCommand" Type="ValueSetCommand" Assembly="Commands">
-      <Parameter Name="Updated">True</Parameter>
+    <Command Name="DataConnectionRefreshCommand" Type="DataConnectionRefreshCommand" Assembly="Commands">
+      <DataConnections>
+        <DataConnection Name="UserSecondaryGetDataConnection" Packet="True" />
+      </DataConnections>
     </Command>
-
   </Commands>
 
   <Executions>
@@ -154,6 +184,24 @@
       </Commands>
     </Execution>
   </Executions>
+
+  <Checkings>
+    <Checking>
+      <Object Name="UserComboBox" />
+      <ConditionExpression>
+        <Condition Name="UserComboBoxIsNullCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
+    </Checking>
+
+    <Checking>
+      <Object Name="PasswordTextBox" />
+      <ConditionExpression>
+        <Condition Name="PasswordTextBoxIsNullOrEmptyCondition" />
+      </ConditionExpression>
+      <AsteriskHint>Пожалуйста, заполните это поле</AsteriskHint>
+    </Checking>
+  </Checkings>
 
   <MyObjects>
     <MyObject Name="HeadPanel" Type="Panel" Assembly="BaseControls">
@@ -243,9 +291,7 @@
       <TabIndex>1</TabIndex>
       <BackColor>ThemeBackgroundColor</BackColor>
 
-      <!-- Insert your content-->
-
-      <MyObject Name="UserFullNameLabel" Type="Label" Assembly="BaseControls">
+      <MyObject Name="UserLabel" Type="Label" Assembly="BaseControls">
         <Top>5</Top>
         <Left>10</Left>
         <Width>
@@ -258,7 +304,7 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="UserFullNameLabel">
+                <Object Name="UserLabel">
                   <Property Name="Left" />
                 </Object>
               </Item>
@@ -272,14 +318,14 @@
         <Text>Пользователь</Text>
       </MyObject>
 
-      <MyObject Name="UserFullNameComboBox" Type="ComboBox" Assembly="BaseControls">
+      <MyObject Name="UserComboBox" Type="ComboBox" Assembly="BaseControls">
         <Top>
-          <Object Name="UserFullNameLabel">
+          <Object Name="UserLabel">
             <Property Name="Bottom" />
           </Object>
         </Top>
         <Left>
-          <Object Name="UserFullNameLabel">
+          <Object Name="UserLabel">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -293,25 +339,29 @@
                 </Object>
               </Item>
               <Item>
-                <Object Name="UserFullNameComboBox">
+                <Object Name="UserComboBox">
                   <Property Name="Left" />
                 </Object>
               </Item>
             </Items>
           </Calculate>
         </Width>
+        <Height>25</Height>
+        <TabIndex>1</TabIndex>
+        <Sorted>True</Sorted>
+        <EnterText>True</EnterText>
+        <AutoCompleteMode>SuggestAppend</AutoCompleteMode>
+        <AutoCompleteSource>ListItems</AutoCompleteSource>
         <NullValue Show="True" />
         <NullValueTitle>[Не выбрано]</NullValueTitle>
-        <AutoCompleteMode>SmartSuggest</AutoCompleteMode>
         <ValueList>
           <DataConnection SourceDataConnection="UserPrimaryGetDataConnection">
             <Fields>
               <Field Name="UserId" />
-              <Field Name="UserName" />
+              <Field Name="UserFullName" />
             </Fields>
           </DataConnection>
         </ValueList>
-        <Value />
       </MyObject>
 
       <MyObject Name="PasswordLabel" Type="Label" Assembly="BaseControls">
@@ -320,7 +370,7 @@
             <Expression>{0} + 5</Expression>
             <Items>
               <Item>
-                <Object Name="UserFullNameComboBox">
+                <Object Name="UserComboBox">
                   <Property Name="Bottom" />
                 </Object>
               </Item>
@@ -328,7 +378,7 @@
           </Calculate>
         </Top>
         <Left>
-          <Object Name="UserFullNameComboBox">
+          <Object Name="UserLabel">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -363,7 +413,7 @@
           </Object>
         </Top>
         <Left>
-          <Object Name="PasswordLabel">
+          <Object Name="UserLabel">
             <Property Name="Left" />
           </Object>
         </Left>
@@ -384,13 +434,9 @@
             </Items>
           </Calculate>
         </Width>
+        <TabIndex>2</TabIndex>
         <Password>True</Password>
-        <Text />
       </MyObject>
-
-
-
-
 
     </MyObject>
 
@@ -461,8 +507,29 @@
         <Text>Войти</Text>
         <TabIndex>1</TabIndex>
         <Commands>
+          <Command Name="DataConnectionRefreshCommand" />
           <Command Name="LoginCommand" />
         </Commands>
+        <Enabled>
+          <Condition Name="MandatoryFieldsAllowedNestedCondition" />
+        </Enabled>
+        <DisabledMode>True</DisabledMode>
+        <DisabledText>
+          <Switch>
+            <Case>
+              <When>
+                <Condition Name="UserComboBoxIsNullCondition" />
+              </When>
+              <Then>Выберите пользователя.</Then>
+            </Case>
+            <Case>
+              <When>
+                <Condition Name="PasswordTextBoxIsNullOrEmptyCondition" />
+              </When>
+              <Then>Введите пароль.</Then>
+            </Case>
+          </Switch>
+        </DisabledText>
       </MyObject>
     </MyObject>
   </MyObjects>
