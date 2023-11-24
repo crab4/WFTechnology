@@ -4,5 +4,6 @@
       "pattern": "**/Template.xml",
       "systemId": "file:///d%3A/WorkflowTechnology/Development/wXSD/Workflow/wXSDschema.xsd"
     }
-  ]
+  ],
+  "compile-hero.disable-compile-files-on-did-save-code": false
 }

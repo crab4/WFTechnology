@@ -11,20 +11,24 @@
 
 <body>
   <div class="wrapper">
-    
+
     <div class="row">
       <div class="column">
-        <a class="text-link"
-          href="Helper/keys.html">Хоткеи </a>
+        <a class="text-link" href="Helper/keys.html">Хоткеи </a>
       </div>
+      <div class="text"> <span style="color: blueviolet; font-weight: 700;">&ltEnabled&gt </span>False<span
+          style="color: blueviolet; font-weight: 700;">&lt/Enabled&gt </span> Отключает на дочках весь ввод</div>
       <!-- <div class="text">В целом проблема решается иначе: необходим необновленный Eclipse. запускающийся на 8ой Яве. А
         так же необходимо установить обе 8ые явы, и быть уверенным, что не снёс их при обновлении</div> -->
     </div>
 
+    <hr class="line-black">
     <div class="row">
       <div class="column">
-        <a class="text-link"
-          href="Helper/add-variable-to-docx-template.html">Добавление переменной в шаблон docx </a>
+        <a class="text-link" href="Helper/add-variable-to-docx-template.html">Добавление переменной в шаблон docx </a>
+      </div>
+      <div class="column">
+        <a class="text-link" href="Helper/add-notification-carrent.html">Добавление уведомления в каррент </a>
       </div>
     </div>
 
@@ -32,40 +36,86 @@
     <hr class="line-black">
     <div class="row">
       <div class="column">
-        <a href="https://wfsys.gitbook.io/wt-practice/main/lesson_pagination#samostoyatelno-1" class="text-link">
-          неправильный файл template
-        </a>
+        <a class="text-link" href="https://wfsys.gitbook.io/wt-practice/main/lesson_filters#globalnye-filtry">Теория по
+          фильтрам и логика их работы </a>
       </div>
-      <a target="_blank" href="images/13.png"><img class="images" src="images/13.png" alt="13"></a>
+      <div class="column">
+        <a class="text-link" href="Helper/sqlers.html">SQL приколюхи</a>
+      </div>
+    </div>
+
+    <hr class="line-black">
+    <div class="row">
+      <div class="column">
+        <a class="text-link" href="Helper/Add-new-report-collectv3.html">Добавление отчета в collect v3</a>
+      </div>
+      <div class="column">
+        <a class="text-link" href="Helper/regexp.html">Полезные регулярки</a>
+      </div>
     </div>
 
 
+    <hr class="big-black-line">
+    <hr class="big-black-line">
+    <div class="text" style="text-align: center;">Безссылочная информация</div>
+    <hr class="big-black-line">
+    <hr class="big-black-line">
+
+
+    <div class="row">
+      <div class="column">
+        <SPAN class="text">Если не сохраняет аренду из-за осмотров: смотри изменение от 26.06.2023 в ForwardV3</SPAN>
+      </div>
+
+    </div>
+
+    
+    <hr class="line-black">
+
+    <div class="row">
+      <div class="column">
+        <SPAN class="text">Копировальщик - D:\WorkflowTechnology\Development\Utilities\VariableRenamer
+        </SPAN>
+      </div>
+
+    </div>    
+    <hr class="line-black">
+
+    <div class="row">
+      <div class="column">
+        <SPAN class="text">Команда под автовыгрузку D:\WorkflowForms\StabilnostBiznesaNew.v3>WorkflowForms.exe -a true -i false -s "D:\WorkflowTechnology\Clients\StabilnostBiznesaNew\Projects\1. Collect\Forms\CollectAutoExport.xml"
+        </SPAN>
+      </div>
+
+    </div>
+    
+    <hr class="line-black">
+
+    <div class="row">
+      <div class="column">
+        <SPAN class="text">Если  дропается ошибка: Невозможно загрузить файл или сборку "Autorent" или один из зависимых от них компонентов. Сборка создана в более поздней версии среды выполнения чем текущая, и не может быть загружена.
+          то меняем в конфиге forms v2 на v4.0
+        </SPAN>
+      </div>
+
+    </div>
+
+    <hr class="line-black">
+
   </div>
 
-
-  <!-- Никогда не пренебрегай SequentialCommand
-        Практически при любом редактировании сущности нужно делать несколько команд, лучше их совместить в секвенцию, чтобы:
-      1. точно знать при просмотре кода кнопки, что она делает и не носиться как курица туда-сюда, а получить удобную ссылку в командс.
-      2. в случае дублирования кода не придётся снова вводить десять тысяч переменных, можно будет просто продублировать seq -->
-
-  <!-- Возможность отключить все изменения на дочерних элементах -->
-  <Enabled>False</Enabled> 
-
-
-  <!-- Создание архивной кнопки и последовательность действий:
-    И хотя в реализации есть различия, алгоритм удобный.
-  -->
-  https://wfsys.gitbook.io/wt-practice/main/lesson_deleting_related_data#priznak-arkhivnoi-zapisi
- 
-  
-  <!-- Фильтры. При проверке в БД не забывать, что сервер отправляет ещё парочку запросов самостоятельно -->
-  https://wfsys.gitbook.io/wt-practice/main/lesson_filters#globalnye-filtry
- 
+  <br>
+  pg_dump --data-only --schema=carwash --port=5434 --username=postgres --column-inserts svivridenko > insert.sql
+  <div class="text"> 
+<DataConnection SourceDataConnection="ObjectClientByIDSecondaryGetDataConnection" GetScalar="True">
+  <Fields>
+    <Field Name="OwnershipEndDate" />
+  </Fields>
+</DataConnection>
+</div>
 
 
-  <!-- Создание ключа в Postgres не через серийник -->
-  CREATE SEQUENCE schema.table_id_seq;
-  table_id smallint NOT NULL DEFAULT nextval('schema.table_id_seq'::regclass),
+
 </body>
 
 </html>

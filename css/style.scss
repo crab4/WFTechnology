@@ -71,6 +71,13 @@ h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight: inherit;}
     height: 2px;
     margin-bottom: 10px;
   }
+  .big-black-line{
+    border:none;
+    background-color: blueviolet;
+    color: blueviolet;
+    height: 4px;
+    margin-bottom: 4px;
+  }
   .images{
     border: 1px solid #ddd; /* Gray border */
     border-radius: 4px;  /* Rounded border */

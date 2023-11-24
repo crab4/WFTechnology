@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../css/style.css">
+  <title>Document</title>
+</head>
+<body>
+  <div class="wrapper">
+      <a class="text-link" href="../myHelper.html">Вернуться</a>
+      <div class="line-black"></div>
+
+
+      <div class="text" style="color: blueviolet;">SQL для вывода самых новых комментов по rent_id(только по одному)</div>
+      <div class ="text" style="white-space: pre;">
+      SELECT DISTINCT ON (rent_id)
+        rent_id,
+        text,
+        date_created
+      FROM
+        carrent.rent_comment
+      ORDER BY rent_id, date_created DESC</div>
+      
+
+      <div class="text" style="color: blueviolet;">SQL для подсчета дней</div>
+      <div class ="text" style="white-space: pre;">
+        ceil(EXTRACT(epoch from date_finish::timestamp - date_start::timestamp)/(3600*24)) AS "DaysCount"
+      </div>
+      
+
+
+
+</body>
+</html>
